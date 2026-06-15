@@ -1,0 +1,30 @@
+# ── 비밀키 (절대 커밋 금지) ──
+.env
+.env.*
+!.env.example
+secrets*.py
+
+# ── 파이썬 ──
+__pycache__/
+*.pyc
+*.pyo
+.DS_Store
+
+# ── 웹앱이 쓰지 않는 대용량 파일 (배포 제외) ──
+*.mp4
+*.png
+
+# ── 무관한 일렉트론 앱 / node ──
+CM-A2A/
+node_modules/
+
+# ── 로컬 산출물 ──
+reports/
+raw/
+processed/
+
+# ── 웹앱 배포에 불필요한 보조 스크립트/하위 프로젝트 (일부 키 하드코딩 포함) ──
+mineral_collector_all.py
+fix_*.py
+minerals_agent/
+*.db
