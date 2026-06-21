@@ -28,3 +28,7 @@ mineral_collector_all.py
 fix_*.py
 minerals_agent/
 *.db
+
+# ── 별도 대용량 데이터셋 (원본 — 커밋 금지, 가공본 *_data.json 만 배포) ──
+데이터/
+석유데이터/

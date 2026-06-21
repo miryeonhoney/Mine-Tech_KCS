@@ -191,6 +191,50 @@ EXTRA_EXPERTS = {
 성격: 실행 가능한 정책 대안 제시에 집중. "그래서 정부는 무엇을 해야 하나"로 토론을 수렴.
 다중 토론 지침: 다른 전문가들이 진단한 문제를 받아 "그렇다면 정책 처방은—"으로 구체적 대안을 묶어냄. 200자 내외."""
     },
+    "식품": {
+        "name": "식품 박사",
+        "title": "농수산물·장바구니 물가 전문가",
+        "avatar": "🥬",
+        "color": "#5ad1b0",
+        "category": "식품",
+        "system": """당신은 '식품 박사'입니다. 한국농수산식품유통공사(aT) 소속 농수산물 가격·물가 전문가입니다.
+전문 분야: 채소·과일·곡물 도소매가, 작황·기후 영향, 소비자물가지수, 도매시장 동향.
+성격: 일반 소비자의 장바구니 체감 중심. "배추 한 포기에 얼마"처럼 피부에 와닿게 설명.
+다중 토론 지침: 광물·에너지 이슈가 식품·물가에 미치는 영향을 연결. 200자 내외."""
+    },
+    "축산": {
+        "name": "축산 박사",
+        "title": "축산물·사료 가격 전문가",
+        "avatar": "🥩",
+        "color": "#e8825a",
+        "category": "식품",
+        "system": """당신은 '축산 박사'입니다. 축산물품질평가원 소속 축산·사료 전문가입니다.
+전문 분야: 소·돼지·닭고기 경락가, 계란·우유, 사료곡물(옥수수·대두) 수입 의존, 가축 질병 리스크.
+성격: 공급망(사료→축산→식탁) 관점. 사료값과 고기값의 연결을 강조.
+다중 토론 지침: 에너지·곡물 가격이 사료를 거쳐 축산물 가격으로 전이되는 고리를 짚음. 200자 내외."""
+    },
+    "석유": {
+        "name": "석유 박사",
+        "title": "유가·정유 전문가",
+        "avatar": "🛢️",
+        "color": "#f59e0b",
+        "category": "에너지",
+        "system": """당신은 '석유 박사'입니다. 한국석유공사 소속 유가·정유 전문가입니다.
+전문 분야: 국제유가(WTI·두바이), 정제마진, 휘발유·경유 소비자가, 원유 수입선, 전략비축.
+성격: 가격 전이(원유→주유소)와 지정학(중동·OPEC)을 함께 봄. "기름값은 결국 원유가+세금+마진".
+다중 토론 지침: 유가가 물가·산업 전반에 미치는 파급을 강조. 200자 내외."""
+    },
+    "가스": {
+        "name": "가스 박사",
+        "title": "천연가스·LPG 전문가",
+        "avatar": "🔥",
+        "color": "#22d3ee",
+        "category": "에너지",
+        "system": """당신은 '가스 박사'입니다. 한국가스공사 소속 천연가스·LPG 전문가입니다.
+전문 분야: LNG 수입가·장기계약, 발전·도시가스 요금, LPG, 동절기 수급, 가스↔전기료 연결.
+성격: 난방·전기료 등 생활 체감과 산업용 가격을 함께 설명.
+다중 토론 지침: 유가·지정학 변화가 가스가격·전기요금으로 이어지는 경로를 짚음. 200자 내외."""
+    },
 }
 MINERAL_EXPERTS.update(EXTRA_EXPERTS)
 
@@ -464,6 +508,160 @@ def fetch_news():
     cache_set("news", result)
     return result
 
+def fetch_food_prices():
+    """한국농수산식품유통공사 최근일자 도소매 가격 (recent/price)."""
+    c = cache_get("food")
+    if c is not None: return c
+    items = []
+    if PUBLIC_DATA_KEY and not PUBLIC_DATA_KEY.startswith("여기에"):
+        try:
+            r = requests.get("https://apis.data.go.kr/B552845/recent/price",
+                params={"serviceKey": PUBLIC_DATA_KEY, "returnType": "JSON",
+                        "pageNo": "1", "numOfRows": "1000"}, timeout=20)
+            if r.status_code == 200:
+                body = r.json().get("response", {}).get("body", {})
+                raw = (body.get("items") or {}).get("item") or []
+                for it in raw:
+                    def num(k):
+                        try: return float(str(it.get(k, "") or "").replace(",", ""))
+                        except: return 0.0
+                    cur = num("exmn_dd_cnvs_prc")
+                    if cur <= 0: continue
+                    items.append({
+                        "부류": (it.get("ctgry_nm") or "").strip(),
+                        "품목": (it.get("item_nm") or "").strip(),
+                        "품종": (it.get("vrty_nm") or "").strip(),
+                        "구분": (it.get("se_nm") or "").strip(),
+                        "단위": f"{it.get('unit_sz','')}{it.get('unit','')}".strip(),
+                        "조사일": (it.get("exmn_ymd") or "").strip(),
+                        "현재가": cur,
+                        "전일": num("dd1_bfr_cnvs_prc"),
+                        "전주": num("ww1_bfr_cnvs_prc"),
+                        "전월": num("mm1_bfr_cnvs_prc"),
+                        "전년": num("yy1_bfr_cnvs_prc"),
+                    })
+            else:
+                print(f"[FOOD API] HTTP {r.status_code}")
+        except Exception as e:
+            print(f"[FOOD API] 오류: {e}")
+    cache_set("food", items)
+    return items
+
+def load_food_indices():
+    try:
+        with open(os.path.join(os.path.dirname(__file__), "food_indices.json"), encoding="utf-8") as f:
+            return json.load(f)
+    except Exception:
+        return {}
+
+def load_oil_data():
+    try:
+        with open(os.path.join(os.path.dirname(__file__), "oil_data.json"), encoding="utf-8") as f:
+            return json.load(f)
+    except Exception:
+        return {}
+
+def load_manufacturing():
+    try:
+        with open(os.path.join(os.path.dirname(__file__), "manufacturing_data.json"), encoding="utf-8") as f:
+            return json.load(f)
+    except Exception:
+        return {}
+
+def load_risk_data():
+    try:
+        with open(os.path.join(os.path.dirname(__file__), "risk_data.json"), encoding="utf-8") as f:
+            return json.load(f)
+    except Exception:
+        return []
+
+FOOD_NEWS_KEYWORDS = ["장바구니 물가", "농수산물 가격", "채소 가격", "과일 가격", "축산물 가격", "밥상물가"]
+
+def fetch_food_news():
+    c = cache_get("food_news")
+    if c is not None: return c
+    all_news = []
+    if NAVER_CLIENT_ID and not NAVER_CLIENT_ID.startswith("여기에"):
+        hdrs = {"X-Naver-Client-Id": NAVER_CLIENT_ID, "X-Naver-Client-Secret": NAVER_CLIENT_SECRET}
+        seen = set()
+        for kw in FOOD_NEWS_KEYWORDS:
+            try:
+                r = requests.get("https://openapi.naver.com/v1/search/news.json",
+                    headers=hdrs, params={"query": kw, "display": 4, "sort": "date"}, timeout=8)
+                if r.status_code != 200: continue
+                for it in r.json().get("items", []):
+                    lnk = it.get("originallink", "")
+                    if lnk in seen: continue
+                    seen.add(lnk)
+                    try: dt = datetime.strptime(it.get("pubDate",""), "%a, %d %b %Y %H:%M:%S +0900").strftime("%Y-%m-%d %H:%M")
+                    except: dt = it.get("pubDate","")
+                    all_news.append({"제목": clean(it.get("title","")), "요약": clean(it.get("description",""))[:80],
+                                     "언론사링크": lnk, "발행일시": dt, "검색키워드": kw})
+            except: continue
+            time.sleep(0.15)
+    cache_set("food_news", all_news)
+    return all_news
+
+# 대상별 뉴스 — 같은 자원 이슈도 누구에게 보여줄지에 따라 다른 키워드
+NEWS_AUDIENCE = {
+    "투자자": ["원자재 관련주", "2차전지 테마주", "핵심광물 수혜주"],
+    "기업":   ["원자재 공급망", "핵심광물 수출규제", "원자재 수급"],
+    "소비자": ["장바구니 물가", "기름값", "생활물가"],
+}
+
+ENERGY_NEWS_KEYWORDS = ["국제유가", "휘발유 가격", "정유업계", "석유 수급", "천연가스 가격"]
+
+def fetch_energy_news():
+    c = cache_get("energy_news")
+    if c is not None: return c
+    out = []
+    if NAVER_CLIENT_ID and not NAVER_CLIENT_ID.startswith("여기에"):
+        hdrs = {"X-Naver-Client-Id": NAVER_CLIENT_ID, "X-Naver-Client-Secret": NAVER_CLIENT_SECRET}
+        seen = set()
+        for kw in ENERGY_NEWS_KEYWORDS:
+            try:
+                r = requests.get("https://openapi.naver.com/v1/search/news.json",
+                    headers=hdrs, params={"query": kw, "display": 4, "sort": "date"}, timeout=8)
+                if r.status_code != 200: continue
+                for it in r.json().get("items", []):
+                    lnk = it.get("originallink", "")
+                    if lnk in seen: continue
+                    seen.add(lnk)
+                    try: dt = datetime.strptime(it.get("pubDate",""), "%a, %d %b %Y %H:%M:%S +0900").strftime("%Y-%m-%d %H:%M")
+                    except: dt = it.get("pubDate","")
+                    out.append({"제목": clean(it.get("title","")), "요약": clean(it.get("description",""))[:80],
+                                "언론사링크": lnk, "발행일시": dt, "검색키워드": kw})
+            except: continue
+            time.sleep(0.12)
+    cache_set("energy_news", out)
+    return out
+
+def fetch_audience_news():
+    c = cache_get("anews")
+    if c is not None: return c
+    out = []
+    if NAVER_CLIENT_ID and not NAVER_CLIENT_ID.startswith("여기에"):
+        hdrs = {"X-Naver-Client-Id": NAVER_CLIENT_ID, "X-Naver-Client-Secret": NAVER_CLIENT_SECRET}
+        seen = set()
+        for aud, kws in NEWS_AUDIENCE.items():
+            for kw in kws:
+                try:
+                    r = requests.get("https://openapi.naver.com/v1/search/news.json",
+                        headers=hdrs, params={"query": kw, "display": 4, "sort": "date"}, timeout=8)
+                    if r.status_code != 200: continue
+                    for it in r.json().get("items", []):
+                        lnk = it.get("originallink", "")
+                        if lnk in seen: continue
+                        seen.add(lnk)
+                        try: dt = datetime.strptime(it.get("pubDate",""), "%a, %d %b %Y %H:%M:%S +0900").strftime("%Y-%m-%d %H:%M")
+                        except: dt = it.get("pubDate","")
+                        out.append({"제목": clean(it.get("title","")), "요약": clean(it.get("description",""))[:80],
+                                    "언론사링크": lnk, "발행일시": dt, "검색키워드": kw, "aud": aud})
+                except: continue
+                time.sleep(0.12)
+    cache_set("anews", out)
+    return out
+
 def by_mineral(rows):
     s = {}
     for r in rows:
@@ -668,6 +866,44 @@ def render_dashboard():
         ensure_ascii=False)
     imports_unit_js = json.dumps(imports_unit)
 
+    # 대상별 뉴스
+    anews = fetch_audience_news()
+    _AUD_LB = {"투자자": "📈 투자자", "기업": "🏢 기업", "소비자": "🛒 소비자"}
+    anews_html = "".join(f"""
+    <a href="{n['언론사링크']}" target="_blank" class="nc" data-aud="{n['aud']}">
+      <span class="nc-kw">{_AUD_LB.get(n['aud'], n['aud'])} · {n['검색키워드']}</span>
+      <div class="nc-ti">{n['제목']}</div>
+      <div class="nc-sm">{n['요약']}</div>
+      <div class="nc-dt">{n['발행일시']}</div>
+    </a>""" for n in anews) or '<div class="empty">뉴스를 불러올 수 없습니다 (네이버 API 키 확인).</div>'
+    news_js = json.dumps(anews, ensure_ascii=False)
+
+    # ── 자원 리스크 신호등 (수급안정화지수, 한국광해광업공단) ──
+    risk = load_risk_data()
+    risk_js = json.dumps(risk, ensure_ascii=False)
+    def _sig(v):
+        if v is None: return ("—", "#888")
+        if v >= 55: return ("안정", "#5ad1b0")
+        if v >= 30: return ("주의", "#ffb000")
+        return ("위험", "#ff7a7a")
+    def _risk_card(r):
+        lab, col = _sig(r["latest"])
+        prev = r.get("prev")
+        if prev is not None:
+            d = r["latest"] - prev
+            sub = f'전월 {"▲" if d>0 else ("▼" if d<0 else "·")} {abs(d):.1f}'
+        else:
+            sub = ""
+        return (f'<div class="risk-card" style="border-left:4px solid {col}">'
+                f'<div class="rk-top"><span class="rk-nm">{r["name"]}</span>'
+                f'<span class="rk-tag" style="background:{col}22;color:{col}">{lab}</span></div>'
+                f'<div class="rk-val">{r["latest"]:.1f}<span>/100</span></div>'
+                f'<div class="rk-sub">{sub} · 수급안정화지수</div></div>')
+    risk_cards = "".join(_risk_card(r) for r in risk) or '<div class="empty">리스크 데이터 없음</div>'
+    _risk_high = [r["name"] for r in risk if r["latest"] < 30]
+    risk_summary = ("현재 <b style=\"color:#ff7a7a\">" + " · ".join(_risk_high) + "</b> 의 수급 불안이 높습니다."
+                    if _risk_high else "현재 주요 광물 수급은 비교적 안정적입니다.")
+
     usgs_html = "".join(f"""
     <div class="uc">
       <div class="uc-nm">{mn}</div>
@@ -702,6 +938,196 @@ def render_dashboard():
       <td class="t-num">${float(str(r.get('수출금액(달러)',0)).replace(',','') or 0):,.0f}</td>
     </tr>""" for r in customs[:30]) if customs else \
     '<tr><td colspan="4" class="empty">KOMIR 데이터 없음</td></tr>'
+
+    # ── 식품 카테고리 데이터 ──
+    food = fetch_food_prices()
+    food_date = food[0]["조사일"] if food else ""
+    if len(food_date) == 8:
+        food_date = f"{food_date[:4]}-{food_date[4:6]}-{food_date[6:]}"
+    _order = ["과일류", "채소류", "축산물", "수산물", "식량작물", "특용작물"]
+    food_cats = [c for c in _order if any(f["부류"] == c for f in food)] + \
+                sorted({f["부류"] for f in food if f["부류"] and f["부류"] not in _order})
+    food_up   = sum(1 for f in food if f["전일"] and f["현재가"] > f["전일"])
+    food_down = sum(1 for f in food if f["전일"] and f["현재가"] < f["전일"])
+
+    def _chg(cur, base):
+        if not base: return '<td class="t-num" style="color:#777">-</td>'
+        p = (cur - base) / base * 100
+        col = '#ff7a7a' if p > 0.05 else ('#5ad1b0' if p < -0.05 else '#888')
+        arr = '▲' if p > 0.05 else ('▼' if p < -0.05 else '·')
+        return f'<td class="t-num" style="color:{col}">{arr} {abs(p):.1f}%</td>'
+
+    food_rows = "".join(
+        f'<tr data-cat="{f["부류"]}" data-se="{f["구분"]}" data-idx="{i}" onclick="showFoodTrend({i})" style="cursor:pointer">'
+        f'<td class="t-nm">{f["품목"]}'
+        + (f' <span style="color:#888;font-size:11px">{f["품종"]}</span>' if f["품종"] and f["품종"] != f["품목"] else '')
+        + '</td>'
+        f'<td class="t-nm" style="color:#999;font-size:12px">{f["구분"]} · {f["단위"]}</td>'
+        f'<td class="t-num" style="color:var(--accent);font-weight:700">{f["현재가"]:,.0f}원</td>'
+        + _chg(f["현재가"], f["전일"]) + _chg(f["현재가"], f["전주"])
+        + _chg(f["현재가"], f["전월"]) + _chg(f["현재가"], f["전년"])
+        + '</tr>'
+        for i, f in enumerate(food)
+    ) or '<tr><td colspan="7" class="empty">식품 가격 데이터를 불러올 수 없습니다 (공공데이터 API 키 확인).</td></tr>'
+
+    food_cat_btns = '<button class="mineral-btn food-cat-btn active" onclick="filterFood(\'전체\',this)">전체</button>' + "".join(
+        f'<button class="mineral-btn food-cat-btn" onclick="filterFood(\'{c}\',this)">{c}</button>' for c in food_cats)
+
+    # ── 장바구니 물가 (소비자 체감 생필품 카드) ──
+    STAPLE_ICON = {"쌀":"🌾","배추":"🥬","양파":"🧅","사과":"🍎","우유":"🥛","감자":"🥔","고구마":"🍠",
+                   "무":"🥗","고등어":"🐟","상추":"🥬","오이":"🥒","토마토":"🍅","바나나":"🍌","수박":"🍉","당근":"🥕"}
+    _pick = ["쌀","배추","양파","사과","우유","감자","고구마","무","고등어","상추"]
+    basket = []; _bseen = set()
+    for nm in _pick:
+        if len(basket) >= 6: break
+        for f in food:
+            if f["구분"] == "소매" and nm in f["품목"] and f["품목"] not in _bseen and (f["전주"] or f["전일"]):
+                _bseen.add(f["품목"]); basket.append((nm, f)); break
+    def _basket_card(nm, f):
+        icon = STAPLE_ICON.get(nm, "🛒")
+        base = f["전주"] or f["전일"] or f["전월"]   # 지난주 우선, 없으면 어제·전월
+        p = (f["현재가"] - base) / base * 100 if base else 0
+        col = "#ff7a7a" if p > 0.5 else ("#5ad1b0" if p < -0.5 else "#999")
+        arr = "▲" if p > 0.5 else ("▼" if p < -0.5 else "·")
+        word = "비싸졌어요" if p > 0.5 else ("싸졌어요" if p < -0.5 else "비슷해요")
+        return (f'<div class="basket-card"><div class="bk-ico">{icon}</div>'
+                f'<div class="bk-nm">{nm}</div>'
+                f'<div class="bk-price">{f["현재가"]:,.0f}<span>원/{f["단위"]}</span></div>'
+                f'<div class="bk-chg" style="color:{col}">{arr} 지난주보다 {abs(p):.0f}% {word}</div></div>')
+    basket_html = "".join(_basket_card(nm, f) for nm, f in basket) or '<div class="empty">데이터 없음</div>'
+
+    # 부류별 동향 (전년대비 평균) + 급등/급락 TOP
+    def _yoy(f): return (f["현재가"] - f["전년"]) / f["전년"] * 100 if f["전년"] else 0
+    _cat_acc = {}
+    for f in food:
+        if f["전년"]:
+            a = _cat_acc.setdefault(f["부류"], [0.0, 0])
+            a[0] += _yoy(f); a[1] += 1
+    cat_trend = sorted(({"부류": k, "yoy": s / c} for k, (s, c) in _cat_acc.items() if c),
+                       key=lambda x: -x["yoy"])
+    _mx = max((abs(x["yoy"]) for x in cat_trend), default=1) or 1
+    cat_trend_html = "".join(
+        f'<div class="ct-row"><span class="ct-nm">{x["부류"]}</span>'
+        f'<div class="ct-bar"><i style="width:{abs(x["yoy"])/_mx*100:.0f}%;background:{"#ff7a7a" if x["yoy"]>0 else "#5ad1b0"}"></i></div>'
+        f'<span class="ct-val" style="color:{"#ff7a7a" if x["yoy"]>0 else "#5ad1b0"}">{"+" if x["yoy"]>0 else ""}{x["yoy"]:.1f}%</span></div>'
+        for x in cat_trend) or '<div class="empty">데이터 없음</div>'
+
+    _movers = [{"nm": f["품목"], "se": f["구분"], "u": f["단위"], "p": f["현재가"], "y": _yoy(f)} for f in food if f["전년"]]
+    def _mv_rows(lst, up):
+        col = "#ff7a7a" if up else "#5ad1b0"
+        return "".join(
+            f'<div class="mv-row"><span class="mv-nm">{m["nm"]} <span style="color:#888;font-size:11px">{m["se"]}</span></span>'
+            f'<span class="mv-p">{m["p"]:,.0f}원</span>'
+            f'<span class="mv-y" style="color:{col}">{"+" if m["y"]>0 else ""}{m["y"]:.1f}%</span></div>'
+            for m in lst) or '<div class="empty">데이터 없음</div>'
+    top_up_html   = _mv_rows(sorted(_movers, key=lambda x: -x["y"])[:8], True)
+    top_down_html = _mv_rows(sorted(_movers, key=lambda x:  x["y"])[:8], False)
+
+    # 추이 차트용(품목별 5시점) + 물가지수 JS
+    food_trend_js = json.dumps([
+        {"nm": f["품목"] + (("·" + f["품종"]) if f["품종"] and f["품종"] != f["품목"] else "") + f' ({f["구분"]})',
+         "v": [f["전년"], f["전월"], f["전주"], f["전일"], f["현재가"]]}
+        for f in food], ensure_ascii=False)
+    food_idx_js = json.dumps(load_food_indices(), ensure_ascii=False)
+
+    # 식품 뉴스
+    fnews = fetch_food_news()
+    food_news_html = "".join(f"""
+    <a href="{n.get('언론사링크','#')}" target="_blank" class="nc">
+      <span class="nc-kw">{n.get('검색키워드','')}</span>
+      <div class="nc-ti">{n.get('제목','')}</div>
+      <div class="nc-sm">{n.get('요약','')}</div>
+      <div class="nc-dt">{n.get('발행일시','')}</div>
+    </a>""" for n in fnews[:12]) or '<div class="empty">식품 뉴스를 불러올 수 없습니다.</div>'
+    food_news_js = json.dumps(fnews[:12], ensure_ascii=False)
+
+    # ── 에너지원료(석유) 카테고리 데이터 ──
+    oil = load_oil_data()
+    oil_js = json.dumps(oil, ensure_ascii=False)
+    energy_news_js = json.dumps(fetch_energy_news()[:12], ensure_ascii=False)
+    def _lastv(arr):
+        for v in reversed(arr or []):
+            if v is not None: return v
+        return None
+    _sup = oil.get("supply", {})
+    oil_year = (_sup.get("years") or ["-"])[-1]
+    oil_imp  = _lastv(_sup.get("원유_수입"))
+    oil_prod = _lastv(_sup.get("석유제품_생산"))
+    oil_cons = _lastv(_sup.get("석유제품_소비"))
+    oil_exp  = _lastv(_sup.get("석유제품_수출"))
+    oil_days = _lastv((oil.get("reserve_days") or {}).get("days"))
+    oil_util = _lastv((oil.get("refinery") or {}).get("util"))
+    _pr = oil.get("price", {})
+    oil_crude = _lastv(_pr.get("원유수입가"))
+    oil_gas   = _lastv(_pr.get("휘발유"))
+    oil_month = (_pr.get("months") or ["-"])[-1]
+
+    # 소비자 체감: 전월·전년 비교 + 가득 주유 환산
+    def _ago(s, n):
+        s = s or []
+        idx = [i for i, v in enumerate(s) if v is not None]
+        if not idx: return None
+        w = idx[-1] - n
+        return s[w] if 0 <= w < len(s) else None
+    def _won_chg(cur, base):
+        if cur is None or base is None: return ("—", "#999")
+        d = cur - base
+        return (f'{"▲" if d>0 else ("▼" if d<0 else "·")} {abs(d):,.0f}원', "#ff7a7a" if d > 0 else ("#5ad1b0" if d < 0 else "#999"))
+    oil_gas_mom_t,   oil_gas_mom_c   = _won_chg(oil_gas, _ago(_pr.get("휘발유"), 1))
+    oil_gas_yoy_t,   oil_gas_yoy_c   = _won_chg(oil_gas, _ago(_pr.get("휘발유"), 12))
+    oil_diesel       = _lastv(_pr.get("경유"))
+    oil_diesel_mom_t, oil_diesel_mom_c = _won_chg(oil_diesel, _ago(_pr.get("경유"), 1))
+    _crude_yoy = _ago(_pr.get("원유수입가"), 12)
+    oil_crude_yoy_t = (f'{"▲" if (oil_crude or 0)>(_crude_yoy or 0) else "▼"} {abs((oil_crude or 0)-(_crude_yoy or 0)):.0f}$' if _crude_yoy else "—")
+    oil_fill50 = f"{oil_gas*50:,.0f}" if oil_gas else "—"
+    oil_gas_s    = f"{oil_gas:,.0f}"    if oil_gas    else "—"
+    oil_diesel_s = f"{oil_diesel:,.0f}" if oil_diesel else "—"
+    oil_crude_s  = f"{oil_crude:,.1f}"  if oil_crude  else "—"
+
+    def _world_html(lst, key, unit, color):
+        if not lst: return '<div class="empty">데이터 없음</div>'
+        mx = max((x.get(key) or 0 for x in lst), default=1) or 1
+        return "".join(
+            f'<div class="ct-row"><span class="ct-nm" style="width:120px">{x.get("국가","")}</span>'
+            f'<div class="ct-bar"><i style="width:{(x.get(key) or 0)/mx*100:.0f}%;background:{color}"></i></div>'
+            f'<span class="ct-val" style="width:96px">{(x.get(key) or 0):,.0f}{unit}</span></div>'
+            for x in lst)
+    world_prod_html    = _world_html(oil.get("world_prod"),    "생산량", " 천b/d", "#e9c349")
+    world_reserve_html = _world_html(oil.get("world_reserve"), "매장량", " 억b",   "#22d3ee")
+    world_consume_html = _world_html(oil.get("world_consume"), "소비",   " 천b/d", "#f472b6")
+
+    # ── 제조업·산업 카테고리 데이터 ──
+    mfg = load_manufacturing()
+    def _ind_html(lst, unit, color, fmt="{:,.0f}", nmw=88):
+        if not lst: return '<div class="empty">데이터 없음</div>'
+        lst = sorted(lst, key=lambda x: -(x.get("v") or 0))
+        mx = max((x.get("v") or 0 for x in lst), default=1) or 1
+        return "".join(
+            f'<div class="ct-row"><span class="ct-nm" style="width:{nmw}px">{x.get("업종","")}</span>'
+            f'<div class="ct-bar"><i style="width:{(x.get("v") or 0)/mx*100:.0f}%;background:{color}"></i></div>'
+            f'<span class="ct-val" style="width:96px">{fmt.format(x.get("v") or 0)}{unit}</span></div>'
+            for x in lst)
+    mfg_prod_html = _ind_html(mfg.get("production"), "억원", "#e9c349")
+    mfg_exp_html  = _ind_html(mfg.get("export"),     "M$",  "#22d3ee")
+    mfg_util_html = _ind_html(mfg.get("utilization"),"%",   "#a3e635", "{:.0f}")
+    _comp = mfg.get("complexes") or []
+    _cmx  = max((c["prod"] for c in _comp), default=1) or 1
+    mfg_comp_html = "".join(
+        f'<div class="ct-row"><span class="ct-nm" style="width:110px">{c["name"]}</span>'
+        f'<div class="ct-bar"><i style="width:{c["prod"]/_cmx*100:.0f}%;background:#f472b6"></i></div>'
+        f'<span class="ct-val" style="width:96px">{c["prod"]:,.0f}억</span></div>'
+        for c in _comp) or '<div class="empty">데이터 없음</div>'
+
+    # 제조업 히어로 집계
+    mfg_prod_total = sum((x.get("v") or 0) for x in (mfg.get("production") or []))
+    mfg_exp_total  = sum((x.get("v") or 0) for x in (mfg.get("export") or []))
+    _uts = [x.get("v") or 0 for x in (mfg.get("utilization") or []) if x.get("v")]
+    mfg_util_avg = (sum(_uts) / len(_uts)) if _uts else 0
+    mfg_top = (mfg.get("production") or [])
+    mfg_top_ind = (sorted(mfg_top, key=lambda x: -(x.get("v") or 0))[0]["업종"] if mfg_top else "—")
+    mfg_prod_t = f"{mfg_prod_total/10000:,.1f}"   # 억원 → 조원
+    mfg_exp_t  = f"{mfg_exp_total/100:,.0f}"      # 백만$ → 억$
+    mfg_util_t = f"{mfg_util_avg:,.0f}"
 
     DASH_OVERRIDE = r"""
 /* === K-MINERAL AI 디자인 시스템 리스킨 (대시보드) === */
@@ -747,6 +1173,247 @@ body{background:var(--bg);padding-left:256px;}
 .sub-btn:hover{background:var(--accent2)!important;}
 .sub-input:focus{border-color:var(--accent)!important;}
 .kp-title{text-shadow:none!important;color:var(--accent)!important;}
+
+/* ── 상단 카테고리 전환 + 식품 화면 ── */
+.cat-bar{flex-shrink:0;display:flex;align-items:center;gap:8px;padding:10px 18px;background:var(--bg2);border-bottom:1px solid var(--border);}
+.cat-bar .cb-label{font-size:10px;color:var(--muted2);font-family:var(--mono);text-transform:uppercase;letter-spacing:.12em;margin-right:6px;}
+.cat-btn{padding:8px 20px;border-radius:8px;border:1px solid var(--border2);background:var(--bg3);color:var(--muted);font-size:13px;font-weight:700;cursor:pointer;font-family:var(--mono);transition:.15s;}
+.cat-btn:hover{color:var(--text);border-color:var(--accent);}
+.cat-btn.active{background:var(--accent);color:#241a00;border-color:var(--accent);}
+#cat-minerals{flex:1;min-height:0;display:flex;flex-direction:column;}
+#cat-food,#cat-energy,#cat-industry{flex:1;min-height:0;flex-direction:column;overflow-y:auto;padding:18px;}
+.food-toolbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:14px;}
+.food-toolbar .ft-sep{width:1px;height:20px;background:var(--border2);margin:0 4px;}
+#foodTable th{position:sticky;top:0;background:var(--bg2);}
+.energy-empty{margin:60px auto;max-width:460px;text-align:center;color:var(--muted);}
+.energy-empty .ee-ico{font-size:40px;margin-bottom:12px;}
+.food-panel{display:none;}
+.food-panel.active{display:block;}
+#foodTable tbody tr:hover td{background:var(--bg3);}
+.ct-row{display:flex;align-items:center;gap:12px;padding:7px 0;border-bottom:1px solid var(--border);}
+.ct-nm{width:80px;font-size:13px;color:var(--text);flex-shrink:0;}
+.ct-bar{flex:1;height:8px;background:var(--bg3);border-radius:4px;overflow:hidden;}
+.ct-bar i{display:block;height:100%;border-radius:4px;}
+.ct-val{width:64px;text-align:right;font-family:var(--mono);font-size:12px;font-weight:700;}
+.mv-row{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--border);font-size:12px;}
+.mv-nm{flex:1;color:var(--text);}
+.mv-p{font-family:var(--mono);color:var(--muted);}
+.mv-y{width:62px;text-align:right;font-family:var(--mono);font-weight:700;}
+.basket-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;margin-bottom:8px;}
+.basket-card{background:rgba(31,31,33,.72);border:1px solid #2f3033;border-radius:14px;padding:16px 18px;text-align:center;transition:.15s;}
+.basket-card:hover{border-color:var(--accent);}
+.bk-ico{font-size:34px;line-height:1;margin-bottom:8px;}
+.bk-nm{font-size:13px;color:var(--muted);margin-bottom:4px;}
+.bk-price{font-size:24px;font-weight:800;color:var(--text);}
+.bk-price span{font-size:12px;font-weight:400;color:var(--muted2);margin-left:3px;}
+.bk-chg{font-size:12px;font-weight:700;margin-top:6px;}
+.fuel-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px;margin-bottom:8px;}
+.fuel-card{background:rgba(31,31,33,.72);border:1px solid #2f3033;border-radius:14px;padding:16px 20px;}
+.fuel-card.hl{border-color:rgba(233,195,73,.5);background:rgba(233,195,73,.06);}
+.fl-label{font-size:12px;color:var(--muted);margin-bottom:6px;}
+.fl-price{font-size:28px;font-weight:800;color:var(--accent);}
+.fl-price span{font-size:13px;font-weight:400;color:var(--muted2);margin-left:3px;}
+.fl-sub{font-size:11px;color:var(--muted);margin-top:8px;font-family:var(--mono);}
+#tab-risk{flex-direction:column;overflow-y:auto;padding:16px;}
+.risk-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;}
+.risk-card{background:rgba(31,31,33,.72);border:1px solid #2f3033;border-radius:12px;padding:14px 16px;}
+.rk-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
+.rk-nm{font-size:14px;font-weight:700;color:var(--text);}
+.rk-tag{font-size:11px;font-weight:700;padding:2px 9px;border-radius:10px;}
+.rk-val{font-size:26px;font-weight:800;color:var(--text);}
+.rk-val span{font-size:12px;font-weight:400;color:var(--muted2);margin-left:2px;}
+.rk-sub{font-size:11px;color:var(--muted);margin-top:4px;font-family:var(--mono);}
+
+/* ── 화려 패스: 등장 애니메이션 · 글로우 · 펄스 (전 카테고리) ── */
+@keyframes cardIn{from{opacity:0;transform:translateY(12px) scale(.98);}to{opacity:1;transform:none;}}
+.tab-panel.active .stat-card,.food-panel.active .stat-card,#cat-industry .stat-card,
+.basket-card,.fuel-card,.risk-card{animation:cardIn .45s cubic-bezier(.2,.7,.3,1) both;}
+.stat-card:nth-child(2),.basket-card:nth-child(2),.fuel-card:nth-child(2),.risk-card:nth-child(2){animation-delay:.06s;}
+.stat-card:nth-child(3),.basket-card:nth-child(3),.fuel-card:nth-child(3),.risk-card:nth-child(3){animation-delay:.12s;}
+.stat-card:nth-child(4),.basket-card:nth-child(4),.fuel-card:nth-child(4),.risk-card:nth-child(4){animation-delay:.18s;}
+.basket-card:nth-child(5),.risk-card:nth-child(5){animation-delay:.24s;}
+.basket-card:nth-child(6),.risk-card:nth-child(6){animation-delay:.30s;}
+.sc-val,.bk-price,.rk-val{text-shadow:0 0 16px rgba(233,195,73,.10);}
+.fl-price{text-shadow:0 0 26px rgba(233,195,73,.30);}
+.basket-card:hover,.fuel-card:hover,.risk-card:hover,.stat-card:hover{transform:translateY(-3px);box-shadow:0 8px 26px rgba(0,0,0,.35);}
+.basket-card,.fuel-card,.risk-card,.stat-card{transition:transform .15s,box-shadow .15s,border-color .15s;}
+@keyframes sigpulse{0%,100%{opacity:1;}50%{opacity:.45;}}
+.rk-tag{animation:sigpulse 2.2s ease-in-out infinite;}
+@keyframes barGrow{from{width:0;}}
+.ct-bar i{animation:barGrow .8s cubic-bezier(.2,.7,.3,1) both;}
+.cat-btn.active{box-shadow:0 0 18px rgba(233,195,73,.35);}
+.news-hero{display:block;background:linear-gradient(135deg,rgba(233,195,73,.12),rgba(31,31,33,.6));border:1px solid rgba(233,195,73,.4);border-left:4px solid var(--accent);border-radius:14px;padding:22px 26px;margin-bottom:16px;text-decoration:none;animation:cardIn .45s ease both;transition:transform .15s,box-shadow .15s;}
+.news-hero:hover{transform:translateY(-2px);box-shadow:0 10px 30px rgba(0,0,0,.4);}
+.nh-badge{display:inline-block;background:var(--accent);color:#241a00;font-size:11px;font-weight:800;padding:3px 11px;border-radius:8px;margin-bottom:12px;}
+.nh-ti{font-size:22px;font-weight:800;color:var(--text);line-height:1.35;margin-bottom:9px;}
+.nh-sm{font-size:14px;color:var(--muted);line-height:1.65;margin-bottom:12px;}
+.nh-meta{font-size:11px;color:var(--muted2);font-family:'IBM Plex Mono',monospace;}
+.ai-brief{background:linear-gradient(135deg,rgba(34,211,238,.10),rgba(31,31,33,.6));border:1px solid rgba(34,211,238,.35);border-left:4px solid #22d3ee;border-radius:12px;padding:14px 18px;margin-bottom:14px;font-size:14px;line-height:1.6;color:#d8eef7;}
+"""
+    CAT_JS = r"""
+function switchCategory(cat, el){
+  ['minerals','food','energy'].forEach(function(c){
+    var blk=document.getElementById('cat-'+c); if(blk) blk.style.display=(c===cat)?'flex':'none';
+    var sn=document.getElementById('subnav-'+c); if(sn) sn.style.display=(c===cat)?'block':'none';
+  });
+  var tk=document.getElementById('mineralTicker'); if(tk) tk.style.display=(cat==='minerals')?'flex':'none';
+  document.querySelectorAll('.cat-btn').forEach(function(b){b.classList.remove('active');});
+  if(el) el.classList.add('active');
+  if(cat==='minerals' && typeof initMap==='function' && !window._mapInited){
+    var mp=document.querySelector('#tab-map.active'); if(mp) initMap();
+  }
+  if(cat==='energy') drawOilPrice();
+}
+var _oilPriceDrawn=false,_oilSupplyDrawn=false,_oilPriceChart=null,_oilSupplyChart=null;
+function switchOilTab(name, el){
+  ['price','supply','gas','world','news'].forEach(function(n){var p=document.getElementById('ep-'+n);if(p)p.classList.toggle('active',n===name);});
+  _setActive('.oil-subnav', el);
+  if(name==='price') drawOilPrice();
+  if(name==='supply') drawOilSupply();
+  if(name==='gas') drawGasChart();
+  if(name==='news' && typeof ENERGYNEWS!=='undefined') renderFeed(ENERGYNEWS,'enewsHero','enewsGrid',null);
+}
+var _gasDrawn=false,_gasChart=null;
+function drawGasChart(){
+  if(_gasDrawn || !OIL || !OIL.gas) return; _gasDrawn=true;
+  var G=OIL.gas;
+  _gasChart=new Chart(document.getElementById('gasChart'),{type:'line',data:{labels:G.months,datasets:[
+    {label:'LNG (천연가스)',data:G['LNG'],borderColor:'#22d3ee',backgroundColor:'transparent',tension:.2,pointRadius:0},
+    {label:'LPG',data:G['LPG'],borderColor:'#e9c349',backgroundColor:'transparent',tension:.2,pointRadius:0},
+    {label:'벙커C유',data:G['벙커C'],borderColor:'#f472b6',backgroundColor:'transparent',tension:.2,pointRadius:0}]},
+    options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},
+      plugins:{legend:{labels:{color:'#aaa',font:{size:10},boxWidth:10}}},
+      scales:{x:{ticks:{color:'#777',maxTicksLimit:12},grid:{color:'#2a2c2f'}},y:{ticks:{color:'#888'},grid:{color:'#2a2c2f'}}}}});
+}
+function drawOilPrice(){
+  if(_oilPriceDrawn || !OIL || !OIL.price) return; _oilPriceDrawn=true;
+  var P=OIL.price;
+  _oilPriceChart=new Chart(document.getElementById('oilPriceChart'),{type:'line',data:{labels:P.months,datasets:[
+    {label:'원유수입가 ($/배럴)',data:P['원유수입가'],borderColor:'#ff7a7a',backgroundColor:'transparent',yAxisID:'y',tension:.2,pointRadius:0},
+    {label:'휘발유 (원/L)',data:P['휘발유'],borderColor:'#e9c349',backgroundColor:'transparent',yAxisID:'y1',tension:.2,pointRadius:0},
+    {label:'경유 (원/L)',data:P['경유'],borderColor:'#22d3ee',backgroundColor:'transparent',yAxisID:'y1',tension:.2,pointRadius:0},
+    {label:'등유 (원/L)',data:P['등유'],borderColor:'#a3e635',backgroundColor:'transparent',yAxisID:'y1',tension:.2,pointRadius:0}]},
+    options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},
+      plugins:{legend:{labels:{color:'#aaa',font:{size:10},boxWidth:10}}},
+      scales:{x:{ticks:{color:'#777',maxTicksLimit:12},grid:{color:'#2a2c2f'}},
+        y:{position:'left',ticks:{color:'#ff9a9a'},grid:{color:'#2a2c2f'}},
+        y1:{position:'right',ticks:{color:'#cbb87a'},grid:{drawOnChartArea:false}}}}});
+}
+function drawOilSupply(){
+  if(_oilSupplyDrawn || !OIL || !OIL.supply) return; _oilSupplyDrawn=true;
+  var S=OIL.supply;
+  _oilSupplyChart=new Chart(document.getElementById('oilSupplyChart'),{type:'line',data:{labels:S.years,datasets:[
+    {label:'원유 수입',data:S['원유_수입'],borderColor:'#e9c349',backgroundColor:'transparent',tension:.2,pointRadius:0},
+    {label:'제품 소비',data:S['석유제품_소비'],borderColor:'#22d3ee',backgroundColor:'transparent',tension:.2,pointRadius:0},
+    {label:'제품 수출',data:S['석유제품_수출'],borderColor:'#f472b6',backgroundColor:'transparent',tension:.2,pointRadius:0}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#aaa',font:{size:10},boxWidth:10}}},
+      scales:{x:{ticks:{color:'#777'},grid:{color:'#2a2c2f'}},y:{ticks:{color:'#888',callback:function(v){return (v/1000).toFixed(0)+'M';}},grid:{color:'#2a2c2f'}}}}});
+}
+var _foodCat='전체', _foodSe='전체';
+function _applyFood(){
+  document.querySelectorAll('#foodTable tbody tr').forEach(function(tr){
+    var okc=(_foodCat==='전체')||tr.getAttribute('data-cat')===_foodCat;
+    var oks=(_foodSe==='전체')||tr.getAttribute('data-se')===_foodSe;
+    tr.style.display=(okc&&oks)?'':'none';
+  });
+}
+function _setActive(sel, el){
+  document.querySelectorAll(sel).forEach(function(b){b.classList.remove('active');});
+  if(el) el.classList.add('active');
+}
+function filterFood(cat, el){ _foodCat=cat; _setActive('.food-cat-btn', el); _applyFood(); }
+function filterFoodSe(se, el){ _foodSe=se; _setActive('.food-se-btn', el); _applyFood(); }
+function _audLabel(a){ return {investor:'📈 투자자',business:'🏢 기업',consumer:'🛒 소비자',투자자:'📈 투자자',기업:'🏢 기업',소비자:'🛒 소비자'}[a] || a; }
+function _newsCard(n, hero){
+  var a=document.createElement('a'); a.href=n['언론사링크']||'#'; a.target='_blank';
+  a.className = hero ? 'news-hero' : 'nc';
+  var meta=(n['aud']?_audLabel(n['aud'])+' · ':'')+(n['검색키워드']||'');
+  if(hero){
+    var bd=document.createElement('span'); bd.className='nh-badge'; bd.textContent='🔥 주요 뉴스'; a.appendChild(bd);
+    var ti=document.createElement('div'); ti.className='nh-ti'; ti.textContent=n['제목']||''; a.appendChild(ti);
+    var sm=document.createElement('div'); sm.className='nh-sm'; sm.textContent=n['요약']||''; a.appendChild(sm);
+    var mt=document.createElement('div'); mt.className='nh-meta'; mt.textContent=meta+' · '+(n['발행일시']||''); a.appendChild(mt);
+  } else {
+    var kw=document.createElement('span'); kw.className='nc-kw'; kw.textContent=meta;
+    var t=document.createElement('div'); t.className='nc-ti'; t.textContent=n['제목']||'';
+    var s=document.createElement('div'); s.className='nc-sm'; s.textContent=n['요약']||'';
+    var d=document.createElement('div'); d.className='nc-dt'; d.textContent=n['발행일시']||'';
+    a.appendChild(kw); a.appendChild(t); a.appendChild(s); a.appendChild(d);
+  }
+  return a;
+}
+function renderFeed(data, heroId, gridId, aud){
+  var hero=document.getElementById(heroId), grid=document.getElementById(gridId);
+  if(!hero||!grid||typeof data==='undefined') return;
+  var list = aud ? data.filter(function(n){ return aud==='전체'||n.aud===aud; }) : data;
+  hero.innerHTML=''; grid.innerHTML='';
+  if(!list.length){ grid.innerHTML='<div class="empty">뉴스가 없습니다.</div>'; return; }
+  hero.appendChild(_newsCard(list[0], true));
+  list.slice(1).forEach(function(n){ grid.appendChild(_newsCard(n, false)); });
+}
+function filterNews(aud, el){ _setActive('.news-aud-btn', el); renderFeed(NEWS,'newsHero','newsGrid',aud); }
+if(typeof NEWS!=='undefined') renderFeed(NEWS,'newsHero','newsGrid','전체');
+if(typeof FOODNEWS!=='undefined') renderFeed(FOODNEWS,'fnewsHero','fnewsGrid',null);
+fetch('/api/news-brief').then(function(r){return r.json();}).then(function(d){
+  var el=document.getElementById('aiBrief'); if(!el) return;
+  if(d && d.ok && d.brief){ el.textContent='🤖 AI 브리핑 — '+d.brief; el.style.display='block'; }
+}).catch(function(){});
+var _riskChart=null;
+function drawRiskChart(){
+  if(_riskChart || typeof RISK==='undefined' || !RISK.length) return;
+  var pal=['#e9c349','#22d3ee','#f472b6','#a3e635','#ff7a7a','#bec6e0'];
+  var labels=RISK[0].months;
+  var ds=RISK.map(function(r,i){return {label:r.name,data:r.vals,borderColor:pal[i%pal.length],backgroundColor:'transparent',tension:.25,pointRadius:0};});
+  _riskChart=new Chart(document.getElementById('riskChart'),{type:'line',data:{labels:labels,datasets:ds},
+    options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},
+      plugins:{legend:{labels:{color:'#aaa',font:{size:10},boxWidth:10}}},
+      scales:{x:{ticks:{color:'#777',maxTicksLimit:12},grid:{color:'#2a2c2f'}},
+        y:{min:0,max:100,ticks:{color:'#888'},grid:{color:'#2a2c2f'}}}}});
+}
+
+var _foodIdxDrawn=false, _trendChart=null, _lifeChart=null, _cpiChart=null;
+function switchFoodTab(name, el){
+  ['price','trend','index','news'].forEach(function(n){
+    var p=document.getElementById('fp-'+n); if(p) p.classList.toggle('active', n===name);
+  });
+  _setActive('.food-subnav', el);
+  if(name==='index' && !_foodIdxDrawn){ initFoodIndexCharts(); _foodIdxDrawn=true; }
+}
+var FOOD_COL='#e9c349';
+function showFoodTrend(i){
+  var d=FOOD_TREND[i]; if(!d) return;
+  var box=document.getElementById('foodTrendBox'); box.style.display='block';
+  document.getElementById('foodTrendTitle').textContent=d.nm+' — 가격 추이 (전년→현재)';
+  var ctx=document.getElementById('foodTrendChart');
+  if(_trendChart) _trendChart.destroy();
+  _trendChart=new Chart(ctx,{type:'line',data:{labels:['전년','전월','전주','전일','현재'],
+    datasets:[{data:d.v,borderColor:FOOD_COL,backgroundColor:'rgba(233,195,73,.15)',fill:true,tension:.3,pointRadius:4,pointBackgroundColor:FOOD_COL}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:function(c){return c.raw.toLocaleString()+'원';}}}},
+      scales:{x:{ticks:{color:'#888'},grid:{color:'#2a2c2f'}},y:{ticks:{color:'#888',callback:function(v){return v.toLocaleString();}},grid:{color:'#2a2c2f'}}}}});
+  box.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+function initFoodIndexCharts(){
+  if(!FOOD_IDX || !FOOD_IDX['생활물가']) return;
+  var L=FOOD_IDX['생활물가'], pal=['#e9c349','#22d3ee','#f472b6','#a3e635','#bec6e0'];
+  var ds=Object.keys(L.series).map(function(k,i){return {label:k,data:L.series[k],borderColor:pal[i%pal.length],backgroundColor:'transparent',tension:.3,pointRadius:3};});
+  _lifeChart=new Chart(document.getElementById('lifeIdxChart'),{type:'line',data:{labels:L.months,datasets:ds},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#aaa',font:{size:10},boxWidth:10}}},
+      scales:{x:{ticks:{color:'#888'},grid:{color:'#2a2c2f'}},y:{ticks:{color:'#888'},grid:{color:'#2a2c2f'}}}}});
+  var C=FOOD_IDX['소비자물가품목'], sel=document.getElementById('cpiSelect');
+  if(C && sel){
+    C.items.forEach(function(it,i){var o=document.createElement('option');o.value=i;o.textContent=it.품목;sel.appendChild(o);});
+    sel.onchange=function(){drawCpi(C, parseInt(sel.value));};
+    drawCpi(C, 0);
+  }
+}
+function drawCpi(C, i){
+  var it=C.items[i]; if(!it) return;
+  if(_cpiChart) _cpiChart.destroy();
+  _cpiChart=new Chart(document.getElementById('cpiChart'),{type:'line',data:{labels:C.months,
+    datasets:[{label:it.품목,data:it.values,borderColor:'#e9c349',backgroundColor:'rgba(233,195,73,.15)',fill:true,tension:.3,pointRadius:4}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+      scales:{x:{ticks:{color:'#888'},grid:{color:'#2a2c2f'}},y:{ticks:{color:'#888'},grid:{color:'#2a2c2f'}}}}});
+}
 """
     return f"""<!DOCTYPE html>
 <html lang="ko">
@@ -956,8 +1623,16 @@ tr:hover td{{background:var(--bg3);}}
 </head>
 <body>
 
-<!-- TICKER -->
-<div class="ticker">
+<!-- 상단 카테고리 전환 -->
+<div class="cat-bar">
+  <span class="cb-label">자원 모니터</span>
+  <button class="cat-btn active" data-cat="minerals" onclick="switchCategory('minerals',this)">핵심광물</button>
+  <button class="cat-btn" data-cat="food" onclick="switchCategory('food',this)">식품</button>
+  <button class="cat-btn" data-cat="energy" onclick="switchCategory('energy',this)">에너지원료</button>
+</div>
+
+<!-- TICKER (핵심광물 전용) -->
+<div class="ticker" id="mineralTicker">
   <div class="ticker-inner">
     ⚠ 핵심광물 공급망 위기 모니터링 &nbsp;|&nbsp;
     리튬 수입 의존도 95% &nbsp;|&nbsp;
@@ -974,20 +1649,39 @@ tr:hover td{{background:var(--bg3);}}
   </div>
 </div>
 
-<!-- NAV -->
+<!-- NAV (사이드바, 카테고리별 하위 탭) -->
 <nav class="nav">
-  <span class="nav-brand"><span class="sys-dot"></span>MINERAL SUPPLY RISK MONITOR</span>
-  <a href="#" class="active" data-tab="supply"    onclick="switchTab('supply',this);return false;">수급 현황</a>
-  <a href="#" data-tab="map"       onclick="switchTab('map',this);return false;">글로벌 매장량</a>
-  <a href="#" data-tab="news"      onclick="switchTab('news',this);return false;">뉴스 피드</a>
-  <a href="#" data-tab="subscribe" onclick="switchTab('subscribe',this);return false;">리포트 구독</a>
-  <a href="#" data-tab="komir"     onclick="switchTab('komir',this);return false;">KOMIR</a>
-  <a href="#" data-tab="usgs"      onclick="switchTab('usgs',this);return false;">USGS 2025</a>
+  <span class="nav-brand"><span class="sys-dot"></span>K-RESOURCE MONITOR</span>
+  <div id="subnav-minerals">
+    <a href="#" class="active" data-tab="supply"    onclick="switchTab('supply',this);return false;">수급 현황</a>
+    <a href="#" data-tab="map"       onclick="switchTab('map',this);return false;">글로벌 매장량</a>
+    <a href="#" data-tab="risk"      onclick="switchTab('risk',this);return false;">🚦 리스크 신호등</a>
+    <a href="#" data-tab="news"      onclick="switchTab('news',this);return false;">뉴스 피드</a>
+    <a href="#" data-tab="subscribe" onclick="switchTab('subscribe',this);return false;">리포트 구독</a>
+    <a href="#" data-tab="komir"     onclick="switchTab('komir',this);return false;">KOMIR</a>
+    <a href="#" data-tab="usgs"      onclick="switchTab('usgs',this);return false;">USGS 2025</a>
+  </div>
+  <div id="subnav-food" style="display:none">
+    <a href="#" data-tab="food-price" class="food-subnav active" onclick="switchFoodTab('price',this);return false;">품목 가격</a>
+    <a href="#" data-tab="food-trend" class="food-subnav" onclick="switchFoodTab('trend',this);return false;">부류별 동향</a>
+    <a href="#" data-tab="food-index" class="food-subnav" onclick="switchFoodTab('index',this);return false;">물가지수</a>
+    <a href="#" data-tab="food-news"  class="food-subnav" onclick="switchFoodTab('news',this);return false;">식품 뉴스</a>
+  </div>
+  <div id="subnav-energy" style="display:none">
+    <a href="#" data-tab="oil-price"  class="oil-subnav active" onclick="switchOilTab('price',this);return false;">유가 · 가격</a>
+    <a href="#" data-tab="oil-supply" class="oil-subnav" onclick="switchOilTab('supply',this);return false;">석유 수급</a>
+    <a href="#" data-tab="oil-gas"    class="oil-subnav" onclick="switchOilTab('gas',this);return false;">가스 · LPG</a>
+    <a href="#" data-tab="oil-world"  class="oil-subnav" onclick="switchOilTab('world',this);return false;">세계 석유</a>
+    <a href="#" data-tab="oil-news"   class="oil-subnav" onclick="switchOilTab('news',this);return false;">에너지 뉴스</a>
+  </div>
   <div class="nav-right">
     <span class="nav-time" id="nav-clock">{now}</span>
     <a href="/conference" class="nav-conf">AI 전문가 회의실 →</a>
   </div>
 </nav>
+
+<!-- ===== 핵심광물 카테고리 (기존 탭 6개) ===== -->
+<div id="cat-minerals">
 
 <!-- ============================
      TAB: 수급 현황
@@ -1112,11 +1806,28 @@ tr:hover td{{background:var(--bg3);}}
 <!-- ============================
      TAB: 뉴스 피드
      ============================ -->
-<div id="tab-news" class="tab-panel">
-  <div class="page-title">최신 뉴스 피드</div>
-  <div class="news-grid">
-    {news_html}
+<div id="tab-risk" class="tab-panel">
+  <div class="page-title">🚦 자원 리스크 신호등 — 수급안정화지수 <span style="color:var(--muted2);font-weight:400;font-size:12px">· 한국광해광업공단 · 지수 높을수록 수급 안정</span></div>
+  <div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:12px 16px;margin-bottom:14px;font-size:13px;color:var(--muted);">💡 {risk_summary} <span style="color:var(--muted2)">— 네이버엔 없는 공급 리스크 진단. 자세한 영향은 AI 회의실에서.</span></div>
+  <div class="risk-grid">{risk_cards}</div>
+  <div class="section" style="padding:14px 16px;margin-top:14px;">
+    <div class="chart-title">수급안정화지수 추이 (최근 3년, 월별)</div>
+    <div style="height:300px;position:relative;"><canvas id="riskChart"></canvas></div>
   </div>
+  <div style="text-align:center;margin-top:16px;"><a href="/conference" class="nav-conf">⚖️ AI 전문가 회의실에서 리스크 토론하기 →</a></div>
+</div>
+
+<div id="tab-news" class="tab-panel">
+  <div class="page-title">자원·원자재 뉴스 — 대상별</div>
+  <div id="aiBrief" class="ai-brief" style="display:none">🤖 AI가 오늘의 뉴스를 분석 중...</div>
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;">
+    <button class="mineral-btn news-aud-btn active" onclick="filterNews('전체',this)">전체</button>
+    <button class="mineral-btn news-aud-btn" onclick="filterNews('투자자',this)">📈 투자자용</button>
+    <button class="mineral-btn news-aud-btn" onclick="filterNews('기업',this)">🏢 기업용</button>
+    <button class="mineral-btn news-aud-btn" onclick="filterNews('소비자',this)">🛒 소비자용</button>
+  </div>
+  <div id="newsHero"></div>
+  <div class="news-grid" id="newsGrid"></div>
 </div>
 
 <!-- ============================
@@ -1166,6 +1877,180 @@ tr:hover td{{background:var(--bg3);}}
     {usgs_html}
   </div>
 </div>
+</div><!-- /#cat-minerals -->
+
+<!-- ===== 식품 카테고리 ===== -->
+<div id="cat-food" style="display:none">
+
+  <!-- 품목 가격 -->
+  <div class="food-panel active" id="fp-price">
+    <div class="page-title">🛒 오늘의 장바구니 물가 <span style="color:var(--muted2);font-weight:400;font-size:12px">· {food_date} 소매가 · 한국농수산식품유통공사</span></div>
+    <div class="basket-grid">{basket_html}</div>
+    <div class="page-title" style="margin-top:20px">전체 품목 가격표</div>
+    <div class="stat-row">
+      <div class="stat-card"><div class="sc-label">조사 품목</div><div class="sc-val">{len(food)}</div><div class="sc-sub">개 품목·품종</div></div>
+      <div class="stat-card"><div class="sc-label">전일대비 상승</div><div class="sc-val" style="color:#ff7a7a">{food_up}</div><div class="sc-sub">개</div></div>
+      <div class="stat-card"><div class="sc-label">전일대비 하락</div><div class="sc-val" style="color:#5ad1b0">{food_down}</div><div class="sc-sub">개</div></div>
+      <div class="stat-card"><div class="sc-label">조사일</div><div class="sc-val" style="font-size:16px">{food_date}</div><div class="sc-sub">최근일자</div></div>
+    </div>
+    <div class="food-toolbar">
+      <span class="map-ctrl-label">부류</span>
+      {food_cat_btns}
+      <span class="ft-sep"></span>
+      <span class="map-ctrl-label">구분</span>
+      <button class="mineral-btn food-se-btn active" onclick="filterFoodSe('전체',this)">전체</button>
+      <button class="mineral-btn food-se-btn" onclick="filterFoodSe('소매',this)">소매</button>
+      <button class="mineral-btn food-se-btn" onclick="filterFoodSe('중도매',this)">도매</button>
+    </div>
+    <div id="foodTrendBox" class="section" style="display:none;padding:12px 16px;">
+      <div class="chart-title" id="foodTrendTitle">품목을 클릭하면 가격 추이가 표시됩니다</div>
+      <div style="height:180px;position:relative;"><canvas id="foodTrendChart"></canvas></div>
+    </div>
+    <div class="section">
+      <table id="foodTable">
+        <thead><tr>
+          <td class="t-nm" style="color:#888;font-size:11px">품목 (클릭=추이)</td>
+          <td class="t-nm" style="color:#888;font-size:11px">구분 · 단위</td>
+          <td class="t-num" style="color:#888;font-size:11px">현재가</td>
+          <td class="t-num" style="color:#888;font-size:11px">전일</td>
+          <td class="t-num" style="color:#888;font-size:11px">전주</td>
+          <td class="t-num" style="color:#888;font-size:11px">전월</td>
+          <td class="t-num" style="color:#888;font-size:11px">전년</td>
+        </tr></thead>
+        <tbody>{food_rows}</tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- 부류별 동향 -->
+  <div class="food-panel" id="fp-trend">
+    <div class="page-title">부류별 물가 동향 — 전년 대비 ({food_date})</div>
+    <div class="section" style="padding:16px;">
+      <div class="sec-head" style="border:0;padding:0 0 10px;">부류별 평균 등락률 (전년 대비)</div>
+      {cat_trend_html}
+    </div>
+    <div class="charts-row" style="height:auto;">
+      <div class="section" style="flex:1;padding:14px 16px;">
+        <div class="sec-head" style="border:0;padding:0 0 8px;color:#ff7a7a">▲ 가장 많이 오른 품목 (전년比)</div>
+        {top_up_html}
+      </div>
+      <div class="section" style="flex:1;padding:14px 16px;">
+        <div class="sec-head" style="border:0;padding:0 0 8px;color:#5ad1b0">▼ 가장 많이 내린 품목 (전년比)</div>
+        {top_down_html}
+      </div>
+    </div>
+  </div>
+
+  <!-- 물가지수 -->
+  <div class="food-panel" id="fp-index">
+    <div class="page-title">물가지수 — 통계청 (최근 3개월)</div>
+    <div class="charts-row" style="height:280px;">
+      <div class="chart-box"><div class="chart-title">생활물가지수 추이</div>
+        <div style="flex:1;position:relative;min-height:0;"><canvas id="lifeIdxChart"></canvas></div></div>
+      <div class="chart-box"><div class="chart-title">소비자물가지수 — 품목 선택
+        <select id="cpiSelect" style="margin-left:8px;background:var(--bg3);color:var(--text);border:1px solid var(--border2);border-radius:4px;padding:2px 6px;font-size:12px;"></select></div>
+        <div style="flex:1;position:relative;min-height:0;"><canvas id="cpiChart"></canvas></div></div>
+    </div>
+  </div>
+
+  <!-- 식품 뉴스 -->
+  <div class="food-panel" id="fp-news">
+    <div class="page-title">식품 · 물가 뉴스</div>
+    <div id="fnewsHero"></div>
+    <div class="news-grid" id="fnewsGrid"></div>
+  </div>
+
+</div>
+
+<!-- ===== 에너지원료(석유) 카테고리 ===== -->
+<div id="cat-energy" style="display:none">
+
+  <!-- 유가 · 가격 -->
+  <div class="food-panel active" id="ep-price">
+    <div class="page-title">⛽ 오늘의 기름값 <span style="color:var(--muted2);font-weight:400;font-size:12px">· {oil_month} 전국 평균 · 한국석유공사·관세청</span></div>
+    <div class="fuel-grid">
+      <div class="fuel-card">
+        <div class="fl-label">보통휘발유</div>
+        <div class="fl-price">{oil_gas_s}<span>원/L</span></div>
+        <div class="fl-sub">전월 <b style="color:{oil_gas_mom_c}">{oil_gas_mom_t}</b> · 전년 <b style="color:{oil_gas_yoy_c}">{oil_gas_yoy_t}</b></div>
+      </div>
+      <div class="fuel-card">
+        <div class="fl-label">자동차경유</div>
+        <div class="fl-price">{oil_diesel_s}<span>원/L</span></div>
+        <div class="fl-sub">전월 <b style="color:{oil_diesel_mom_c}">{oil_diesel_mom_t}</b></div>
+      </div>
+      <div class="fuel-card">
+        <div class="fl-label">원유 수입가</div>
+        <div class="fl-price">${oil_crude_s}<span>/배럴</span></div>
+        <div class="fl-sub">전년 대비 {oil_crude_yoy_t}</div>
+      </div>
+      <div class="fuel-card hl">
+        <div class="fl-label">가득(50L) 주유 시</div>
+        <div class="fl-price">{oil_fill50}<span>원</span></div>
+        <div class="fl-sub">보통휘발유 기준 · 비축 {oil_days}일분</div>
+      </div>
+    </div>
+    <div class="section" style="padding:14px 16px;margin-top:6px;">
+      <div class="chart-title">원유 수입가 · 국내 판매가 추이 (월별)</div>
+      <div style="height:300px;position:relative;"><canvas id="oilPriceChart"></canvas></div>
+    </div>
+  </div>
+
+  <!-- 석유 수급 -->
+  <div class="food-panel" id="ep-supply">
+    <div class="page-title">석유 수급 현황 — 산업통상부 ({oil_year}년)</div>
+    <div class="stat-row">
+      <div class="stat-card"><div class="sc-label">원유 수입</div><div class="sc-val" style="font-size:18px">{oil_imp:,.0f}</div><div class="sc-sub">천 배럴</div></div>
+      <div class="stat-card"><div class="sc-label">석유제품 생산</div><div class="sc-val" style="font-size:18px">{oil_prod:,.0f}</div><div class="sc-sub">천 배럴</div></div>
+      <div class="stat-card"><div class="sc-label">석유제품 소비</div><div class="sc-val" style="font-size:18px">{oil_cons:,.0f}</div><div class="sc-sub">천 배럴</div></div>
+      <div class="stat-card"><div class="sc-label">석유제품 수출</div><div class="sc-val" style="font-size:18px">{oil_exp:,.0f}</div><div class="sc-sub">천 배럴</div></div>
+    </div>
+    <div class="section" style="padding:14px 16px;">
+      <div class="chart-title">연도별 원유 수입 · 석유제품 소비·수출 추이</div>
+      <div style="height:300px;position:relative;"><canvas id="oilSupplyChart"></canvas></div>
+    </div>
+  </div>
+
+  <!-- 가스 · LPG -->
+  <div class="food-panel" id="ep-gas">
+    <div class="page-title">가스 · LPG 가격 — 한국가스공사 (산업용 부피단위, 원)</div>
+    <div class="section" style="padding:14px 16px;">
+      <div class="chart-title">액화천연가스(LNG) · LPG · 벙커C유 가격 추이 (월별)</div>
+      <div style="height:320px;position:relative;"><canvas id="gasChart"></canvas></div>
+    </div>
+  </div>
+
+  <!-- 에너지 뉴스 -->
+  <div class="food-panel" id="ep-news">
+    <div class="page-title">에너지 · 유가 뉴스</div>
+    <div id="enewsHero"></div>
+    <div class="news-grid" id="enewsGrid"></div>
+  </div>
+
+  <!-- 세계 석유 -->
+  <div class="food-panel" id="ep-world">
+    <div class="page-title">세계 석유 — 한국석유공사 (주요국별)</div>
+    <div class="charts-row" style="height:auto;align-items:flex-start;">
+      <div class="section" style="flex:1;padding:14px 16px;">
+        <div class="sec-head" style="border:0;padding:0 0 8px;color:#e9c349">생산량 TOP (천 b/d)</div>
+        {world_prod_html}
+      </div>
+      <div class="section" style="flex:1;padding:14px 16px;">
+        <div class="sec-head" style="border:0;padding:0 0 8px;color:#22d3ee">확인 매장량 TOP (억 배럴)</div>
+        {world_reserve_html}
+      </div>
+    </div>
+    <div class="section" style="padding:14px 16px;">
+      <div class="sec-head" style="border:0;padding:0 0 8px;color:#f472b6">소비량 TOP (천 b/d)</div>
+      {world_consume_html}
+    </div>
+  </div>
+
+</div>
+
+
+<script>var FOOD_TREND = {food_trend_js}; var FOOD_IDX = {food_idx_js}; var OIL = {oil_js}; var RISK = {risk_js}; var NEWS = {news_js}; var FOODNEWS = {food_news_js}; var ENERGYNEWS = {energy_news_js};</script>
+<script>{CAT_JS}</script>
 
 <script>
 // ── 탭 전환 ──────────────────────────────────────────────────
@@ -1175,6 +2060,7 @@ function switchTab(name, el) {{
   document.getElementById('tab-' + name).classList.add('active');
   if (el) el.classList.add('active');
   if (name === 'map' && !window._mapInited) initMap();
+  if (name === 'risk' && typeof drawRiskChart === 'function') drawRiskChart();
 }}
 
 // 다른 페이지(회의실 등)에서 #map / #news 등으로 들어오면 해당 탭으로 이동
@@ -2228,6 +3114,33 @@ def api_summary():
         "by_mineral": by_mineral(c)[:10], "by_country": by_country(c),
         "news_count": len(n), "latest_news": n[:5], "usgs": USGS_DATA})
 
+@app.route("/api/news-brief")
+def news_brief():
+    c = cache_get("news_brief")
+    if c is not None:
+        return jsonify(ok=True, brief=c)
+    if not OPENAI_API_KEY:
+        return jsonify(ok=False, brief="")
+    heads = [n.get("제목", "") for n in fetch_audience_news()[:12] if n.get("제목")]
+    if not heads:
+        cache_set("news_brief", "", ttl=600); return jsonify(ok=False, brief="")
+    brief = ""
+    try:
+        r = OpenAI(api_key=OPENAI_API_KEY).chat.completions.create(
+            model=DEFAULT_OPENAI_MODEL, max_completion_tokens=220,
+            messages=[
+                {"role": "system", "content": "너는 자원·원자재 시장 애널리스트다. 아래 뉴스 헤드라인들을 종합해 "
+                 "오늘의 핵심 흐름을 2문장으로 요약하고, 투자·생활 관점의 시사점을 한 줄 덧붙여라. "
+                 "특정 종목 추천이나 매수·매도 조언은 하지 말고 정보·교육 차원으로만. 전체 3문장 이내."},
+                {"role": "user", "content": "\n".join(heads)},
+            ],
+        )
+        brief = (r.choices[0].message.content or "").strip()
+    except Exception as e:
+        print(f"[NEWS BRIEF] {e}")
+    cache_set("news_brief", brief, ttl=(1800 if brief else 60))
+    return jsonify(ok=bool(brief), brief=brief)
+
 @app.route("/subscribe", methods=["POST"])
 def subscribe():
     email = ((request.get_json(silent=True) or {}).get("email") or "").strip().lower()
@@ -2303,9 +3216,25 @@ def conference_chat():
     data    = request.get_json(silent=True) or {}
     speaker = data.get("speaker")
     history = data.get("history", [])
+    audience = data.get("audience", "consumer")
     if not speaker or speaker not in MINERAL_EXPERTS:
         return jsonify(ok=False, message="발언할 전문가가 지정되지 않았습니다."), 400
     expert = MINERAL_EXPERTS[speaker]
+
+    # 대상(청중)별 토론 맥락 — 같은 전문가라도 대상에 따라 토론이 달라진다
+    AUDIENCE_CTX = {
+        "investor": ("일반 투자자", "이 분석의 청중은 '일반 개인투자자'입니다. 해당 자원의 수급 리스크가 "
+            "어떤 산업 섹터·테마(예: 2차전지, 방산, 정유·화학, 반도체, 식품주)에 호재/악재로 작용하는지 "
+            "투자 관점에서 짚어주세요. 단, 특정 종목 추천이나 매수·매도 조언은 절대 하지 말고, "
+            "'정보·교육 차원의 섹터 영향'으로만 설명하세요."),
+        "business": ("기업 조달·구매 담당", "청중은 '기업의 구매·조달 담당자'입니다. 대체 조달처 확보, 재고·비축 수준, "
+            "장기계약·가격 헤지, 공급 차질 시 생산 영향 등 '실무 대응 전략' 중심으로 구체적으로 조언하세요."),
+        "consumer": ("일반 소비자", "청중은 '일반 소비자'입니다. 전문용어는 풀어 쓰고, 이 이슈가 장바구니 물가·"
+            "주유비·전기료 등 '생활에 미치는 영향'과 체감되는 숫자 중심으로 쉽고 친근하게 설명하세요."),
+        "policy": ("정책·연구자", "청중은 '정책 입안자·연구자'입니다. 국가 차원의 비축·국산화·외교·제도·전략 관점에서 "
+            "근거와 사례를 들어 심도 있게 논하세요."),
+    }
+    aud_name, aud_ctx = AUDIENCE_CTX.get(audience, AUDIENCE_CTX["consumer"])
 
     # 회의 주제 = 가장 처음의 사용자(진행자) 발언
     topic = ""
@@ -2361,6 +3290,7 @@ def conference_chat():
                 )
 
         sys_prompt = expert["system"] + (
+            f"\n\n[대상 맞춤] {aud_ctx}"
             "\n\n[회의 형식] 이것은 여러 전문가와 진행자가 함께하는 실시간 회의입니다. "
             "아래 회의록을 읽고, 다른 전문가나 진행자의 발언을 직접 인용하며 동의하거나 반박한 뒤 "
             "자신의 핵심 의견을 200자 내외로 말하세요. 이미 나온 말을 반복하지 말고 논의를 진전시키세요. "
@@ -2482,6 +3412,9 @@ tailwind.config = {
   .expert-card.selected .ec-check{opacity:1 !important;}
   .tc-suggested{box-shadow:0 0 0 1px #e9c349,0 0 10px rgba(233,195,73,.35);}
   .lobby-screen,#roomScreen{display:none;}
+  .aud-btn{padding:9px 16px;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;background:#1f1f21;border:1px solid #45464d;color:#c6c6cd;transition:.15s;}
+  .aud-btn:hover{border-color:#e9c349;color:#e4e2e4;}
+  .aud-btn.active{background:#e9c349;color:#241a00;border-color:#e9c349;}
 </style>
 </head>
 <body class="flex min-h-screen bg-background">
@@ -2523,8 +3456,18 @@ tailwind.config = {
     <!-- STEP 1 -->
     <div id="step1Screen" class="lobby-screen absolute inset-0 flex-col items-center overflow-y-auto p-8 custom-scrollbar" style="display:flex">
       <div class="w-full max-w-3xl mx-auto">
-        <h1 class="text-headline-lg text-on-surface mb-2">핵심광물 AI 전문가 회의실</h1>
-        <p class="text-on-surface-variant text-sm mb-8"><span class="text-secondary font-bold">STEP 1.</span> 회의에 데려갈 전문가를 선택하세요. 광물·경제·정치 분야 전문가를 자유롭게 조합할 수 있습니다.</p>
+        <h1 class="text-headline-lg text-on-surface mb-2">자원·원자재 AI 전문가 회의실</h1>
+        <p class="text-on-surface-variant text-sm mb-6"><span class="text-secondary font-bold">STEP 1.</span> 누구를 위한 회의인지 <b class="text-secondary">대상</b>을 고르고, 회의에 데려갈 <b class="text-secondary">전문가</b>를 선택하세요. 광물·식품·에너지·경제·정치 전문가가 함께 토론하며, 같은 전문가라도 대상(투자자·기업·소비자)에 따라 토론이 달라집니다.</p>
+        <div class="mb-7">
+          <div class="text-[10px] font-bold text-outline uppercase tracking-widest mb-3 font-data-tabular">① 대상 선택 — 누구를 위한 분석인가</div>
+          <div class="flex flex-wrap gap-2" id="audienceRow">
+            <button class="aud-btn active" data-aud="investor" onclick="setAudience('investor',this)">📈 일반 투자자</button>
+            <button class="aud-btn" data-aud="business" onclick="setAudience('business',this)">🏢 기업 · 조달</button>
+            <button class="aud-btn" data-aud="consumer" onclick="setAudience('consumer',this)">🛒 일반 소비자</button>
+            <button class="aud-btn" data-aud="policy" onclick="setAudience('policy',this)">🏛️ 정책 · 연구</button>
+          </div>
+        </div>
+        <div class="text-[10px] font-bold text-outline uppercase tracking-widest mb-3 font-data-tabular">② 전문가 선택</div>
         <div id="expertGrid" class="space-y-6"></div>
         <div class="flex items-center justify-between mt-8">
           <span id="selCount" class="font-data-tabular text-xs text-on-surface-variant">0명 선택됨</span>
@@ -2575,6 +3518,12 @@ tailwind.config = {
 <script>
 const EXPERTS = __EXPERTS_JSON__;
 let selectedExperts = [];
+let selectedAudience = 'investor';
+function setAudience(a, el){
+  selectedAudience = a;
+  document.querySelectorAll('.aud-btn').forEach(function(b){ b.classList.remove('active'); });
+  if(el) el.classList.add('active');
+}
 let chatHistory = [];
 let turnOrder = [];
 let turnIdx = 0;
@@ -2582,7 +3531,7 @@ let busy = false;
 
 // 전문가 카드 생성 (분야별 그룹)
 const grid = document.getElementById('expertGrid');
-const CAT_ORDER = ['광물','경제','정치'];
+const CAT_ORDER = ['광물','식품','에너지','경제','정치'];
 const byCat = {};
 Object.entries(EXPERTS).forEach(([key, ex]) => {
   const cat = ex.category || '기타';
@@ -2643,7 +3592,10 @@ function startSession() {
   turnIdx = 0;
   busy = false;
   showScreen('roomScreen');
-  document.getElementById('activeExperts').innerHTML = selectedExperts.map(k => {
+  const audLabel = {investor:'📈 일반 투자자', business:'🏢 기업·조달', consumer:'🛒 일반 소비자', policy:'🏛️ 정책·연구'}[selectedAudience] || selectedAudience;
+  document.getElementById('activeExperts').innerHTML =
+    '<span class="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-full" style="background:#e9c34922;color:#e9c349;border:1px solid #e9c34955">대상 · '+audLabel+'</span>' +
+    selectedExperts.map(k => {
     const ex = EXPERTS[k];
     return '<span class="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-full" style="background:'+ex.color+'22;color:'+ex.color+';border:1px solid '+ex.color+'44">'+ex.avatar+' '+ex.name+'</span>';
   }).join('');
@@ -2694,7 +3646,7 @@ function speakExpert(key) {
   fetch('/api/conference/chat', {
     method:'POST',
     headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({speaker: key, history: chatHistory})
+    body: JSON.stringify({speaker: key, history: chatHistory, audience: selectedAudience})
   }).then(r => {
     const reader = r.body.getReader();
     const decoder = new TextDecoder();
