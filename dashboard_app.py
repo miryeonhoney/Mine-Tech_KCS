@@ -14,7 +14,7 @@
 =====================================================================
 """
 
-import os, re, json, glob, time, smtplib, hmac, hashlib, xml.etree.ElementTree as ET
+import os, re, json, glob, time, smtplib, hmac, hashlib, html, xml.etree.ElementTree as ET
 import pandas as pd
 from datetime import datetime
 from email.mime.text import MIMEText
@@ -43,6 +43,8 @@ _load_dotenv()
 
 # 비밀키는 환경변수(.env 또는 호스팅 환경변수)에서 읽습니다. 코드에 하드코딩하지 마세요.
 PUBLIC_DATA_KEY     = os.environ.get("PUBLIC_DATA_KEY", "")
+OPINET_KEY          = os.environ.get("OPINET_KEY", "")        # 한국석유공사 오피넷 유가 API (opinet.co.kr 무료 키)
+KOSIS_KEY           = os.environ.get("KOSIS_KEY", "")         # 통계청 KOSIS 물가지수 API (kosis.kr 무료 키)
 NAVER_CLIENT_ID     = os.environ.get("NAVER_CLIENT_ID", "")
 NAVER_CLIENT_SECRET = os.environ.get("NAVER_CLIENT_SECRET", "")
 EMAIL_ADDRESS       = os.environ.get("EMAIL_ADDRESS", "")
@@ -476,7 +478,7 @@ def fetch_customs():
     cache_set("customs", result)
     return result
 
-def clean(t): return re.sub(r"<[^>]+>","",str(t)).strip()
+def clean(t): return html.unescape(re.sub(r"<[^>]+>", "", str(t))).strip()
 
 def fetch_news():
     c = cache_get("news")
@@ -546,6 +548,29 @@ def fetch_food_prices():
             print(f"[FOOD API] 오류: {e}")
     cache_set("food", items)
     return items
+
+def fetch_opinet():
+    """오피넷 전국 평균 유가 (실시간). OPINET_KEY 없으면 None → 스냅샷 사용."""
+    if not OPINET_KEY:
+        return None
+    c = cache_get("opinet")
+    if c is not None:
+        return c
+    try:
+        r = requests.get("http://www.opinet.co.kr/api/avgAllPrice.do",
+                         params={"code": OPINET_KEY, "out": "json"}, timeout=10)
+        oils = (r.json().get("RESULT") or {}).get("OIL") or []
+        res = {}
+        for o in oils:
+            nm = o.get("PRODNM", "")
+            try: res[nm] = float(str(o.get("PRICE", 0)).replace(",", ""))
+            except: pass
+        if res:
+            cache_set("opinet", res, ttl=1800)
+            return res
+    except Exception as e:
+        print(f"[OPINET] {e}")
+    return None
 
 def load_food_indices():
     try:
@@ -1060,7 +1085,16 @@ def render_dashboard():
     _pr = oil.get("price", {})
     oil_crude = _lastv(_pr.get("원유수입가"))
     oil_gas   = _lastv(_pr.get("휘발유"))
+    oil_diesel = _lastv(_pr.get("경유"))
     oil_month = (_pr.get("months") or ["-"])[-1]
+
+    # 오피넷 실시간 유가가 있으면 '오늘의 기름값'을 그걸로 대체 (없으면 스냅샷)
+    _op = fetch_opinet()
+    oil_live = bool(_op)
+    if _op:
+        oil_gas    = _op.get("휘발유") or oil_gas
+        oil_diesel = _op.get("경유") or oil_diesel
+    oil_src = "오늘 · 오피넷 실시간" if oil_live else f"{oil_month} 월평균 (스냅샷)"
 
     # 소비자 체감: 전월·전년 비교 + 가득 주유 환산
     def _ago(s, n):
@@ -1075,7 +1109,6 @@ def render_dashboard():
         return (f'{"▲" if d>0 else ("▼" if d<0 else "·")} {abs(d):,.0f}원', "#ff7a7a" if d > 0 else ("#5ad1b0" if d < 0 else "#999"))
     oil_gas_mom_t,   oil_gas_mom_c   = _won_chg(oil_gas, _ago(_pr.get("휘발유"), 1))
     oil_gas_yoy_t,   oil_gas_yoy_c   = _won_chg(oil_gas, _ago(_pr.get("휘발유"), 12))
-    oil_diesel       = _lastv(_pr.get("경유"))
     oil_diesel_mom_t, oil_diesel_mom_c = _won_chg(oil_diesel, _ago(_pr.get("경유"), 1))
     _crude_yoy = _ago(_pr.get("원유수입가"), 12)
     oil_crude_yoy_t = (f'{"▲" if (oil_crude or 0)>(_crude_yoy or 0) else "▼"} {abs((oil_crude or 0)-(_crude_yoy or 0)):.0f}$' if _crude_yoy else "—")
@@ -1967,7 +2000,7 @@ tr:hover td{{background:var(--bg3);}}
 
   <!-- 유가 · 가격 -->
   <div class="food-panel active" id="ep-price">
-    <div class="page-title">⛽ 오늘의 기름값 <span style="color:var(--muted2);font-weight:400;font-size:12px">· {oil_month} 전국 평균 · 한국석유공사·관세청</span></div>
+    <div class="page-title">⛽ 오늘의 기름값 <span style="color:var(--muted2);font-weight:400;font-size:12px">· {oil_src} · 전국 평균</span></div>
     <div class="fuel-grid">
       <div class="fuel-card">
         <div class="fl-label">보통휘발유</div>
