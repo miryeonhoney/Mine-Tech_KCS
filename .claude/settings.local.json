@@ -140,7 +140,9 @@
       "Bash(git check-ignore *)",
       "Bash(python3 -c \"import PIL; print\\('PIL', PIL.__version__\\)\")",
       "Bash(git fetch *)",
-      "Bash(git reset *)"
+      "Bash(git reset *)",
+      "Bash(echo \"remote: $\\(git remote get-url origin\\)\")",
+      "Bash(exit 1)"
     ]
   }
 }

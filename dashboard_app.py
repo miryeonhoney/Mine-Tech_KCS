@@ -1484,15 +1484,21 @@ body{padding-left:0!important;}
   opacity:0;visibility:hidden;transform:translateY(-10px);transition:.22s cubic-bezier(.2,.7,.3,1);}
 .cat-menu:hover .megapanel{opacity:1;visibility:visible;transform:none;}
 .cat-bar.mega-closed .megapanel{opacity:0!important;visibility:hidden!important;transform:translateY(-10px)!important;}
-.mp-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:13px;padding:26px 30px 30px;max-width:1180px;}
-.mp-tile{display:flex;flex-direction:column;gap:6px;padding:16px 18px;border-radius:14px;
+.mp-grid{display:grid;gap:13px;padding:24px 40px 28px;}              /* 창 너비를 1/n 균등 분할, 항상 두 줄 */
+.mp-c2{grid-template-columns:repeat(2,1fr);}
+.mp-c3{grid-template-columns:repeat(3,1fr);}
+.mp-c4{grid-template-columns:repeat(4,1fr);}
+.mp-tile{position:relative;display:flex;flex-direction:column;gap:6px;padding:15px 20px;border-radius:14px;
   background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.06);cursor:pointer;text-decoration:none;
   transition:.18s cubic-bezier(.2,.7,.3,1);}
-.mp-tile b{font-size:14.5px;font-weight:700;color:#f4e3ad;letter-spacing:-.01em;}
-.mp-tile span{font-size:11.5px;color:var(--muted2);}
+.mp-tile b{font-size:14px;font-weight:700;color:#f4e3ad;letter-spacing:-.01em;}
+.mp-tile span{font-size:11px;color:var(--muted2);}
+.mp-tile::after{content:'→';position:absolute;right:14px;top:50%;transform:translateY(-50%) translateX(-4px);
+  color:#e9c349;font-size:14px;opacity:0;transition:.18s;}
 .mp-tile:hover{background:rgba(233,195,73,.1);border-color:rgba(233,195,73,.45);transform:translateY(-3px);
   box-shadow:0 12px 28px rgba(0,0,0,.45);}
 .mp-tile:hover b{color:#fff;}
+.mp-tile:hover::after{opacity:1;transform:translateY(-50%) translateX(0);}
 
 /* ===== 히어로 슬라이드 배너 + 통합검색 ===== */
 .hero{position:relative;flex-shrink:0;height:440px;margin-bottom:0;}
@@ -2209,7 +2215,7 @@ tr:hover td{{background:var(--bg3);}}
   <a href="/" class="brand-lock" title="허브 홈"><img src="/static/logo.png" alt="K-RESOURCE" class="brand-logo"></a>
   <div class="cat-menu">
     <button class="cat-btn active" data-cat="minerals" onclick="switchCategory('minerals',this)">핵심광물</button>
-    <div class="megapanel"><div class="mp-grid">
+    <div class="megapanel"><div class="mp-grid mp-c4">
       <a class="mp-tile" onclick="goSec('minerals','supply')"><b>수급 현황</b><span>수입·생산 한눈에</span></a>
       <a class="mp-tile" onclick="goSec('minerals','mindex')"><b>가격지수</b><span>광해광업공단 파생지수</span></a>
       <a class="mp-tile" onclick="goSec('minerals','map')"><b>글로벌 매장량</b><span>세계 분포·수입루트</span></a>
@@ -2222,7 +2228,7 @@ tr:hover td{{background:var(--bg3);}}
   </div>
   <div class="cat-menu">
     <button class="cat-btn" data-cat="food" onclick="switchCategory('food',this)">식품</button>
-    <div class="megapanel"><div class="mp-grid">
+    <div class="megapanel"><div class="mp-grid mp-c2">
       <a class="mp-tile" onclick="goSec('food','price')"><b>품목 가격</b><span>농수산 도소매가</span></a>
       <a class="mp-tile" onclick="goSec('food','trend')"><b>부류별 동향</b><span>급등·급락</span></a>
       <a class="mp-tile" onclick="goSec('food','index')"><b>물가지수</b><span>CPI·생활물가</span></a>
@@ -2231,7 +2237,7 @@ tr:hover td{{background:var(--bg3);}}
   </div>
   <div class="cat-menu">
     <button class="cat-btn" data-cat="energy" onclick="switchCategory('energy',this)">에너지원료</button>
-    <div class="megapanel"><div class="mp-grid">
+    <div class="megapanel"><div class="mp-grid mp-c3">
       <a class="mp-tile" onclick="goSec('energy','price')"><b>유가 · 가격</b><span>WTI·두바이·주유소</span></a>
       <a class="mp-tile" onclick="goSec('energy','supply')"><b>석유 수급</b><span>생산·소비·수출</span></a>
       <a class="mp-tile" onclick="goSec('energy','gas')"><b>가스 · LPG</b><span>LNG·도시가스</span></a>
@@ -3901,6 +3907,7 @@ def conference_chat():
     speaker = data.get("speaker")
     history = data.get("history", [])
     audience = data.get("audience", "consumer")
+    recent_viz = data.get("recentViz", []) or []
     if not speaker or speaker not in MINERAL_EXPERTS:
         return jsonify(ok=False, message="발언할 전문가가 지정되지 않았습니다."), 400
     expert = MINERAL_EXPERTS[speaker]
@@ -3975,6 +3982,25 @@ def conference_chat():
                     "\"앞서 말씀드린 데 더해—\" 같은 식으로 자연스럽게 이어, 한 단계 더 들어가세요."
                 )
 
+        # 이 전문가가 발언 근거로 띄울 수 있는 시각자료(차트) 목록 주입
+        viz_block = ""
+        try:
+            _cat = build_viz_catalog()
+            _my = [k for k in EXPERT_VIZ.get(speaker, []) if k in _cat]
+            if _my:
+                _lines = "\n".join(f"- {k}: {_cat[k]['title']}" for k in _my)
+                viz_block = (
+                    "\n\n[시각자료 — 근거 차트] 다음 자료를 화면에 띄울 수 있습니다:\n" + _lines +
+                    "\n사용법: 발언에서 특정 수치·추세·자원·가격을 언급하고 위 목록에 관련 차트가 있으면, "
+                    "발언 맨 마지막에 `[[viz:키]]` 한 줄을 붙여 적극적으로 보여주세요 "
+                    "(예: [[viz:" + _my[0] + "]]). 데이터를 근거로 드는 발언이라면 대체로 하나 붙이는 게 좋습니다. "
+                    "다만 ① 직전 발언과 똑같은 차트를 연속으로 반복하지 말고, ② 순수하게 동의·맥락·"
+                    "감상만 말하는 발언에는 생략하세요. 한 발언에 차트는 최대 하나입니다."
+                    + (f" 최근 화면에 이미 띄운 차트({', '.join(recent_viz)})는 다시 고르지 말고 다른 자료를 쓰거나 생략하세요." if recent_viz else "")
+                )
+        except Exception as _e:
+            print("[VIZ prompt]", _e)
+
         sys_prompt = SHARED_A2A_PREAMBLE + "\n\n[당신의 역할]\n" + expert["system"] + (
             f"\n\n[대상 맞춤] {aud_ctx}"
             "\n\n[회의 형식] 이것은 여러 전문가와 진행자가 함께하는 실시간 회의입니다. "
@@ -3982,7 +4008,7 @@ def conference_chat():
             "자신의 핵심 의견을 200자 내외로 말하세요. 위 공통 규칙을 따르되, 특히 수치·사실 끝에는 "
             "[데이터셋명] 출처칩을 붙이세요. 이미 나온 말을 반복하지 말고 논의를 진전시키세요. "
             "발언 앞에 자신의 이름이나 '[이름]' 같은 라벨을 붙이지 말고, 바로 본문부터 말하세요."
-        ) + repeat_guard
+        ) + viz_block + repeat_guard
         convo = transcript_text(history) or f"회의 주제: {topic}"
         user_prompt = (
             f"[회의 주제]\n{topic}\n\n"
@@ -4350,10 +4376,204 @@ def render_login(err=""):
     return PAGE.replace("__ERR__", err)
 
 
+# ── AI 회의실 시각자료(차트) 카탈로그 ──────────────────────────────
+# 전문가가 발언하면서 근거로 띄울 수 있는 차트 스펙을 실데이터로 생성.
+# 각 항목: {title, type(line|bar|doughnut|stat), labels, series|stats, note, source}
+EXPERT_VIZ = {
+    "리튬":   ["risk_리튬", "reserves", "mineral_index", "komir_trade"],
+    "코발트": ["risk_코발트", "reserves", "komir_trade"],
+    "니켈":   ["risk_니켈", "reserves", "resource_dev"],
+    "희토류": ["reserves", "mineral_index", "komir_trade"],
+    "텅스텐": ["risk_텅스텐", "mineral_index", "reserves"],
+    "망간":   ["reserves", "resource_dev", "mineral_index"],
+    "흑연":   ["reserves", "mineral_index", "komir_trade"],
+    "경제":   ["mineral_index", "oil_price", "food_life"],
+    "통상":   ["komir_trade", "energy_import", "reserves"],
+    "지정학": ["reserves", "komir_trade", "energy_import"],
+    "정책":   ["resource_dev", "oil_reserve", "mineral_index"],
+    "식품":   ["food_life"],
+    "축산":   ["food_life", "resource_dev"],
+    "석유":   ["oil_price", "fuel_today", "oil_reserve", "energy_import"],
+    "가스":   ["oil_price", "energy_import"],
+}
+
+
+def build_viz_catalog():
+    """발언 근거용 차트 카탈로그. 각 데이터셋은 독립적으로 try-guard."""
+    here = os.path.dirname(__file__)
+    _pj = lambda f: os.path.join(here, f)
+    tail = lambda a, n: (a[-n:] if isinstance(a, list) and len(a) > n else (a or []))
+    cat = {}
+
+    # 1) 광물 수급안정화지수 (광물별 라인)
+    try:
+        for r in (load_risk_data() or []):
+            nm, ms, vs = r.get("name"), r.get("months", []), r.get("vals", [])
+            if not (nm and ms and vs):
+                continue
+            cat[f"risk_{nm}"] = {
+                "title": f"{nm} 수급안정화지수", "type": "line",
+                "labels": tail(ms, 24),
+                "series": [{"name": "수급안정화지수", "data": tail(vs, 24), "color": "#5ad1b0"}],
+                "note": f"최신 {r.get('latest','?')} · ≥55 안정·30~54 주의·<30 위험",
+                "source": "KOMIS 수급안정화지수",
+            }
+    except Exception as e:
+        print("[VIZ risk]", e)
+
+    # 2) 광물 가격지수 (종합·카테고리)
+    try:
+        midx = json.load(open(_pj("mineral_index_data2.json"), encoding="utf-8"))
+        S = midx.get("series", {})
+        base = S.get("종합") or {}
+        if base.get("months"):
+            pal = {"종합": "#e9c349", "에너지광물": "#f59e0b", "희소금속": "#5fd0ff", "메이저금속": "#b388ff"}
+            ser = [{"name": k, "data": tail(S[k]["values"], 36), "color": pal.get(k, "#aaa")}
+                   for k in pal if S.get(k)]
+            sm = midx.get("summary", {}).get("종합", {})
+            cat["mineral_index"] = {
+                "title": "광물 가격지수", "type": "line",
+                "labels": tail(base["months"], 36), "series": ser,
+                "note": f"종합 {sm.get('latest','?')} ({sm.get('asof','')}) · 전월 {sm.get('mom','?')}%",
+                "source": "광해광업공단 파생지수",
+            }
+    except Exception as e:
+        print("[VIZ midx]", e)
+
+    # 3) 주요 광물 매장량 (USGS)
+    try:
+        items = sorted(USGS_DATA.items(), key=lambda kv: kv[1].get("매장량_만톤", 0), reverse=True)
+        cat["reserves"] = {
+            "title": "주요 광물 세계 매장량", "type": "bar",
+            "labels": [k for k, _ in items],
+            "series": [{"name": "매장량(만톤)", "data": [v.get("매장량_만톤", 0) for _, v in items], "color": "#9b8cff"}],
+            "note": "1위국: " + ", ".join(f"{k}={v.get('1위국','')}" for k, v in items[:3]),
+            "source": "USGS MCS 2025",
+        }
+    except Exception as e:
+        print("[VIZ reserves]", e)
+
+    # 4) 유가 추이 + 석유 비축일수
+    try:
+        oil = load_oil_data() or {}
+        P = oil.get("price")
+        if P and P.get("months"):
+            ser = []
+            for nm, col in [("휘발유", "#e9c349"), ("경유", "#22d3ee")]:
+                if P.get(nm):
+                    ser.append({"name": f"{nm}(원/L)", "data": tail(P[nm], 24), "color": col})
+            if ser:
+                cat["oil_price"] = {
+                    "title": "국내 유가 추이", "type": "line",
+                    "labels": tail(P["months"], 24), "series": ser,
+                    "note": "월별 전국 평균", "source": "한국석유공사 오피넷",
+                }
+        RD = oil.get("reserve_days")
+        if RD and RD.get("years") and RD.get("days"):
+            cat["oil_reserve"] = {
+                "title": "국내 석유 비축일수", "type": "line",
+                "labels": RD["years"],
+                "series": [{"name": "비축일수(일)", "data": RD["days"], "color": "#5fd0ff"}],
+                "note": "IEA 권고 90일", "source": "한국석유공사",
+            }
+    except Exception as e:
+        print("[VIZ oil]", e)
+
+    # 5) 오늘 유가 (실시간 stat)
+    try:
+        op = fetch_opinet()
+        if op and op.get("휘발유"):
+            def _d(x):
+                try:
+                    f = float(x); return ("+" if f >= 0 else "") + f"{f:.1f}원"
+                except Exception:
+                    return ""
+            cat["fuel_today"] = {
+                "title": "오늘 전국 평균 유가 (실시간)", "type": "stat",
+                "stats": [
+                    {"label": "휘발유", "value": f"{round(op.get('휘발유',0)):,}", "unit": "원/L", "delta": _d(op.get("휘발유_diff"))},
+                    {"label": "경유", "value": f"{round(op.get('경유',0)):,}", "unit": "원/L", "delta": _d(op.get("경유_diff"))},
+                ],
+                "note": "전일 대비", "source": "오피넷 실시간",
+            }
+    except Exception as e:
+        print("[VIZ fuel]", e)
+
+    # 6) 석유제품 수입국 (doughnut)
+    try:
+        eimp = json.load(open(_pj("energy_import_data2.json"), encoding="utf-8"))
+        tc = (eimp.get("top_countries") or [])[:6]
+        if tc:
+            cat["energy_import"] = {
+                "title": f"석유제품 수입국 비중 ({eimp.get('latest_year','')})", "type": "doughnut",
+                "labels": [c["name"] for c in tc],
+                "series": [{"name": "수입량", "data": [c["vol"] for c in tc]}],
+                "note": "상위 수입국 (천 배럴)", "source": "한국석유공사",
+            }
+    except Exception as e:
+        print("[VIZ eimp]", e)
+
+    # 7) 자원개발률(자주개발률)
+    try:
+        rdev = json.load(open(_pj("resource_dev_data2.json"), encoding="utf-8"))
+        if rdev.get("series") and rdev.get("years"):
+            pal = ["#f59e0b", "#9aa0aa", "#5fd0ff", "#e9c349", "#5ad1b0", "#f472b6"]
+            ser = [{"name": k, "data": v, "color": pal[i % len(pal)]}
+                   for i, (k, v) in enumerate(rdev["series"].items())]
+            cat["resource_dev"] = {
+                "title": "자원개발률(자주개발률) 추이", "type": "line",
+                "labels": rdev["years"], "series": ser,
+                "note": "품목별 자주개발률 %", "source": "산업통상자원부",
+            }
+    except Exception as e:
+        print("[VIZ rdev]", e)
+
+    # 8) 생활물가지수
+    try:
+        fi = load_food_indices() or {}
+        L = fi.get("생활물가") or {}
+        if L.get("months") and L.get("series"):
+            pal = ["#e9c349", "#5ad1b0", "#22d3ee", "#f472b6", "#bec6e0"]
+            ser = [{"name": k, "data": tail(v, 24), "color": pal[i % len(pal)]}
+                   for i, (k, v) in enumerate(L["series"].items())]
+            cat["food_life"] = {
+                "title": "생활물가지수 추이", "type": "line",
+                "labels": tail(L["months"], 24), "series": ser,
+                "note": "지수", "source": "통계청 생활물가",
+            }
+    except Exception as e:
+        print("[VIZ food]", e)
+
+    # 9) 광종별 수입액 상위 (KOMIR)
+    try:
+        agg = {}
+        for r in (local_customs() or []):
+            nm = (r.get("광물명") or "").strip()
+            if nm:
+                agg[nm] = agg.get(nm, 0) + (r.get("수입금액(달러)", 0) or 0)
+        top = [(k, v) for k, v in sorted(agg.items(), key=lambda kv: kv[1], reverse=True)[:7] if v > 0]
+        if top:
+            cat["komir_trade"] = {
+                "title": "광종별 수입액 상위", "type": "bar",
+                "labels": [k for k, _ in top],
+                "series": [{"name": "수입액(억$)", "data": [round(v / 1e8, 1) for _, v in top], "color": "#f59e0b"}],
+                "note": "최신연도 수입금액", "source": "광해광업공단 수출입",
+            }
+    except Exception as e:
+        print("[VIZ komir]", e)
+
+    return cat
+
+
 def render_conference():
     experts_json = json.dumps(
         {k: {kk: vv for kk, vv in v.items() if kk not in ("system", "api_key")} for k, v in MINERAL_EXPERTS.items()},
         ensure_ascii=False
+    )
+    _cat = build_viz_catalog()
+    viz_json = json.dumps(_cat, ensure_ascii=False)
+    expertviz_json = json.dumps(
+        {k: [vk for vk in v if vk in _cat] for k, v in EXPERT_VIZ.items()}, ensure_ascii=False
     )
     now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     PAGE = r"""<!DOCTYPE html>
@@ -4427,7 +4647,21 @@ tailwind.config = {
   .custom-scrollbar::-webkit-scrollbar-thumb{background:rgba(233,195,73,.3)!important;}
   /* 브랜드 로고 블록 */
   aside .bg-secondary{background:linear-gradient(135deg,#f4e3ad,#e9c349)!important;box-shadow:0 0 16px rgba(233,195,73,.3);}
+  /* 발언 근거 시각자료 카드 */
+  .viz-card{margin-top:10px;background:rgba(16,16,24,.72);border:1px solid #2c2c38;border-left:2px solid rgba(233,195,73,.55);
+    border-radius:12px;padding:11px 13px;max-width:460px;animation:vizIn .4s cubic-bezier(.2,.7,.2,1);}
+  @keyframes vizIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  .viz-head{display:flex;align-items:center;gap:7px;font-size:12.5px;font-weight:700;color:#ece9e0;margin-bottom:7px;}
+  .viz-dot{width:7px;height:7px;border-radius:50%;display:inline-block;flex-shrink:0;}
+  .viz-canvas{position:relative;height:158px;}
+  .viz-foot{margin-top:7px;font-size:9.5px;color:#8a8a95;letter-spacing:.02em;}
+  .viz-stats{display:flex;gap:26px;padding:4px 2px 2px;}
+  .vs-label{font-size:10.5px;color:#9a9aa5;margin-bottom:2px;}
+  .vs-val{font-size:25px;font-weight:800;color:#f4e3ad;font-family:'JetBrains Mono',monospace;line-height:1;}
+  .vs-val span{font-size:11px;color:#8a8a95;margin-left:3px;font-weight:500;}
+  .vs-delta{font-size:11px;font-weight:700;margin-top:3px;}
 </style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 </head>
 <body class="flex min-h-screen bg-background">
 
@@ -4512,6 +4746,10 @@ tailwind.config = {
 
 <script>
 const EXPERTS = __EXPERTS_JSON__;
+const VIZ = __VIZ_JSON__;
+const EXPERT_VIZ = __EXPERTVIZ_JSON__;
+let vizSeq = 0;
+let recentViz = [];   // 최근 띄운 차트 키 (연속 중복 방지)
 let selectedExperts = [];
 let selectedAudience = 'investor';
 function setAudience(a, el){
@@ -4595,6 +4833,7 @@ function startSession() {
     return '<span class="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-full" style="background:'+ex.color+'22;color:'+ex.color+';border:1px solid '+ex.color+'44">'+ex.avatar+' '+ex.name+'</span>';
   }).join('');
   document.getElementById('chatArea').innerHTML = '';
+  recentViz = [];
   appendUserMsg(q);
   speakExpert(turnOrder[0]);
 }
@@ -4604,6 +4843,7 @@ function backToLobby() {
   document.getElementById('chatArea').innerHTML = '';
   document.getElementById('turnControls').style.display = 'none';
   chatHistory = [];
+  recentViz = [];
   busy = false;
 }
 
@@ -4641,7 +4881,7 @@ function speakExpert(key) {
   fetch('/api/conference/chat', {
     method:'POST',
     headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({speaker: key, history: chatHistory, audience: selectedAudience})
+    body: JSON.stringify({speaker: key, history: chatHistory, audience: selectedAudience, recentViz: recentViz})
   }).then(r => {
     const reader = r.body.getReader();
     const decoder = new TextDecoder();
@@ -4681,11 +4921,22 @@ function speakExpert(key) {
             } else if (d.speaker_end) {
               if (currentBubble) {
                 var _btxt = currentBubble.textContent;
+                // 시각자료 태그 추출: 모델이 [[viz:키]]를 명시한 경우만, 최근 띄운 차트면 생략
+                var _vizKey = null;
+                var _vm = _btxt.match(/\[\[\s*viz\s*:\s*([^\]]+?)\s*\]\]/i);
+                if (_vm) { _vizKey = _vm[1].trim(); _btxt = _btxt.replace(_vm[0], '').trim(); }
+                if (_vizKey && recentViz.indexOf(_vizKey) !== -1) { _vizKey = null; }
                 chatHistory.push({role:'assistant', name:EXPERTS[d.speaker_end]?.name||d.speaker_end, content:_btxt});
-                // 출처칩 렌더: [데이터셋명] → 칩 (HTML 이스케이프 후 치환, XSS 안전)
+                // 텍스트 렌더: HTML 이스케이프 → **굵게** → [출처칩]
                 var _esc = _btxt.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+                _esc = _esc.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
                 _esc = _esc.replace(/\[([^\[\]]{1,40})\]/g, '<span class="src-chip">$1</span>');
                 currentBubble.innerHTML = _esc;
+                if (_vizKey && VIZ[_vizKey]) {
+                  renderVizCard(VIZ[_vizKey], currentBubble.parentNode, (EXPERTS[d.speaker_end]||{}).color);
+                  recentViz.push(_vizKey); if (recentViz.length > 3) recentViz.shift();
+                  document.getElementById('chatArea').scrollTop = 1e9;
+                }
               }
               currentBubble = null;
             }
@@ -4696,6 +4947,49 @@ function speakExpert(key) {
     }
     read();
   }).catch(e => { ti.style.display = 'none'; busy = false; renderTurnControls(); console.error(e); });
+}
+
+// 발언 근거 시각자료 카드 렌더 (말풍선 아래)
+function renderVizCard(spec, container, color){
+  if(!spec || !container) return;
+  color = color || '#e9c349';
+  var head = '<div class="viz-head"><span class="viz-dot" style="background:'+color+'"></span>'+(spec.title||'')+'</div>';
+  var foot = '<div class="viz-foot">'+[spec.note, spec.source].filter(Boolean).join(' · ')+'</div>';
+  var card = document.createElement('div');
+  card.className = 'viz-card';
+  if(spec.type === 'stat'){
+    var body = '<div class="viz-stats">'+(spec.stats||[]).map(function(s){
+      var col = ((s.delta||'').indexOf('-')===0) ? '#ff8a8a' : '#5ad1b0';
+      return '<div class="viz-stat"><div class="vs-label">'+s.label+'</div>'
+        +'<div class="vs-val">'+s.value+'<span>'+(s.unit||'')+'</span></div>'
+        +(s.delta ? ('<div class="vs-delta" style="color:'+col+'">'+s.delta+'</div>') : '')+'</div>';
+    }).join('')+'</div>';
+    card.innerHTML = head + body + foot;
+    container.appendChild(card);
+    return;
+  }
+  var cid = 'vz'+(vizSeq++);
+  card.innerHTML = head + '<div class="viz-canvas"><canvas id="'+cid+'"></canvas></div>' + foot;
+  container.appendChild(card);
+  if(typeof Chart === 'undefined') return;
+  var ctx = document.getElementById(cid), type = spec.type || 'line', grid = '#26262f', tickc = '#8a8a95';
+  if(type === 'doughnut'){
+    var pal = ['#e9c349','#5fd0ff','#5ad1b0','#f472b6','#f59e0b','#9b8cff'];
+    new Chart(ctx, {type:'doughnut',
+      data:{labels:spec.labels, datasets:[{data:(spec.series[0]||{}).data||[], backgroundColor:pal, borderColor:'#101018', borderWidth:2}]},
+      options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'right', labels:{color:'#bbb', font:{size:10}, boxWidth:10}}}}});
+    return;
+  }
+  var ds = (spec.series||[]).map(function(s){
+    return {label:s.name, data:s.data, borderColor:s.color||color,
+      backgroundColor:(type==='bar' ? (s.color||color) : 'transparent'),
+      borderWidth:2, tension:.25, pointRadius:0, maxBarThickness:30};
+  });
+  new Chart(ctx, {type:type, data:{labels:spec.labels, datasets:ds},
+    options:{responsive:true, maintainAspectRatio:false, interaction:{mode:'index', intersect:false},
+      plugins:{legend:{display:(ds.length>1), labels:{color:'#bbb', font:{size:9}, boxWidth:9}}},
+      scales:{x:{ticks:{color:tickc, font:{size:9}, maxTicksLimit:8}, grid:{color:grid}},
+              y:{ticks:{color:tickc, font:{size:9}}, grid:{color:grid}}}}});
 }
 
 function sendMessage() {
@@ -4719,7 +5013,10 @@ setInterval(() => {
 </script>
 </body>
 </html>"""
-    return PAGE.replace("__EXPERTS_JSON__", experts_json).replace("__NOW__", now)
+    return (PAGE.replace("__EXPERTS_JSON__", experts_json)
+                .replace("__VIZ_JSON__", viz_json)
+                .replace("__EXPERTVIZ_JSON__", expertviz_json)
+                .replace("__NOW__", now))
 
 
 if __name__ == "__main__":
