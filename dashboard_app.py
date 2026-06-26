@@ -1640,6 +1640,7 @@ body.scenes #scene-rail{display:flex;}
 .page-title{color:var(--accent)!important;font-size:13px!important}
 .chart-title,.sec-head{letter-spacing:.03em}
 .charts-row{height:248px!important;gap:14px!important}
+.food-panel .charts-row{height:auto!important;}   /* 세계석유·수입·식품 목록은 내용만큼 늘어나야 겹침 안 생김 */
 .chart-box{border-radius:14px!important;padding:16px!important}
 /* 좌측 데이터 사이드바 가독성 */
 .sb-section{margin-bottom:18px}
