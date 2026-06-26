@@ -1771,12 +1771,12 @@ function countUp(){
 setTimeout(countUp, 2350);
 var _oilPriceDrawn=false,_oilSupplyDrawn=false,_oilPriceChart=null,_oilSupplyChart=null;
 function switchOilTab(name, el){
-  ['price','supply','gas','world','news'].forEach(function(n){var p=document.getElementById('ep-'+n);if(p)p.classList.toggle('active',n===name);});
+  ['price','supply','gas','world','news','import'].forEach(function(n){var p=document.getElementById('ep-'+n);if(p)p.classList.toggle('active',n===name);});
   _setActive('.oil-subnav', el);
   if(name==='price') drawOilPrice();
   if(name==='supply') drawOilSupply();
   if(name==='gas') drawGasChart();
-  if(name==='news' && typeof ENERGYNEWS!=='undefined') renderFeed(ENERGYNEWS,'enewsHero','enewsGrid',null);
+  if(name==='news'){ if(typeof ENERGYNEWS!=='undefined') renderFeed(ENERGYNEWS,'enewsHero','enewsGrid',null); fetchNewsBrief('energy','energyBrief'); }
   if(name==='import') drawImportCharts();
 }
 var _impDrawn=false,_eimpChart=null,_rdevChart=null;
@@ -1880,10 +1880,14 @@ function renderFeed(data, heroId, gridId, aud){
 function filterNews(aud, el){ _setActive('.news-aud-btn', el); renderFeed(NEWS,'newsHero','newsGrid',aud); }
 if(typeof NEWS!=='undefined') renderFeed(NEWS,'newsHero','newsGrid','전체');
 if(typeof FOODNEWS!=='undefined') renderFeed(FOODNEWS,'fnewsHero','fnewsGrid',null);
-fetch('/api/news-brief').then(function(r){return r.json();}).then(function(d){
-  var el=document.getElementById('aiBrief'); if(!el) return;
-  if(d && d.ok && d.brief){ el.textContent='🤖 AI 브리핑 — '+d.brief; el.style.display='block'; }
-}).catch(function(){});
+// 카테고리별 뉴스 AI 브리핑 (한 번만 로드)
+function fetchNewsBrief(cat, elId){
+  var el=document.getElementById(elId); if(!el || el._loaded) return; el._loaded=true;
+  fetch('/api/news-brief'+(cat?('?cat='+cat):'')).then(function(r){return r.json();}).then(function(d){
+    if(d && d.ok && d.brief){ el.textContent='🤖 AI 브리핑 — '+d.brief; el.style.display='block'; }
+  }).catch(function(){});
+}
+fetchNewsBrief('', 'aiBrief');   // 핵심광물(기본)
 var _riskChart=null;
 function drawRiskChart(){
   if(_riskChart || typeof RISK==='undefined' || !RISK.length) return;
@@ -1918,6 +1922,7 @@ function switchFoodTab(name, el){
   });
   _setActive('.food-subnav', el);
   if(name==='index' && !_foodIdxDrawn){ initFoodIndexCharts(); _foodIdxDrawn=true; }
+  if(name==='news') fetchNewsBrief('food','foodBrief');
 }
 var FOOD_COL='#e9c349';
 function showFoodTrend(i){
@@ -2221,7 +2226,6 @@ tr:hover td{{background:var(--bg3);}}
       <a class="mp-tile" onclick="goSec('minerals','map')"><b>글로벌 매장량</b><span>세계 분포·수입루트</span></a>
       <a class="mp-tile" onclick="goSec('minerals','risk')"><b>리스크 신호등</b><span>수급안정화지수</span></a>
       <a class="mp-tile" onclick="goSec('minerals','news')"><b>뉴스 피드</b><span>대상별 자원 뉴스</span></a>
-      <a class="mp-tile" onclick="goSec('minerals','subscribe')"><b>리포트 구독</b><span>매일 받는 동향</span></a>
       <a class="mp-tile" onclick="goSec('minerals','komir')"><b>KOMIR</b><span>광종별 수출입</span></a>
       <a class="mp-tile" onclick="goSec('minerals','usgs')"><b>USGS 2025</b><span>글로벌 매장 통계</span></a>
     </div></div>
@@ -2279,7 +2283,6 @@ tr:hover td{{background:var(--bg3);}}
     <a href="#" data-tab="map"       onclick="switchTab('map',this);return false;">글로벌 매장량</a>
     <a href="#" data-tab="risk"      onclick="switchTab('risk',this);return false;">🚦 리스크 신호등</a>
     <a href="#" data-tab="news"      onclick="switchTab('news',this);return false;">뉴스 피드</a>
-    <a href="#" data-tab="subscribe" onclick="switchTab('subscribe',this);return false;">리포트 구독</a>
     <a href="#" data-tab="komir"     onclick="switchTab('komir',this);return false;">KOMIR</a>
     <a href="#" data-tab="usgs"      onclick="switchTab('usgs',this);return false;">USGS 2025</a>
   </div>
@@ -2352,6 +2355,19 @@ tr:hover td{{background:var(--bg3);}}
       <div class="hl-stat"><span>오늘 휘발유</span><b>{oil_gas_s}원</b></div>
       <div class="hl-stat"><span>총 광물 수입액</span><b>${total:,.0f}</b></div>
       <div class="hl-stat"><span>수집 뉴스</span><b>{len(news)}건</b></div>
+    </div>
+    <div style="margin-top:34px;">
+      <div class="sub-box">
+        <div class="sub-title">📩 매일 자원 동향 리포트 구독</div>
+        <div class="sub-desc">
+          핵심광물·식품·에너지의 핵심 흐름과 글로벌 이슈를 매일 이메일로 받아보세요.<br>
+          현재 <strong>{len(subs)}명</strong>이 구독 중입니다.
+        </div>
+        <input id="sub-email" class="sub-input" type="email" placeholder="이메일 주소 입력">
+        <button class="sub-btn" onclick="doSubscribe()">구독 신청</button>
+        <button class="sub-btn2" onclick="doSendNow()">지금 바로 받기 (1회)</button>
+        <div class="sub-msg" id="sub-msg"></div>
+      </div>
     </div>
   </div>
 </div>
@@ -2487,19 +2503,7 @@ tr:hover td{{background:var(--bg3);}}
 <!-- ============================
      TAB: 리포트 구독
      ============================ -->
-<div id="tab-subscribe" class="tab-panel">
-  <div class="sub-box">
-    <div class="sub-title">핵심광물 동향 리포트 구독</div>
-    <div class="sub-desc">
-      매일 최신 광물 수급 현황과 글로벌 이슈를 이메일로 받아보세요.<br>
-      현재 <strong>{len(subs)}명</strong>이 구독 중입니다.
-    </div>
-    <input id="sub-email" class="sub-input" type="email" placeholder="이메일 주소 입력">
-    <button class="sub-btn" onclick="doSubscribe()">구독 신청</button>
-    <button class="sub-btn2" onclick="doSendNow()">지금 바로 받기 (1회)</button>
-    <div class="sub-msg" id="sub-msg"></div>
-  </div>
-</div>
+<!-- 리포트 구독 섹션은 메인 화면(home-landing)으로 이동함 -->
 
 <!-- ============================
      TAB: KOMIR
@@ -2583,7 +2587,7 @@ tr:hover td{{background:var(--bg3);}}
       <div class="sec-head" style="border:0;padding:0 0 10px;">부류별 평균 등락률 (전년 대비)</div>
       {cat_trend_html}
     </div>
-    <div class="charts-row" style="height:auto;">
+    <div class="charts-row" style="height:auto!important;">
       <div class="section" style="flex:1;padding:14px 16px;">
         <div class="sec-head" style="border:0;padding:0 0 8px;color:#ff7a7a">▲ 가장 많이 오른 품목 (전년比)</div>
         {top_up_html}
@@ -2610,6 +2614,7 @@ tr:hover td{{background:var(--bg3);}}
   <!-- 식품 뉴스 -->
   <div class="food-panel" id="fp-news">
     <div class="page-title">식품 · 물가 뉴스</div>
+    <div id="foodBrief" class="ai-brief" style="display:none">🤖 AI가 오늘의 식품 뉴스를 분석 중...</div>
     <div id="fnewsHero"></div>
     <div class="news-grid" id="fnewsGrid"></div>
   </div>
@@ -2677,6 +2682,7 @@ tr:hover td{{background:var(--bg3);}}
   <!-- 에너지 뉴스 -->
   <div class="food-panel" id="ep-news">
     <div class="page-title">에너지 · 유가 뉴스</div>
+    <div id="energyBrief" class="ai-brief" style="display:none">🤖 AI가 오늘의 에너지 뉴스를 분석 중...</div>
     <div id="enewsHero"></div>
     <div class="news-grid" id="enewsGrid"></div>
   </div>
@@ -2684,7 +2690,7 @@ tr:hover td{{background:var(--bg3);}}
   <!-- 세계 석유 -->
   <div class="food-panel" id="ep-world">
     <div class="page-title">세계 석유 — 한국석유공사 (주요국별)</div>
-    <div class="charts-row" style="height:auto;align-items:flex-start;">
+    <div class="charts-row" style="height:auto!important;align-items:flex-start;">
       <div class="section" style="flex:1;padding:14px 16px;">
         <div class="sec-head" style="border:0;padding:0 0 8px;color:#e9c349">생산량 TOP (천 b/d)</div>
         {world_prod_html}
@@ -2705,7 +2711,7 @@ tr:hover td{{background:var(--bg3);}}
     <div class="page-title">🌍 석유제품 수입국 & 자원 자주개발률 <span style="color:var(--muted2);font-weight:400;font-size:12px">· 한국석유공사 · 산업통상부</span></div>
     <div class="sec-head" style="border:0;padding:4px 0 8px;color:#f59e0b">국가별 석유제품 수입 — {eimp_year}년 상위</div>
     <div class="stat-row" style="flex-wrap:wrap">{eimp_rows}</div>
-    <div class="charts-row" style="height:auto;align-items:flex-start;margin-top:8px;">
+    <div class="charts-row" style="height:auto!important;align-items:flex-start;margin-top:8px;">
       <div class="section" style="flex:1;padding:14px 16px;">
         <div class="chart-title">수입국 비중 ({eimp_year})</div>
         <div style="height:280px;position:relative;"><canvas id="eimpChart"></canvas></div>
@@ -3802,29 +3808,43 @@ def api_summary():
 
 @app.route("/api/news-brief")
 def news_brief():
-    c = cache_get("news_brief")
+    cat = request.args.get("cat", "minerals")
+    ckey = f"news_brief_{cat}"
+    c = cache_get(ckey)
     if c is not None:
-        return jsonify(ok=True, brief=c)
+        return jsonify(ok=bool(c), brief=c)
     if not OPENAI_API_KEY:
         return jsonify(ok=False, brief="")
-    heads = [n.get("제목", "") for n in fetch_audience_news()[:12] if n.get("제목")]
+    if cat == "food":
+        items = fetch_food_news()
+        sysmsg = ("너는 먹거리·장바구니 물가 애널리스트다. 아래 식품·농수산 뉴스 헤드라인을 종합해 "
+                  "오늘의 먹거리 물가 핵심 흐름을 2문장으로 요약하고, 소비자 생활 관점의 팁을 한 줄 덧붙여라. 전체 3문장 이내.")
+    elif cat == "energy":
+        items = fetch_energy_news()
+        sysmsg = ("너는 에너지·유가 애널리스트다. 아래 유가·에너지 뉴스 헤드라인을 종합해 "
+                  "오늘의 에너지 시장 핵심 흐름을 2문장으로 요약하고, 주유비·난방비 등 생활·투자 관점 시사점을 한 줄 덧붙여라. "
+                  "특정 종목 추천이나 매수·매도 조언은 하지 말 것. 전체 3문장 이내.")
+    else:
+        items = fetch_audience_news()
+        sysmsg = ("너는 자원·원자재 시장 애널리스트다. 아래 뉴스 헤드라인들을 종합해 "
+                  "오늘의 핵심 흐름을 2문장으로 요약하고, 투자·생활 관점의 시사점을 한 줄 덧붙여라. "
+                  "특정 종목 추천이나 매수·매도 조언은 하지 말고 정보·교육 차원으로만. 전체 3문장 이내.")
+    heads = [(n.get("제목") or n.get("title", "")) for n in items[:12] if (n.get("제목") or n.get("title"))]
     if not heads:
-        cache_set("news_brief", "", ttl=600); return jsonify(ok=False, brief="")
+        cache_set(ckey, "", ttl=600); return jsonify(ok=False, brief="")
     brief = ""
     try:
         r = OpenAI(api_key=OPENAI_API_KEY).chat.completions.create(
             model=DEFAULT_OPENAI_MODEL, max_completion_tokens=220,
             messages=[
-                {"role": "system", "content": "너는 자원·원자재 시장 애널리스트다. 아래 뉴스 헤드라인들을 종합해 "
-                 "오늘의 핵심 흐름을 2문장으로 요약하고, 투자·생활 관점의 시사점을 한 줄 덧붙여라. "
-                 "특정 종목 추천이나 매수·매도 조언은 하지 말고 정보·교육 차원으로만. 전체 3문장 이내."},
+                {"role": "system", "content": sysmsg},
                 {"role": "user", "content": "\n".join(heads)},
             ],
         )
         brief = (r.choices[0].message.content or "").strip()
     except Exception as e:
-        print(f"[NEWS BRIEF] {e}")
-    cache_set("news_brief", brief, ttl=(1800 if brief else 60))
+        print(f"[NEWS BRIEF {cat}] {e}")
+    cache_set(ckey, brief, ttl=(1800 if brief else 60))
     return jsonify(ok=bool(brief), brief=brief)
 
 @app.route("/subscribe", methods=["POST"])
