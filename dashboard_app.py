@@ -76,61 +76,61 @@ CRON_TOKEN   = os.environ.get("CRON_TOKEN", "")            # /cron/daily 보호 
 
 MINERAL_EXPERTS = {
     "리튬": {
-        "name": "리튬 박사",
+        "name": "리튬 전문가",
         "title": "배터리·전기차 공급망 전문가",
         "avatar": "🔋",
         "color": "#4a9eff",
-        "system": """당신은 '리튬 박사'입니다. 한국에너지기술연구원 소속의 리튬 배터리 및 전기차 공급망 전문가입니다.
+        "system": """당신은 '리튬 전문가'입니다. 한국에너지기술연구원 소속의 리튬 배터리 및 전기차 공급망 전문가입니다.
 전문 분야: 리튬 채굴, 배터리 소재, 전기차 전환, 칠레·아르헨티나·호주 공급망, LFP vs NCM 기술.
 성격: 데이터 중심적, 논리적. 한국의 리튬 수입 의존도(95%)와 가격 변동성을 핵심 이슈로 항상 언급.
-다중 토론 지침: 회의실에 여러 전문가가 있을 때, 다른 박사의 발언을 직접 인용하며 동의/반박하세요. 200자 내외로 핵심만."""
+다중 토론 지침: 회의실에 여러 전문가가 있을 때, 다른 전문가의 발언을 직접 인용하며 동의/반박하세요. 200자 내외로 핵심만."""
     },
     "코발트": {
-        "name": "코발트 박사",
+        "name": "코발트 전문가",
         "title": "아프리카 자원 리스크 분석가",
         "avatar": "⚠️",
         "color": "#e8281a",
-        "system": """당신은 '코발트 박사'입니다. 산업통상자원부 자문 코발트·아프리카 자원 리스크 전문 분석가입니다.
+        "system": """당신은 '코발트 전문가'입니다. 산업통상자원부 자문 코발트·아프리카 자원 리스크 전문 분석가입니다.
 전문 분야: 콩고민주공화국(DRC) 정치 리스크, 공급망 집중도, 중국의 DRC 광산 장악(70%).
 성격: 지정학적 관점 강조, 비관적이지만 현실적. 리스크 시나리오를 구체적으로 제시.
-다중 토론 지침: 다른 박사 발언에 "잠깐, ○○ 박사—" 처럼 끼어드는 스타일. 최악의 시나리오를 항상 경고. 200자 내외."""
+다중 토론 지침: 다른 전문가 발언에 "잠깐, ○○ 전문가—" 처럼 끼어드는 스타일. 최악의 시나리오를 항상 경고. 200자 내외."""
     },
     "니켈": {
-        "name": "니켈 박사",
+        "name": "니켈 전문가",
         "title": "인도네시아·필리핀 광물 시장 전문가",
         "avatar": "🌏",
         "color": "#39c96e",
-        "system": """당신은 '니켈 박사'입니다. KOTRA 소속 동남아 광물 시장 전문가입니다.
+        "system": """당신은 '니켈 전문가'입니다. KOTRA 소속 동남아 광물 시장 전문가입니다.
 전문 분야: 인도네시아 니켈 수출 규제, 필리핀 광산 정책, HPAL 기술, 스테인리스·배터리 수요.
 성격: 실용적, 외교적 해법 선호. 인도네시아와의 협력 가능성을 낙관적으로 봄.
-다중 토론 지침: 다른 박사들이 위기를 강조할 때 "그렇지만 기회도 있습니다—"로 균형을 잡음. 200자 내외."""
+다중 토론 지침: 다른 전문가들이 위기를 강조할 때 "그렇지만 기회도 있습니다—"로 균형을 잡음. 200자 내외."""
     },
     "희토류": {
-        "name": "희토류 박사",
+        "name": "희토류 전문가",
         "title": "중국 자원 외교 및 희토류 정책 교수",
         "avatar": "🇨🇳",
         "color": "#ffc400",
-        "system": """당신은 '희토류 박사'입니다. 서울대학교 자원외교학과 교수이자 희토류 정책 전문가입니다.
+        "system": """당신은 '희토류 전문가'입니다. 서울대학교 자원외교학과 교수이자 희토류 정책 전문가입니다.
 전문 분야: 중국 희토류 독점(60%), 수출 규제 역사, 미중 무역갈등, 2010년 중일 분쟁 사례.
 성격: 학문적, 역사적 맥락 중시. 장기 전략의 중요성을 강조.
-다중 토론 지침: 다른 박사 논의에 역사적 사례로 무게를 더함. "역사를 보면..."으로 시작하는 발언 자주 함. 200자 내외."""
+다중 토론 지침: 다른 전문가 논의에 역사적 사례로 무게를 더함. "역사를 보면..."으로 시작하는 발언 자주 함. 200자 내외."""
     },
     "텅스텐": {
-        "name": "텅스텐 박사",
+        "name": "텅스텐 전문가",
         "title": "방산·산업소재 공급망 리스크 전문가",
         "avatar": "⚙️",
         "color": "#a78bfa",
-        "system": """당신은 '텅스텐 박사'입니다. 한국방위산업진흥회 공급망 리스크 전문가입니다.
+        "system": """당신은 '텅스텐 전문가'입니다. 한국방위산업진흥회 공급망 리스크 전문가입니다.
 전문 분야: 텅스텐 방산 활용, 절삭공구·초경합금, 북한 텅스텐 매장량, 안보 리스크.
 성격: 안보 관점 최우선. 경제성보다 전략적 자율성을 중시. "이건 안보 문제입니다"를 자주 씀.
 다중 토론 지침: 경제·기술 논의에 항상 안보 렌즈를 씌움. 200자 내외."""
     },
     "망간": {
-        "name": "망간 박사",
+        "name": "망간 전문가",
         "title": "철강·차세대 배터리 소재 연구원",
         "avatar": "🔩",
         "color": "#f97316",
-        "system": """당신은 '망간 박사'입니다. 포스코 기술연구원 소속 망간·철강 소재 전문가입니다.
+        "system": """당신은 '망간 전문가'입니다. 포스코 기술연구원 소속 망간·철강 소재 전문가입니다.
 전문 분야: 망간 강철 합금, LMFP 배터리, 남아프리카공화국 공급망, 전기로 제강.
 성격: 기술 낙관주의자. "사실 망간이 핵심입니다"로 논점 전환을 즐김. 200자 내외."""
     },
@@ -139,100 +139,100 @@ MINERAL_EXPERTS = {
 # ── 광물 외 분야 전문가 (경제·정치 등) ─────────────────────────
 EXTRA_EXPERTS = {
     "흑연": {
-        "name": "흑연 박사",
+        "name": "흑연 전문가",
         "title": "음극재·배터리 소재 전문가",
         "avatar": "⚫",
         "color": "#94a3b8",
         "category": "광물",
-        "system": """당신은 '흑연 박사'입니다. 한국전자기술연구원 소속 흑연·음극재 전문가입니다.
+        "system": """당신은 '흑연 전문가'입니다. 한국전자기술연구원 소속 흑연·음극재 전문가입니다.
 전문 분야: 천연/인조 흑연, 배터리 음극재, 중국의 흑연 수출 통제(2023), 구형흑연 가공 독점.
 성격: 차분하고 기술 디테일에 강함. "음극재 없이는 배터리도 없습니다"를 자주 언급.
 다중 토론 지침: 양극재(리튬·니켈) 중심 논의에 "음극재 관점도 보셔야 합니다"로 균형을 맞춤. 200자 내외."""
     },
     "경제": {
-        "name": "경제 박사",
+        "name": "경제 전문가",
         "title": "거시경제·자원가격 전문가",
         "avatar": "📈",
         "color": "#22d3ee",
         "category": "경제",
-        "system": """당신은 '경제 박사'입니다. 한국개발연구원(KDI) 소속 거시경제 전문가입니다.
+        "system": """당신은 '경제 전문가'입니다. 한국개발연구원(KDI) 소속 거시경제 전문가입니다.
 전문 분야: 원자재 가격이 물가·환율·무역수지에 미치는 파급, 인플레이션, 경기 사이클, 가격 헤지.
 성격: 숫자와 거시 지표로 말함. 개별 광물 이슈를 항상 거시경제 충격으로 환산해 제시.
 다중 토론 지침: 다른 전문가의 산업·안보 논의를 "그게 거시경제로는 이렇게 나타납니다"로 받아 정량화. 200자 내외."""
     },
     "통상": {
-        "name": "통상 박사",
+        "name": "통상 전문가",
         "title": "무역·통상정책 전문가",
         "avatar": "🤝",
         "color": "#2dd4bf",
         "category": "경제",
-        "system": """당신은 '통상 박사'입니다. 대외경제정책연구원(KIEP) 소속 무역·통상 전문가입니다.
+        "system": """당신은 '통상 전문가'입니다. 대외경제정책연구원(KIEP) 소속 무역·통상 전문가입니다.
 전문 분야: FTA·관세, IRA·CRMA 등 핵심광물 통상규제, 원산지 규정, 수출통제 대응.
 성격: 협상 테이블 관점. 규제를 리스크이자 협상 카드로 봄.
-다중 토론 지침: 기술·안보 논의를 "통상 규범상 이렇게 풀어야 합니다"로 제도화. 다른 박사 의견을 통상 조항에 연결. 200자 내외."""
+다중 토론 지침: 기술·안보 논의를 "통상 규범상 이렇게 풀어야 합니다"로 제도화. 다른 전문가 의견을 통상 조항에 연결. 200자 내외."""
     },
     "지정학": {
-        "name": "지정학 박사",
+        "name": "지정학 전문가",
         "title": "자원안보·국제정치 전문가",
         "avatar": "🌐",
         "color": "#f472b6",
         "category": "정치",
-        "system": """당신은 '지정학 박사'입니다. 국립외교원 소속 자원안보·국제정치 전문가입니다.
+        "system": """당신은 '지정학 전문가'입니다. 국립외교원 소속 자원안보·국제정치 전문가입니다.
 전문 분야: 미중 패권 경쟁, 자원의 무기화, 동맹 기반 공급망 재편(프렌드쇼어링), 해상 수송로 안보.
 성격: 큰 그림과 권력 역학으로 해석. "이건 결국 힘의 문제입니다"를 자주 씀.
-다중 토론 지침: 경제·기술 논의를 국제정치 구도로 끌어올려 재해석. 다른 박사 발언의 지정학적 함의를 짚음. 200자 내외."""
+다중 토론 지침: 경제·기술 논의를 국제정치 구도로 끌어올려 재해석. 다른 전문가 발언의 지정학적 함의를 짚음. 200자 내외."""
     },
     "정책": {
-        "name": "정책 박사",
+        "name": "정책 전문가",
         "title": "산업정책·자원전략 전문가",
         "avatar": "🏛️",
         "color": "#a3e635",
         "category": "정치",
-        "system": """당신은 '정책 박사'입니다. 산업연구원(KIET) 소속 산업정책·자원전략 전문가입니다.
+        "system": """당신은 '정책 전문가'입니다. 산업연구원(KIET) 소속 산업정책·자원전략 전문가입니다.
 전문 분야: 비축, 국산화·재자원화(리사이클), 보조금·세제, 해외 자원개발, 컨트롤타워.
 성격: 실행 가능한 정책 대안 제시에 집중. "그래서 정부는 무엇을 해야 하나"로 토론을 수렴.
 다중 토론 지침: 다른 전문가들이 진단한 문제를 받아 "그렇다면 정책 처방은—"으로 구체적 대안을 묶어냄. 200자 내외."""
     },
     "식품": {
-        "name": "식품 박사",
+        "name": "식품 전문가",
         "title": "농수산물·장바구니 물가 전문가",
         "avatar": "🥬",
         "color": "#5ad1b0",
         "category": "식품",
-        "system": """당신은 '식품 박사'입니다. 한국농수산식품유통공사(aT) 소속 농수산물 가격·물가 전문가입니다.
+        "system": """당신은 '식품 전문가'입니다. 한국농수산식품유통공사(aT) 소속 농수산물 가격·물가 전문가입니다.
 전문 분야: 채소·과일·곡물 도소매가, 작황·기후 영향, 소비자물가지수, 도매시장 동향.
 성격: 일반 소비자의 장바구니 체감 중심. "배추 한 포기에 얼마"처럼 피부에 와닿게 설명.
 다중 토론 지침: 광물·에너지 이슈가 식품·물가에 미치는 영향을 연결. 200자 내외."""
     },
     "축산": {
-        "name": "축산 박사",
+        "name": "축산 전문가",
         "title": "축산물·사료 가격 전문가",
         "avatar": "🥩",
         "color": "#e8825a",
         "category": "식품",
-        "system": """당신은 '축산 박사'입니다. 축산물품질평가원 소속 축산·사료 전문가입니다.
+        "system": """당신은 '축산 전문가'입니다. 축산물품질평가원 소속 축산·사료 전문가입니다.
 전문 분야: 소·돼지·닭고기 경락가, 계란·우유, 사료곡물(옥수수·대두) 수입 의존, 가축 질병 리스크.
 성격: 공급망(사료→축산→식탁) 관점. 사료값과 고기값의 연결을 강조.
 다중 토론 지침: 에너지·곡물 가격이 사료를 거쳐 축산물 가격으로 전이되는 고리를 짚음. 200자 내외."""
     },
     "석유": {
-        "name": "석유 박사",
+        "name": "석유 전문가",
         "title": "유가·정유 전문가",
         "avatar": "🛢️",
         "color": "#f59e0b",
         "category": "에너지",
-        "system": """당신은 '석유 박사'입니다. 한국석유공사 소속 유가·정유 전문가입니다.
+        "system": """당신은 '석유 전문가'입니다. 한국석유공사 소속 유가·정유 전문가입니다.
 전문 분야: 국제유가(WTI·두바이), 정제마진, 휘발유·경유 소비자가, 원유 수입선, 전략비축.
 성격: 가격 전이(원유→주유소)와 지정학(중동·OPEC)을 함께 봄. "기름값은 결국 원유가+세금+마진".
 다중 토론 지침: 유가가 물가·산업 전반에 미치는 파급을 강조. 200자 내외."""
     },
     "가스": {
-        "name": "가스 박사",
+        "name": "가스 전문가",
         "title": "천연가스·LPG 전문가",
         "avatar": "🔥",
         "color": "#22d3ee",
         "category": "에너지",
-        "system": """당신은 '가스 박사'입니다. 한국가스공사 소속 천연가스·LPG 전문가입니다.
+        "system": """당신은 '가스 전문가'입니다. 한국가스공사 소속 천연가스·LPG 전문가입니다.
 전문 분야: LNG 수입가·장기계약, 발전·도시가스 요금, LPG, 동절기 수급, 가스↔전기료 연결.
 성격: 난방·전기료 등 생활 체감과 산업용 가격을 함께 설명.
 다중 토론 지침: 유가·지정학 변화가 가스가격·전기요금으로 이어지는 경로를 짚음. 200자 내외."""
@@ -245,6 +245,28 @@ for _v in MINERAL_EXPERTS.values():
     _v.setdefault("category", "광물")
     _v.setdefault("model", DEFAULT_OPENAI_MODEL)
     _v.setdefault("api_key", "")
+
+# ── A2A 공통 프리앰블 (모든 전문가에 주입) — 10대 발언 규칙 + 정책 팩트 카드 ──
+# 출처: A2A 프롬프트/A2A_프롬프트.md (검증된 정책 사실)
+SHARED_A2A_PREAMBLE = """[공통 발언 규칙 — 모든 전문가 공통]
+1. 지정된 역할의 관점에서만 발언한다. 다른 역할의 말을 대신하지 않는다.
+2. 실제 정책토론회 패널처럼 말한다. 완결된 정답을 한 번에 쏟지 않는다.
+3. 다른 전문가 발언에 반응할 때: ① 먼저 인정/동의 → ② "다만 / 문제는" → ③ 근거 데이터로 반박·보완.
+4. 단정하지 말고 헤지를 쓴다: "단정하긴 이르나…", "현재 수치 기준으로는…".
+5. 동료를 호명한다: "방금 ○○ 전문가님 말씀 중에…".
+6. 한 발언은 3~6문장(200자 내외). 가끔 질문으로 끝내 다음 사람에게 공을 넘긴다.
+7. 수치·사실을 말할 때는 반드시 끝에 [데이터셋명] 형태 출처칩을 붙인다. (예: …95% 입니다 [핵심광물 확보전략])
+8. 아래 '정책 팩트 카드'와 자신의 근거 데이터 범위를 벗어난 수치는 지어내지 말고 "정확한 수치는 확인이 필요합니다"라고 말한다.
+9. 억지 합의를 만들지 않는다. 이견이 남으면 남은 채로 둔다.
+10. 법령·최신 동향 등 '시점에 민감한 정보'가 쟁점이면, 추측하지 말고 "이 부분은 최신 [법령/통계/뉴스] 확인이 필요합니다 — 검색을 권합니다"라고 명시한다.
+
+[정책 팩트 카드 — 이 범위 내에서만 정책·거시 사실 인용]
+- 국가자원안보 특별법: 2025.2.7 시행. 자원안보협의회=컨트롤타워. 평시 비축기관 6곳(석유공사·가스공사·석탄공사·한수원·광해광업공단·에너지공단). 핵심공급 18·수요 20기관 지정. [국가자원안보 특별법]
+- 핵심광물 확보전략(2023): 33종 지정, 10대 전략광물, 특정국 의존도 80%대→2030년 50% 목표, 재자원화 2%→20% 목표. [핵심광물 확보전략]
+- 중국 수출통제 확대: '24.12 갈륨·게르마늄·안티모니(對미) → '25초 텅스텐·텔루륨·비스무트·인듐·몰리브덴 및 중(重)희토류 7종. [IEA 2025]
+- IEA 2025: 니켈 상위 3개국이 2035년 시장 85% 차지('24년 75%). [IEA 2025]
+- 공급국 집중: 호주 = 한국 일반광 수입 1위(약 42%). [KOTRA/무역협회]
+"""
 
 USGS_DATA = {
     "리튬":   {"매장량_만톤": 2800,  "생산량_만톤": 24,   "1위국": "칠레",           "출처": "USGS MCS 2025"},
@@ -478,7 +500,10 @@ def fetch_customs():
     cache_set("customs", result)
     return result
 
-def clean(t): return html.unescape(re.sub(r"<[^>]+>", "", str(t))).strip()
+def clean(t):
+    s = re.sub(r"<[^>]+>", "", str(t))
+    s = html.unescape(html.unescape(s))   # 이중 인코딩(&amp;lt;)까지 해제
+    return s.strip()
 
 def fetch_news():
     c = cache_get("news")
@@ -509,6 +534,29 @@ def fetch_news():
     result = all_news if all_news else local_news()
     cache_set("news", result)
     return result
+
+def fetch_search_news(q, n=24):
+    """통합검색용 — 입력어로 네이버 뉴스 검색 (관련도순)."""
+    if not q or not NAVER_CLIENT_ID or NAVER_CLIENT_ID.startswith("여기에"): return []
+    c = cache_get("search:" + q)
+    if c is not None: return c
+    hdrs = {"X-Naver-Client-Id": NAVER_CLIENT_ID, "X-Naver-Client-Secret": NAVER_CLIENT_SECRET}
+    out, seen = [], set()
+    try:
+        r = requests.get("https://openapi.naver.com/v1/search/news.json",
+            headers=hdrs, params={"query": q, "display": n, "sort": "sim"}, timeout=8)
+        for it in r.json().get("items", []):
+            lnk = it.get("originallink") or it.get("link", "")
+            if not lnk or lnk in seen: continue
+            seen.add(lnk)
+            try: dt = datetime.strptime(it.get("pubDate", ""), "%a, %d %b %Y %H:%M:%S +0900").strftime("%Y-%m-%d")
+            except: dt = it.get("pubDate", "")
+            out.append({"제목": clean(it.get("title", "")), "요약": clean(it.get("description", "")),
+                        "링크": lnk, "발행일": dt})
+    except Exception as e:
+        print(f"[SEARCH] {e}")
+    cache_set("search:" + q, out, ttl=600)
+    return out
 
 def fetch_food_prices():
     """한국농수산식품유통공사 최근일자 도소매 가격 (recent/price)."""
@@ -565,6 +613,13 @@ def fetch_opinet():
             nm = o.get("PRODNM", "")
             try: res[nm] = float(str(o.get("PRICE", 0)).replace(",", ""))
             except: pass
+            try: res[nm + "_diff"] = float(str(o.get("DIFF", 0)).replace(",", ""))  # 전일대비
+            except: pass
+        # 오피넷 명칭 보정: 자동차용경유 → 경유 (UI는 '경유' 키 사용)
+        if "자동차용경유" in res and "경유" not in res:
+            res["경유"] = res["자동차용경유"]
+            if "자동차용경유_diff" in res:
+                res["경유_diff"] = res["자동차용경유_diff"]
         if res:
             cache_set("opinet", res, ttl=1800)
             return res
@@ -864,7 +919,8 @@ def build_newsletter(to=None):
 # ═══════════════════════════════════════════════════════════════
 #  ② 대시보드 HTML 렌더링
 # ═══════════════════════════════════════════════════════════════
-def render_dashboard():
+def render_dashboard(home=False):
+    body_cls = "is-home" if home else ""
     customs  = fetch_customs()
     news     = fetch_news()
     mines    = local_mines()
@@ -929,6 +985,34 @@ def render_dashboard():
     risk_summary = ("현재 <b style=\"color:#ff7a7a\">" + " · ".join(_risk_high) + "</b> 의 수급 불안이 높습니다."
                     if _risk_high else "현재 주요 광물 수급은 비교적 안정적입니다.")
 
+    # ── 광물 가격지수 (한국광해광업공단 파생지수, 2012~ 월별) ──
+    midx = load_json(os.path.join(os.path.dirname(__file__), "mineral_index_data2.json"))
+    if not isinstance(midx, dict):
+        midx = {}
+    midx_js = json.dumps(midx, ensure_ascii=False)
+    def _midx_card(key, label, color):
+        s = (midx.get("summary") or {}).get(key)
+        if not s:
+            return ""
+        mom = s.get("mom") or 0
+        mtxt = f'{"▲" if mom>0 else ("▼" if mom<0 else "·")} {abs(mom):.1f}% 전월'
+        yoy = s.get("yoy")
+        if yoy is not None:
+            ycol = "#5ad1b0" if yoy >= 0 else "#ff7a7a"
+            ytxt = f'<span style="color:{ycol}">{"▲" if yoy>0 else "▼"} {abs(yoy):.1f}% 전년</span>'
+        else:
+            ytxt = ""
+        return (f'<div class="risk-card" style="border-left:4px solid {color}">'
+                f'<div class="rk-top"><span class="rk-nm">{label}</span></div>'
+                f'<div class="rk-val">{s["latest"]:,.0f}</div>'
+                f'<div class="rk-sub">{mtxt} · {ytxt} · {s["asof"]}</div></div>')
+    midx_cards = "".join([
+        _midx_card("종합", "광물종합지수", "#e9c349"),
+        _midx_card("에너지광물", "에너지광물 (연료탄·우라늄)", "#f59e0b"),
+        _midx_card("희소금속", "희소금속 (리튬·희토류)", "#5fd0ff"),
+        _midx_card("메이저금속", "메이저금속 (철·동·니켈)", "#b388ff"),
+    ]) or '<div class="empty">지수 데이터 없음</div>'
+
     usgs_html = "".join(f"""
     <div class="uc">
       <div class="uc-nm">{mn}</div>
@@ -955,6 +1039,19 @@ def render_dashboard():
       <div class="nc-dt">{n.get('발행일시','')}</div>
     </a>""" for n in news[:12]) if news else \
     '<div class="empty">뉴스 없음 — API 키를 설정하거나 수집기를 먼저 실행하세요.</div>'
+
+    # 수급 대시보드 위젯 — 매장량 순위 / 주요 생산국 (USGS)
+    _usgs_sorted = sorted(USGS_DATA.items(), key=lambda kv: kv[1]["매장량_만톤"], reverse=True)
+    _usgs_max = _usgs_sorted[0][1]["매장량_만톤"] if _usgs_sorted else 1
+    usgs_rank_html = "".join(
+        f'<div class="rk-item"><span class="rk-no">{i+1:02d}</span>'
+        f'<div class="rk-mid"><div class="rk-nm">{mn}</div>'
+        f'<div class="rk-bar"><div class="rk-fill" style="width:{info["매장량_만톤"]/_usgs_max*100:.0f}%"></div></div></div>'
+        f'<span class="rk-vl">{info["매장량_만톤"]:,}<small>만t</small></span></div>'
+        for i, (mn, info) in enumerate(_usgs_sorted))
+    prod_html = "".join(
+        f'<div class="pr-item"><span class="pr-nm">{mn}</span><span class="pr-co">{info["1위국"]}</span></div>'
+        for mn, info in USGS_DATA.items())
 
     komir_rows = "".join(f"""<tr>
       <td class="t-nm">{r.get('광물명','')}</td>
@@ -1069,6 +1166,24 @@ def render_dashboard():
     # ── 에너지원료(석유) 카테고리 데이터 ──
     oil = load_oil_data()
     oil_js = json.dumps(oil, ensure_ascii=False)
+
+    # ── 석유제품 국가별 수입 + 자원 자주개발률 (데이터2) ──
+    eimp = load_json(os.path.join(os.path.dirname(__file__), "energy_import_data2.json"))
+    if not isinstance(eimp, dict):
+        eimp = {}
+    eimp_js = json.dumps(eimp, ensure_ascii=False)
+    rdev = load_json(os.path.join(os.path.dirname(__file__), "resource_dev_data2.json"))
+    if not isinstance(rdev, dict):
+        rdev = {}
+    rdev_js = json.dumps(rdev, ensure_ascii=False)
+    _et = eimp.get("top_countries") or []
+    _etot = eimp.get("total_latest") or 0
+    eimp_rows = "".join(
+        f'<div class="stat-card"><div class="sc-label">{c["name"]}</div>'
+        f'<div class="sc-val" style="font-size:17px">{c["vol"]:,.0f}</div>'
+        f'<div class="sc-sub">{(c["vol"]/_etot*100):.0f}% · 천 배럴</div></div>'
+        for c in _et[:6]) if _et else '<div class="empty">수입 데이터 없음</div>'
+    eimp_year = eimp.get("latest_year", "")
     energy_news_js = json.dumps(fetch_energy_news()[:12], ensure_ascii=False)
     def _lastv(arr):
         for v in reversed(arr or []):
@@ -1095,6 +1210,15 @@ def render_dashboard():
         oil_gas    = _op.get("휘발유") or oil_gas
         oil_diesel = _op.get("경유") or oil_diesel
     oil_src = "오늘 · 오피넷 실시간" if oil_live else f"{oil_month} 월평균 (스냅샷)"
+
+    # 전일 대비 (오늘 vs 어제) — 오피넷 DIFF (실시간일 때만)
+    def _dod(diff):
+        if diff is None: return ("", "#999")
+        return (f'{"▲" if diff>0 else ("▼" if diff<0 else "·")} {abs(diff):.2f}원', "#ff7a7a" if diff>0 else ("#5ad1b0" if diff<0 else "#999"))
+    oil_gas_dod_t,    oil_gas_dod_c    = _dod(_op.get("휘발유_diff") if _op else None)
+    oil_diesel_dod_t, oil_diesel_dod_c = _dod(_op.get("경유_diff") if _op else None)
+    oil_gas_dod_lead    = (f'전일 <b style="color:{oil_gas_dod_c}">{oil_gas_dod_t}</b> · ' if oil_gas_dod_t else '')
+    oil_diesel_dod_lead = (f'전일 <b style="color:{oil_diesel_dod_c}">{oil_diesel_dod_t}</b> · ' if oil_diesel_dod_t else '')
 
     # 소비자 체감: 전월·전년 비교 + 가득 주유 환산
     def _ago(s, n):
@@ -1185,10 +1309,25 @@ body{background:var(--bg);padding-left:256px;}
   border-bottom:none!important;overflow-y:auto;z-index:200;}
 .nav-brand{font-size:14px!important;color:var(--accent)!important;margin:0 0 22px 4px!important;text-shadow:none!important;letter-spacing:.08em!important;}
 .nav-brand .sys-dot{background:var(--accent)!important;box-shadow:0 0 8px var(--accent)!important;}
-.nav a[data-tab]{display:flex!important;align-items:center;width:100%;padding:11px 14px!important;border-radius:8px!important;
-  font-size:13px!important;font-weight:600;color:var(--muted)!important;border:1px solid transparent!important;font-family:var(--mono);}
-.nav a[data-tab]:hover{background:rgba(255,255,255,.05)!important;color:var(--text)!important;}
-.nav a[data-tab].active{background:#0f172a!important;color:#e9c349!important;text-shadow:none!important;border-color:transparent!important;}
+/* ===== 섹션 네비 — 인덱스 레일 + 슬라이딩 골드 인디케이터 ===== */
+#subnav-minerals,#subnav-food,#subnav-energy{counter-reset:nav;position:relative;}
+#subnav-minerals::before,#subnav-food::before,#subnav-energy::before{
+  content:'';position:absolute;left:22px;top:16px;bottom:16px;width:1px;
+  background:linear-gradient(180deg,transparent,rgba(233,195,73,.28),transparent);}
+.nav a[data-tab]{position:relative;display:flex!important;align-items:center;gap:12px;width:100%;
+  padding:11px 12px 11px 46px!important;border-radius:11px!important;font-size:13.5px!important;font-weight:600;
+  color:var(--muted)!important;border:0!important;transition:.24s cubic-bezier(.2,.7,.3,1);overflow:hidden;}
+.nav a[data-tab]::before{counter-increment:nav;content:counter(nav,decimal-leading-zero);
+  position:absolute;left:11px;top:50%;transform:translateY(-50%);
+  width:22px;height:22px;display:flex;align-items:center;justify-content:center;
+  font-family:var(--mono);font-size:10px;font-weight:700;color:var(--muted2);
+  background:#14141c;border:1px solid rgba(255,255,255,.13);border-radius:7px;transition:.24s;z-index:1;}
+.nav a[data-tab]:hover{background:rgba(233,195,73,.06)!important;color:var(--text)!important;padding-left:50px!important;}
+.nav a[data-tab]:hover::before{border-color:rgba(233,195,73,.55);color:var(--accent);}
+.nav a[data-tab].active{background:linear-gradient(90deg,rgba(233,195,73,.18),rgba(233,195,73,.02))!important;
+  color:#f4e3ad!important;font-weight:800;box-shadow:inset 3px 0 0 #e9c349;}
+.nav a[data-tab].active::before{background:linear-gradient(135deg,#f4e3ad,#e9c349);color:#241a00;
+  border-color:#e9c349;box-shadow:0 0 13px rgba(233,195,73,.55);}
 .nav-right{margin-top:auto!important;margin-left:0!important;flex-direction:column;align-items:stretch;gap:10px;padding-top:14px;border-top:1px solid var(--border);}
 .nav-time{color:var(--muted)!important;font-size:10px!important;text-align:center;}
 .nav-conf{text-align:center;color:#241a00!important;background:var(--accent)!important;border:none!important;font-weight:700!important;padding:10px!important;border-radius:8px!important;}
@@ -1282,9 +1421,261 @@ body{background:var(--bg);padding-left:256px;}
 .nh-sm{font-size:14px;color:var(--muted);line-height:1.65;margin-bottom:12px;}
 .nh-meta{font-size:11px;color:var(--muted2);font-family:'IBM Plex Mono',monospace;}
 .ai-brief{background:linear-gradient(135deg,rgba(34,211,238,.10),rgba(31,31,33,.6));border:1px solid rgba(34,211,238,.35);border-left:4px solid #22d3ee;border-radius:12px;padding:14px 18px;margin-bottom:14px;font-size:14px;line-height:1.6;color:#d8eef7;}
+
+/* ============================================================
+   ★ COMMAND-DECK 디자인 레이어 — 3D 인트로와 한 세계로 (기능 불변)
+   ============================================================ */
+html{background:#06080f;}
+body{background:transparent!important;}
+/* 카테고리별 분위기 색 */
+body[data-cat="minerals"]{--catglow:#e9c349;--catglow2:#ff9d2e;}
+body[data-cat="food"]{--catglow:#5ad1b0;--catglow2:#39c0ff;}
+body[data-cat="energy"]{--catglow:#f59e0b;--catglow2:#ff5e5e;}
+
+/* 차분한 다크 배경 (움직임 없음 — 가벼움) */
+#cosmos{position:fixed;inset:0;z-index:-2;background:radial-gradient(circle at 50% 24%, #0c1626 0%, #080c15 55%, #04060c 100%);}
+
+/* 글래스 패널 (우주 위에 떠 있는) */
+.stat-card,.chart-box,.section,.sub-box,.uc,.sidebar,.basket-card,.risk-card{
+  background:rgba(18,22,31,.92)!important;
+  border:1px solid rgba(255,255,255,.08)!important;box-shadow:0 10px 34px rgba(0,0,0,.4)!important;}
+.section:hover,.stat-card:hover{border-color:rgba(255,255,255,.16)!important;}
+.cat-bar{background:rgba(11,15,23,.94)!important;border-bottom:1px solid rgba(255,255,255,.07)!important;}
+.nav{background:rgba(10,13,20,.96)!important;border-right:1px solid rgba(255,255,255,.07)!important;}
+.ticker{background:linear-gradient(90deg,#0b0f17,#23200f 50%,#0b0f17)!important;}
+
+/* 우주로 돌아가기 */
+.to-space{margin-left:auto;display:inline-flex;align-items:center;gap:6px;color:var(--muted)!important;
+  text-decoration:none;font-size:12px;font-weight:700;border:1px solid rgba(255,255,255,.14);
+  padding:6px 14px;border-radius:20px;background:rgba(255,255,255,.04);transition:.2s;}
+.to-space:hover{color:#fff!important;border-color:var(--catglow,#e9c349);
+  box-shadow:0 0 18px color-mix(in srgb, var(--catglow,#e9c349) 45%, transparent);}
+
+/* ===== 메가메뉴 — 전체 폭 패널 (호버 시 모든 카테고리 컬럼 동시) ===== */
+.nav{display:none!important;}
+body{padding-left:0!important;}
+.cat-bar{position:relative;z-index:600;overflow:visible!important;gap:0!important;padding:12px 30px!important;align-items:center;}
+/* 사이트 브랜드 로고 (흰색+골드, 투명) */
+.brand-lock{display:flex;align-items:center;text-decoration:none;margin-right:26px;flex-shrink:0;transition:.2s;}
+.brand-lock:hover{opacity:.82;}
+.brand-logo{height:34px;width:auto;display:block;}
+/* 텍스트형 내비 (버튼/알약 아님 — 진짜 사이트 GNB) */
+.cat-btn{background:transparent!important;border:0!important;box-shadow:none!important;border-radius:0!important;
+  margin:0 20px!important;padding:6px 2px!important;color:var(--muted)!important;font-family:var(--sans)!important;
+  font-size:15px!important;font-weight:700!important;letter-spacing:-.01em;position:relative;}
+.cat-btn:first-of-type{margin-left:24px!important;}
+.cat-btn::after{content:'';position:absolute;left:0;right:0;bottom:-5px;height:2px;border-radius:2px;
+  background:linear-gradient(90deg,#f4e3ad,#e9c349);transform:scaleX(0);transform-origin:center;
+  transition:.24s cubic-bezier(.2,.7,.3,1);}
+.cat-btn:hover{color:#f4e3ad!important;}
+.cat-btn.active{background:transparent!important;color:#f4e3ad!important;box-shadow:none!important;}
+.cat-btn.active::after,.cat-btn:hover::after{transform:scaleX(1);}
+.cat-btn .cv{display:none;}
+.cb-right{margin-left:auto;display:flex;align-items:center;gap:8px;}
+.cb-right .to-space{margin-left:0;}
+.cb-link{font-size:12px;font-weight:700;color:var(--muted)!important;text-decoration:none;padding:6px 13px;
+  border-radius:20px;border:1px solid rgba(255,255,255,.14);transition:.18s;white-space:nowrap;}
+.cb-link:hover{color:#f4e3ad!important;border-color:var(--accent);background:rgba(233,195,73,.08);}
+/* 카테고리별 전용 메가패널 (호버한 카테고리만) — 세종대 스타일 카드 타일 */
+.cat-menu{position:static;display:inline-flex;align-items:center;}
+.megapanel{position:absolute;left:0;right:0;top:100%;z-index:590;
+  background:linear-gradient(180deg,rgba(13,13,19,.99),rgba(8,8,13,.99));
+  border-top:1px solid rgba(233,195,73,.22);box-shadow:0 32px 70px rgba(0,0,0,.7);
+  opacity:0;visibility:hidden;transform:translateY(-10px);transition:.22s cubic-bezier(.2,.7,.3,1);}
+.cat-menu:hover .megapanel{opacity:1;visibility:visible;transform:none;}
+.cat-bar.mega-closed .megapanel{opacity:0!important;visibility:hidden!important;transform:translateY(-10px)!important;}
+.mp-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:13px;padding:26px 30px 30px;max-width:1180px;}
+.mp-tile{display:flex;flex-direction:column;gap:6px;padding:16px 18px;border-radius:14px;
+  background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.06);cursor:pointer;text-decoration:none;
+  transition:.18s cubic-bezier(.2,.7,.3,1);}
+.mp-tile b{font-size:14.5px;font-weight:700;color:#f4e3ad;letter-spacing:-.01em;}
+.mp-tile span{font-size:11.5px;color:var(--muted2);}
+.mp-tile:hover{background:rgba(233,195,73,.1);border-color:rgba(233,195,73,.45);transform:translateY(-3px);
+  box-shadow:0 12px 28px rgba(0,0,0,.45);}
+.mp-tile:hover b{color:#fff;}
+
+/* ===== 히어로 슬라이드 배너 + 통합검색 ===== */
+.hero{position:relative;flex-shrink:0;height:440px;margin-bottom:0;}
+.hero-clip{position:absolute;inset:0;overflow:hidden;border-bottom:1px solid rgba(255,255,255,.06);}
+.hero-track{display:flex;width:400%;height:100%;transition:transform .6s cubic-bezier(.4,0,.2,1);}
+.hero-slide{width:25%;height:100%;display:flex;align-items:center;padding:0 7vw;text-decoration:none;cursor:pointer;}
+.hs-in{max-width:640px;}
+.hs-eyebrow{font-size:11px;letter-spacing:.4em;text-transform:uppercase;color:#caa24e;font-weight:700;margin-bottom:13px;}
+.hs-title{font-family:'Noto Serif KR',serif;font-size:clamp(23px,3.2vw,38px);font-weight:700;color:#fff;line-height:1.16;}
+.hs-title b{color:#f4e3ad;}
+.hs-sub{margin-top:11px;font-size:14px;color:rgba(255,255,255,.68);}
+.hero-slide{background-size:cover!important;background-position:center!important;background-repeat:no-repeat!important;}
+.hs-min{background-image:linear-gradient(90deg,rgba(6,6,11,.95) 0%,rgba(6,6,11,.72) 40%,rgba(6,6,11,.28) 72%,rgba(6,6,11,.08) 100%),url('/static/hero/minerals.png');}
+.hs-food{background-image:linear-gradient(90deg,rgba(6,6,11,.95) 0%,rgba(6,6,11,.72) 40%,rgba(6,6,11,.28) 72%,rgba(6,6,11,.08) 100%),url('/static/hero/food.png');}
+.hs-energy{background-image:linear-gradient(90deg,rgba(6,6,11,.95) 0%,rgba(6,6,11,.72) 40%,rgba(6,6,11,.28) 72%,rgba(6,6,11,.08) 100%),url('/static/hero/energy.png');}
+.hs-ai{background-image:linear-gradient(90deg,rgba(6,6,11,.95) 0%,rgba(6,6,11,.72) 40%,rgba(6,6,11,.28) 72%,rgba(6,6,11,.08) 100%),url('/static/hero/ai.png');}
+.hero-nav{position:absolute;top:44%;transform:translateY(-50%);z-index:5;width:40px;height:40px;border-radius:50%;
+  background:rgba(0,0,0,.4);border:1px solid rgba(255,255,255,.16);color:#fff;font-size:22px;line-height:1;cursor:pointer;transition:.18s;}
+.hero-nav:hover{background:rgba(233,195,73,.28);border-color:#e9c349;}
+.hero-nav.prev{left:18px;}.hero-nav.next{right:18px;}
+.hero-dots{position:absolute;bottom:98px;left:50%;transform:translateX(-50%);z-index:5;display:flex;gap:8px;}
+.hero-dots button{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.3);border:0;cursor:pointer;padding:0;transition:.25s;}
+.hero-dots button.on{background:#e9c349;width:22px;border-radius:4px;}
+.hero-search{position:absolute;left:50%;bottom:26px;transform:translateX(-50%);z-index:6;width:min(640px,82%);
+  display:flex;align-items:center;gap:12px;background:#fff;border-radius:15px;padding:9px 11px 9px 20px;box-shadow:0 18px 44px rgba(0,0,0,.55);}
+.hsr-cat{font-size:13px;font-weight:800;color:#2a2a2a;white-space:nowrap;border-right:1px solid #e0e0e0;padding-right:14px;}
+.hero-search input{flex:1;border:0;outline:0;font-size:14px;color:#222;background:transparent;}
+.hsr-btn{width:40px;height:40px;border-radius:11px;border:0;background:linear-gradient(135deg,#f4e3ad,#e9c349);color:#1a1400;font-size:16px;cursor:pointer;flex-shrink:0;}
+
+/* ===== 페이지 스크롤 — 대시보드를 줄이지 말고 아래로 (히어로 + 풀사이즈) ===== */
+body{height:auto!important;min-height:100vh;overflow-y:auto!important;overflow-x:hidden;}
+.cat-bar{position:sticky;top:0;}
+.ticker{position:sticky;top:62px;z-index:580;}
+#cat-minerals,#cat-food,#cat-energy{flex:none!important;}
+.tab-panel{overflow:visible!important;}
+#tab-supply{height:auto!important;overflow:visible!important;}
+.dash{height:auto!important;overflow:visible!important;}
+.dash-cols{min-height:66vh;}
+.main{overflow:visible!important;height:auto!important;}
+/* 수급현황 외 탭(가격지수·리스크·뉴스 등)은 세로 스택 — 가로로 찌부러지는 버그 수정 */
+#cat-minerals .tab-panel:not(#tab-supply){flex-direction:column!important;align-items:stretch!important;padding:18px 24px!important;gap:0;}
+#cat-minerals .tab-panel:not(#tab-supply) .risk-grid{margin-bottom:16px;}
+
+/* ===== 메인(홈) vs 카테고리 화면 분리 — 검색/히어로는 메인에만 ===== */
+.hero{display:none;}
+body.is-home .hero{display:block;}
+body.is-home #cat-minerals,body.is-home #cat-food,body.is-home #cat-energy{display:none!important;}
+body.is-home .ticker{display:none!important;}
+#home-landing{display:none;}
+body.is-home #home-landing{display:block;padding:44px 6vw 64px;}
+.hl-wrap{max-width:1120px;margin:0 auto;}
+.hl-head{text-align:center;margin-bottom:36px;}
+.hl-eyebrow{font-size:11px;letter-spacing:.42em;color:#caa24e;font-weight:700;text-transform:uppercase;}
+.hl-title{font-family:'Noto Serif KR',serif;font-size:clamp(28px,4vw,46px);font-weight:700;color:#fff;margin-top:14px;letter-spacing:-.01em;}
+.hl-sub{color:var(--muted);margin-top:13px;font-size:15px;}
+.hl-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-bottom:32px;}
+.hl-card{position:relative;overflow:hidden;display:block;text-decoration:none;padding:32px 28px;border-radius:20px;
+  background:rgba(18,22,31,.85);border:1px solid rgba(255,255,255,.08);transition:.26s cubic-bezier(.2,.7,.3,1);}
+.hl-card::after{content:'';position:absolute;inset:0;background:radial-gradient(125% 130% at 82% 0%,var(--g),transparent 60%);opacity:.6;pointer-events:none;}
+.hl-min{--g:rgba(233,195,73,.28);}.hl-food{--g:rgba(90,209,176,.24);}.hl-energy{--g:rgba(245,158,11,.24);}
+.hl-ic{font-size:42px;line-height:1;position:relative;}
+.hl-nm{font-size:23px;font-weight:800;color:#fff;margin-top:16px;position:relative;}
+.hl-dc{font-size:13px;color:var(--muted);margin-top:7px;position:relative;}
+.hl-go{margin-top:20px;font-size:13px;font-weight:700;color:#f4e3ad;position:relative;}
+.hl-card:hover{transform:translateY(-6px);border-color:rgba(233,195,73,.5);box-shadow:0 22px 50px rgba(0,0,0,.5);}
+.hl-stats{display:flex;justify-content:center;gap:46px;flex-wrap:wrap;padding:24px;border-top:1px solid rgba(255,255,255,.07);}
+.hl-stat{text-align:center;}
+.hl-stat span{display:block;font-size:11px;color:var(--muted2);letter-spacing:.1em;margin-bottom:7px;}
+.hl-stat b{font-size:23px;font-weight:800;color:#f4e3ad;font-family:var(--mono);}
+
+/* 착륙 연출 (다이브 → 도착) */
+/* 시네마틱 막 타이틀 카드 (다이브 진입 연출) */
+#arrival{position:fixed;inset:0;z-index:9999;pointer-events:none;background:#05050a;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;
+  opacity:1;transition:opacity 1.1s ease;}
+#arrival.gone{opacity:0;}
+#arrival .a-eyebrow{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:clamp(15px,2vw,22px);
+  letter-spacing:.36em;color:#8a7330;text-transform:uppercase;opacity:0;transform:translateY(14px);transition:opacity .9s .15s,transform .9s .15s;}
+#arrival .a-line{width:0;height:1px;background:linear-gradient(90deg,transparent,#caa24e,transparent);margin:24px 0;transition:width 1.1s .35s;}
+#arrival .a-title{font-family:'Noto Serif KR',serif;font-weight:700;font-size:clamp(40px,7.5vw,94px);line-height:1.05;
+  opacity:0;transform:translateY(20px);transition:opacity 1s .3s,transform 1s .3s;}
+#arrival .a-title .gold{background:linear-gradient(118deg,#f6e7b4,#caa24e 58%,#9c7a2f);-webkit-background-clip:text;background-clip:text;color:transparent;}
+#arrival .a-name{margin-top:20px;font-size:12px;letter-spacing:.42em;color:#7d7666;text-transform:uppercase;opacity:0;transition:opacity .9s .5s;}
+#arrival.show .a-eyebrow,#arrival.show .a-title,#arrival.show .a-name{opacity:1;transform:none;}
+#arrival.show .a-line{width:200px;}
+@keyframes landIn{from{opacity:0;transform:translateY(26px) scale(.992)}to{opacity:1;transform:none}}
+body.landed #cat-minerals,body.landed #cat-food,body.landed #cat-energy{animation:landIn .75s cubic-bezier(.2,.7,.3,1) both;}
+
+
+/* 카드에 입체감 (깊이·하이라이트·글로우·틸트 대비) */
+.main{perspective:1600px;}
+.stat-card,.basket-card,.risk-card,.fuel-card{position:relative;overflow:hidden;border-radius:16px!important;
+  transform-style:preserve-3d;will-change:transform;transition:transform .18s cubic-bezier(.2,.7,.3,1),box-shadow .22s,border-color .22s;}
+.stat-card::after,.basket-card::after,.risk-card::after{content:'';position:absolute;inset:0;border-radius:inherit;pointer-events:none;
+  background:linear-gradient(155deg,rgba(255,255,255,.12),transparent 42%);}
+.stat-card:hover,.basket-card:hover,.risk-card:hover,.fuel-card:hover{
+  box-shadow:0 28px 64px rgba(0,0,0,.6), 0 0 38px color-mix(in srgb, var(--catglow,#e9c349) 55%, transparent)!important;
+  border-color:var(--catglow,#e9c349)!important;}
+.sc-val{text-shadow:0 2px 18px rgba(0,0,0,.5);}
+
+/* ====== 풀스크린 시네마틱 씬 (핵심광물 플래그십) ====== */
+body.scenes{padding-left:0!important;}
+body.scenes .nav{display:none!important;}
+body.scenes #cat-minerals{display:block!important;overflow-y:auto;scroll-snap-type:y proximity;scroll-behavior:smooth;scrollbar-width:none;}
+body.scenes #cat-minerals::-webkit-scrollbar{display:none;}
+body.scenes #cat-minerals .tab-panel{display:flex!important;flex-direction:column;justify-content:flex-start;align-items:stretch;
+  scroll-snap-align:start;padding:5vh 5vw 7vh 96px;box-sizing:border-box;animation:sceneIn .7s cubic-bezier(.2,.7,.3,1) both;}
+body.scenes #cat-minerals .main{overflow:visible!important;height:auto!important;flex:none!important;padding:0!important;}
+body.scenes #cat-minerals .sidebar{height:auto!important;max-width:280px;}
+@keyframes sceneIn{from{opacity:0;transform:translateY(40px)}to{opacity:1;transform:none}}
+.scene-head{margin-bottom:24px;}
+.scene-hero{font-size:13px;letter-spacing:.38em;text-transform:uppercase;color:var(--catglow,#e9c349);font-weight:700;margin-bottom:10px;}
+.scene-title{font-size:clamp(28px,5vw,58px);font-weight:800;letter-spacing:-.03em;line-height:1.05;
+  background:linear-gradient(120deg,#fff,#c9d4e6);-webkit-background-clip:text;background-clip:text;color:transparent;}
+#scene-rail{position:fixed;left:22px;top:50%;transform:translateY(-50%);z-index:350;display:none;flex-direction:column;gap:14px;}
+body.scenes #scene-rail{display:flex;}
+#scene-rail button{all:unset;cursor:pointer;width:11px;height:11px;border-radius:50%;background:rgba(255,255,255,.22);transition:.25s;position:relative;}
+#scene-rail button.on{background:var(--catglow,#e9c349);box-shadow:0 0 14px var(--catglow,#e9c349);transform:scale(1.4);}
+#scene-rail button span{position:absolute;left:22px;top:50%;transform:translateY(-50%);white-space:nowrap;font-size:12px;color:#cfd8e6;opacity:0;pointer-events:none;transition:.2s;background:rgba(10,14,22,.9);padding:4px 11px;border-radius:7px;border:1px solid rgba(255,255,255,.1);}
+#scene-rail button:hover span{opacity:1;}
+
+/* ============================================================
+   ★ 대시보드 가독성·밀도 폴리시 (히어로 지표 + 벤토 + 정돈)
+   ============================================================ */
+.stat-row{gap:14px!important;margin-bottom:18px!important}
+.stat-card{padding:18px 22px!important;border-radius:16px!important;position:relative;overflow:hidden;min-height:98px;
+  display:flex!important;flex-direction:column;justify-content:center;
+  background:linear-gradient(162deg,rgba(28,33,45,.95),rgba(15,19,27,.96))!important;border:1px solid rgba(255,255,255,.07)!important}
+.stat-card:first-child{flex:1.7}
+.stat-card::after{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--catglow,#e9c349);opacity:.55}
+.stat-card.red::after{background:#ff7a7a}
+.stat-card .sc-label{font-size:10px!important;letter-spacing:.18em;text-transform:uppercase;color:var(--muted2)!important;margin-bottom:9px;font-family:var(--mono)}
+.stat-card .sc-val{font-size:clamp(19px,2.1vw,28px)!important;font-weight:800!important;font-family:var(--mono);letter-spacing:-.02em;line-height:1.1;white-space:nowrap;text-shadow:none!important}
+.stat-card:first-child .sc-val{font-size:clamp(20px,2.7vw,36px)!important;
+  color:#f4e3ad!important;-webkit-text-fill-color:#f4e3ad!important;background:none!important;text-shadow:0 0 22px rgba(233,195,73,.22)!important}
+.stat-card .sc-sub{font-size:11px!important;color:var(--muted2)!important;margin-top:8px}
+.stat-card:hover{border-color:var(--catglow,#e9c349)!important;box-shadow:0 16px 42px rgba(0,0,0,.5)}
+/* 헤더·차트 정돈 */
+.page-title{color:var(--accent)!important;font-size:13px!important}
+.chart-title,.sec-head{letter-spacing:.03em}
+.charts-row{height:248px!important;gap:14px!important}
+.chart-box{border-radius:14px!important;padding:16px!important}
+/* 좌측 데이터 사이드바 가독성 */
+.sb-section{margin-bottom:18px}
+.sb-title{color:var(--accent)!important;opacity:.85}
+.sb-stat{padding:6px 0!important}
+.sb-stat:hover{background:rgba(233,195,73,.04)}
+
+/* ====== 관제실형 대시보드 격자 (수급현황) ====== */
+#tab-supply{flex-direction:column!important;overflow:hidden!important;}
+.dash{display:flex;flex-direction:column;gap:14px;height:100%;padding:16px;box-sizing:border-box;overflow:hidden}
+.dash-kpis{flex-shrink:0;margin-bottom:0!important}
+.dash-cols{flex:1;min-height:0;display:grid;grid-template-columns:0.95fr 1.45fr 1.05fr;gap:14px}
+.dash-col{min-height:0;display:flex;flex-direction:column;gap:14px}
+.wpanel{background:rgba(17,21,30,.94);border:1px solid rgba(255,255,255,.07);border-radius:16px;
+  display:flex;flex-direction:column;min-height:0;overflow:hidden;box-shadow:0 10px 30px rgba(0,0,0,.4)}
+.wpanel.grow{flex:1}
+.wp-head{flex-shrink:0;display:flex;align-items:center;gap:8px;font-size:11.5px;font-weight:800;letter-spacing:.04em;
+  color:var(--accent);padding:13px 16px;border-bottom:1px solid rgba(255,255,255,.06)}
+.wp-sub{font-size:9px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--muted2);
+  background:rgba(255,255,255,.05);padding:2px 7px;border-radius:6px;margin-left:auto}
+.wp-body{flex:1;min-height:0;overflow-y:auto;padding:8px 16px 12px}
+.wp-chart{flex:1;min-height:130px;position:relative;padding:12px 14px}
+.wp-table{width:100%;border-collapse:collapse;font-size:12px}
+.wp-table td{padding:7px 4px;border-bottom:1px solid rgba(255,255,255,.05)}
+/* 순위 리스트 */
+.rk-item{display:flex;align-items:center;gap:12px;padding:9px 0;border-bottom:1px solid rgba(255,255,255,.05)}
+.rk-item:last-child{border-bottom:0}
+.rk-no{font-family:var(--mono);font-size:13px;font-weight:700;color:var(--muted2);width:22px;text-align:center}
+.rk-mid{flex:1;min-width:0}
+.rk-nm{font-size:13px;font-weight:600;color:var(--text);margin-bottom:6px}
+.rk-bar{height:5px;background:rgba(255,255,255,.06);border-radius:3px;overflow:hidden}
+.rk-fill{height:100%;background:linear-gradient(90deg,#caa24e,#f4e3ad);border-radius:3px}
+.rk-vl{font-family:var(--mono);font-size:13px;font-weight:700;color:var(--accent);white-space:nowrap}
+.rk-vl small{font-size:9px;color:var(--muted2);margin-left:2px;font-weight:500}
+.pr-item{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.05);font-size:12.5px}
+.pr-item:last-child{border-bottom:0}
+.pr-nm{color:var(--muted)}.pr-co{color:var(--text);font-weight:600}
+@media(max-width:1100px){.dash-cols{grid-template-columns:1fr 1fr}.dash-col:last-child{grid-column:1/-1}}
 """
     CAT_JS = r"""
 function switchCategory(cat, el){
+  if(document.body.classList.contains('is-home')){ location.href='/dashboard?cat='+cat; return; }  // 메인에선 카테고리 화면으로 이동
   ['minerals','food','energy'].forEach(function(c){
     var blk=document.getElementById('cat-'+c); if(blk) blk.style.display=(c===cat)?'flex':'none';
     var sn=document.getElementById('subnav-'+c); if(sn) sn.style.display=(c===cat)?'block':'none';
@@ -1296,7 +1687,82 @@ function switchCategory(cat, el){
     var mp=document.querySelector('#tab-map.active'); if(mp) initMap();
   }
   if(cat==='energy') drawOilPrice();
+  document.body.dataset.cat = cat;   // 배경/글로우 색을 카테고리에 맞춤
+  if(window._applyScenes) window._applyScenes(cat);   // 핵심광물=시네마틱 씬 모드
 }
+// 메가메뉴 → 카테고리 전환 + 해당 섹션 선택
+function goSec(cat, sec){
+  if(document.body.classList.contains('is-home')){ location.href='/dashboard?cat='+cat+'&sec='+sec; return; }  // 메인 → 카테고리 화면
+  var btn=document.querySelector('.cat-btn[data-cat="'+cat+'"]');
+  if(document.body.dataset.cat!==cat) switchCategory(cat, btn);
+  if(cat==='minerals') switchTab(sec, document.querySelector('.nav a[data-tab="'+sec+'"]'));
+  else if(cat==='food') switchFoodTab(sec, document.querySelector('#subnav-food .food-subnav[data-tab="food-'+sec+'"]'));
+  else if(cat==='energy') switchOilTab(sec, document.querySelector('#subnav-energy .oil-subnav[data-tab="oil-'+sec+'"]'));
+  // 클릭으로 화면이 바뀌면 펼친 메가패널 닫기 (바 영역을 벗어나면 다시 열림)
+  var cb=document.querySelector('.cat-bar');
+  if(cb){ cb.classList.add('mega-closed');
+    cb.addEventListener('mouseleave', function(){ cb.classList.remove('mega-closed'); }, {once:true}); }
+}
+// ── 히어로 슬라이드 배너 + 통합검색 ──
+var _heroI=0, _heroN=4, _heroT=null;
+function heroSet(i){ _heroI=(i+_heroN)%_heroN;
+  var t=document.getElementById('heroTrack'); if(t) t.style.transform='translateX(-'+(_heroI*25)+'%)';
+  document.querySelectorAll('#heroDots button').forEach(function(d,k){ d.classList.toggle('on',k===_heroI); }); }
+function heroGo(d){ heroSet(_heroI+d); heroRestart(); }
+function heroRestart(){ clearInterval(_heroT); _heroT=setInterval(function(){ heroSet(_heroI+1); },5500); }
+function heroSearch(){
+  var q=(document.getElementById('heroQ')||{}).value||''; q=q.trim();
+  if(!q) return;
+  location.href='/search?q='+encodeURIComponent(q);
+}
+(function initHero(){ var dd=document.getElementById('heroDots'); if(!dd) return;
+  for(var k=0;k<_heroN;k++){ var b=document.createElement('button'); if(k===0) b.className='on';
+    (function(idx){ b.onclick=function(){ heroSet(idx); heroRestart(); }; })(k); dd.appendChild(b); }
+  heroRestart();
+})();
+// 허브에서 다이브해 들어온 경우 → 카테고리 진입 + 시네마틱 "막 타이틀 카드"
+var CAT_ACTS={
+  minerals:['제 1 막 · Act I','땅속의 <span class="gold">권력</span>','핵심광물 · Core Minerals'],
+  food:    ['제 2 막 · Act II','식탁의 <span class="gold">경제</span>','식품 · Food'],
+  energy:  ['제 3 막 · Act III','흐르는 <span class="gold">에너지</span>','에너지 · Energy']
+};
+(function(){
+  try{
+    var ar=document.getElementById('arrival');
+    // 메인(홈)에선 카테고리 진입·막 카드 없음
+    if(document.body.classList.contains('is-home')){ if(ar) ar.style.display='none'; return; }
+    var qp=new URLSearchParams(location.search);
+    var p=qp.get('cat'), sec=qp.get('sec'), min=qp.get('min');
+    var cat=(p && ['minerals','food','energy'].indexOf(p)>=0)?p:'minerals';
+    document.body.dataset.cat = cat;
+    var b=document.querySelector('.cat-btn[data-cat="'+cat+'"]'); if(b) switchCategory(cat,b);
+    // 메인 검색/메가메뉴에서 넘어온 딥링크
+    if(min){ switchTab('map', document.querySelector('.nav a[data-tab="map"]')); if(window.selectMineral) selectMineral(min, null); }
+    else if(sec){
+      if(cat==='minerals') switchTab(sec, document.querySelector('.nav a[data-tab="'+sec+'"]'));
+      else if(cat==='food') switchFoodTab(sec, document.querySelector('#subnav-food .food-subnav[data-tab="food-'+sec+'"]'));
+      else if(cat==='energy') switchOilTab(sec, document.querySelector('#subnav-energy .oil-subnav[data-tab="oil-'+sec+'"]'));
+    }
+    if(ar){ ar.style.display='none'; }   // 막 타이틀 카드 제거 — 바로 대시보드
+    document.body.classList.add('landed');
+  }catch(e){ var ar=document.getElementById('arrival'); if(ar) ar.style.display='none'; }
+})();
+// 통계 숫자 카운트업 (막 카드가 걷힌 뒤 시작 → 대시보드 드러나며 촤르륵)
+function countUp(){
+  document.querySelectorAll('.stat-card .sc-val').forEach(function(el){
+    if(el._cu) return;
+    var txt=(el.textContent||'').trim();
+    var m=txt.match(/^([^\d\-]*)([\d,]+(?:\.\d+)?)(.*)$/);
+    if(!m){ el._cu=1; return; }
+    var num=parseFloat(m[2].replace(/,/g,'')); if(!isFinite(num)||num<=0){ el._cu=1; return; }
+    el._cu=1; var pre=m[1], suf=m[3], dur=1000, t0=performance.now();
+    function step(now){ var k=Math.min((now-t0)/dur,1), e=1-Math.pow(1-k,3);
+      el.textContent=pre+Math.round(num*e).toLocaleString()+suf;
+      if(k<1) requestAnimationFrame(step); else el.textContent=pre+num.toLocaleString()+suf; }
+    requestAnimationFrame(step);
+  });
+}
+setTimeout(countUp, 2350);
 var _oilPriceDrawn=false,_oilSupplyDrawn=false,_oilPriceChart=null,_oilSupplyChart=null;
 function switchOilTab(name, el){
   ['price','supply','gas','world','news'].forEach(function(n){var p=document.getElementById('ep-'+n);if(p)p.classList.toggle('active',n===name);});
@@ -1305,6 +1771,27 @@ function switchOilTab(name, el){
   if(name==='supply') drawOilSupply();
   if(name==='gas') drawGasChart();
   if(name==='news' && typeof ENERGYNEWS!=='undefined') renderFeed(ENERGYNEWS,'enewsHero','enewsGrid',null);
+  if(name==='import') drawImportCharts();
+}
+var _impDrawn=false,_eimpChart=null,_rdevChart=null;
+function drawImportCharts(){
+  if(_impDrawn) return; _impDrawn=true;
+  if(typeof EIMP!=='undefined' && EIMP.top_countries){
+    var pal=['#f59e0b','#e9c349','#5fd0ff','#5ad1b0','#f472b6','#b388ff','#a3e635','#ff7a7a'];
+    var tc=EIMP.top_countries;
+    _eimpChart=new Chart(document.getElementById('eimpChart'),{type:'doughnut',
+      data:{labels:tc.map(function(c){return c.name;}),datasets:[{data:tc.map(function(c){return c.vol;}),backgroundColor:pal,borderColor:'#15171b',borderWidth:2}]},
+      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'right',labels:{color:'#aaa',font:{size:11},boxWidth:12}}}}});
+  }
+  if(typeof RDEV!=='undefined' && RDEV.series){
+    var pal2=['#f59e0b','#888','#5fd0ff','#e9c349','#5ad1b0','#f472b6'];
+    var keys=Object.keys(RDEV.series);
+    var ds=keys.map(function(k,i){return {label:k,data:RDEV.series[k],borderColor:pal2[i%pal2.length],backgroundColor:'transparent',borderWidth:2,tension:.2,pointRadius:0};});
+    _rdevChart=new Chart(document.getElementById('rdevChart'),{type:'line',data:{labels:RDEV.years,datasets:ds},
+      options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},
+        plugins:{legend:{labels:{color:'#aaa',font:{size:10},boxWidth:10}}},
+        scales:{x:{ticks:{color:'#777'},grid:{color:'#2a2c2f'}},y:{ticks:{color:'#888'},grid:{color:'#2a2c2f'}}}}});
+  }
 }
 var _gasDrawn=false,_gasChart=null;
 function drawGasChart(){
@@ -1403,6 +1890,20 @@ function drawRiskChart(){
       scales:{x:{ticks:{color:'#777',maxTicksLimit:12},grid:{color:'#2a2c2f'}},
         y:{min:0,max:100,ticks:{color:'#888'},grid:{color:'#2a2c2f'}}}}});
 }
+var _mindexChart=null;
+function drawMineralIndex(){
+  if(_mindexChart || typeof MIDX==='undefined' || !MIDX.series) return;
+  var conf=[['종합','#e9c349'],['에너지광물','#f59e0b'],['희소금속','#5fd0ff'],['메이저금속','#b388ff']];
+  var base=MIDX.series['종합']||{}; var labels=base.months||[];
+  var ds=conf.filter(function(c){return MIDX.series[c[0]];}).map(function(c){
+    return {label:c[0],data:MIDX.series[c[0]].values,borderColor:c[1],backgroundColor:'transparent',borderWidth:2,tension:.25,pointRadius:0};
+  });
+  _mindexChart=new Chart(document.getElementById('mindexChart'),{type:'line',data:{labels:labels,datasets:ds},
+    options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},
+      plugins:{legend:{labels:{color:'#aaa',font:{size:11},boxWidth:12}}},
+      scales:{x:{ticks:{color:'#777',maxTicksLimit:12},grid:{color:'#2a2c2f'}},
+        y:{ticks:{color:'#888'},grid:{color:'#2a2c2f'}}}}});
+}
 
 var _foodIdxDrawn=false, _trendChart=null, _lifeChart=null, _cpiChart=null;
 function switchFoodTab(name, el){
@@ -1448,6 +1949,45 @@ function drawCpi(C, i){
       scales:{x:{ticks:{color:'#888'},grid:{color:'#2a2c2f'}},y:{ticks:{color:'#888'},grid:{color:'#2a2c2f'}}}}});
 }
 """
+
+    # 움직이는 3D 배경 + 카드 틸트 (인트로와 같은 입체감) — 별도 raw string으로 주입
+    # 카드 3D 틸트 + 풀스크린 씬 (가벼운 DOM 전용 — WebGL 배경 제거됨)
+    BACKDROP = r"""
+<script>
+function bindTilt(){
+  document.querySelectorAll('.stat-card,.basket-card,.risk-card,.fuel-card').forEach(function(card){
+    if(card._tilt) return; card._tilt=1;
+    card.addEventListener('animationend',function(){ card.style.animation='none'; });
+    card.addEventListener('pointermove',function(e){
+      var r=card.getBoundingClientRect(); var x=(e.clientX-r.left)/r.width-.5, y=(e.clientY-r.top)/r.height-.5;
+      card.style.transform='perspective(760px) rotateY('+(x*9).toFixed(2)+'deg) rotateX('+(-y*9).toFixed(2)+'deg) translateZ(20px)';
+    });
+    card.addEventListener('pointerleave',function(){ card.style.transform=''; });
+  });
+}
+bindTilt(); setTimeout(bindTilt,1200);
+
+var SCENE_TITLES={
+  'tab-supply':['\ud575\uc2ec\uad11\ubb3c \uc218\uc785\u00b7\uc0dd\uc0b0\uc744 \ud55c\ub208\uc5d0','\uc218\uae09 \ud604\ud669'],
+  'tab-mindex':['\uad11\ud574\uad11\uc5c5\uacf5\ub2e8 \ud30c\uc0dd\uc9c0\uc218 \ucd94\uc774','\uac00\uaca9\uc9c0\uc218'],
+  'tab-map':['\uc138\uacc4 \uc790\uc6d0 \ubd84\ud3ec\uc640 \uc218\uc785 \ub8e8\ud2b8','\uae00\ub85c\ubc8c \ub9e4\uc7a5\ub7c9'],
+  'tab-risk':['\uc218\uae09\uc548\uc815\ud654\uc9c0\uc218 \uc9c4\ub2e8','\ub9ac\uc2a4\ud06c \uc2e0\ud638\ub4f1'],
+  'tab-news':['\ub300\uc0c1\ubcc4 \uc790\uc6d0\u00b7\uc6d0\uc790\uc7ac \ub274\uc2a4','\ub274\uc2a4 \ud53c\ub4dc'],
+  'tab-subscribe':['\ub9e4\uc77c \ubc1b\uc544\ubcf4\ub294 \ub3d9\ud5a5 \ub9ac\ud3ec\ud2b8','\ub9ac\ud3ec\ud2b8 \uad6c\ub3c5'],
+  'tab-komir':['\uad11\uc885\ubcc4 \uad6d\uac00\ubcc4 \uc218\ucd9c\uc785','KOMIR'],
+  'tab-usgs':['\uae00\ub85c\ubc8c \ub9e4\uc7a5 \ud1b5\uacc4 2025','USGS'],
+};
+var SCENE_DRAW={
+  'tab-mindex':function(){ if(window.drawMineralIndex) window.drawMineralIndex(); },
+  'tab-risk':function(){ if(window.drawRiskChart) window.drawRiskChart(); },
+  'tab-map':function(){ if(!window._mapInited&&window.initMap) window.initMap(); },
+};
+// 풀스크린 씬 비활성 — 대시보드는 밀도 높은 정돈 레이아웃(공백 방지·가독성 우선)
+window._applyScenes=function(c){ document.body.classList.remove('scenes'); };
+window._applyScenes('minerals');
+</script>
+"""
+
     return f"""<!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -1455,6 +1995,7 @@ function drawCpi(C, i){
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>핵심광물 위기 현황 — MINERAL CRISIS DESK</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Noto+Sans+KR:wght@400;500;700;900&family=IBM+Plex+Mono:wght@400;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Noto+Serif+KR:wght@300;500;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -1654,14 +2195,55 @@ tr:hover td{{background:var(--bg3);}}
 </style>
 <style>{DASH_OVERRIDE}</style>
 </head>
-<body>
+<body class="{body_cls}">
+<div id="cosmos"></div>
+<div id="arrival">
+  <div class="a-eyebrow" id="a-eyebrow"></div>
+  <div class="a-title" id="a-title"></div>
+  <div class="a-line"></div>
+  <div class="a-name" id="a-name"></div>
+</div>
 
 <!-- 상단 카테고리 전환 -->
 <div class="cat-bar">
-  <span class="cb-label">자원 모니터</span>
-  <button class="cat-btn active" data-cat="minerals" onclick="switchCategory('minerals',this)">핵심광물</button>
-  <button class="cat-btn" data-cat="food" onclick="switchCategory('food',this)">식품</button>
-  <button class="cat-btn" data-cat="energy" onclick="switchCategory('energy',this)">에너지원료</button>
+  <a href="/" class="brand-lock" title="허브 홈"><img src="/static/logo.png" alt="K-RESOURCE" class="brand-logo"></a>
+  <div class="cat-menu">
+    <button class="cat-btn active" data-cat="minerals" onclick="switchCategory('minerals',this)">핵심광물</button>
+    <div class="megapanel"><div class="mp-grid">
+      <a class="mp-tile" onclick="goSec('minerals','supply')"><b>수급 현황</b><span>수입·생산 한눈에</span></a>
+      <a class="mp-tile" onclick="goSec('minerals','mindex')"><b>가격지수</b><span>광해광업공단 파생지수</span></a>
+      <a class="mp-tile" onclick="goSec('minerals','map')"><b>글로벌 매장량</b><span>세계 분포·수입루트</span></a>
+      <a class="mp-tile" onclick="goSec('minerals','risk')"><b>리스크 신호등</b><span>수급안정화지수</span></a>
+      <a class="mp-tile" onclick="goSec('minerals','news')"><b>뉴스 피드</b><span>대상별 자원 뉴스</span></a>
+      <a class="mp-tile" onclick="goSec('minerals','subscribe')"><b>리포트 구독</b><span>매일 받는 동향</span></a>
+      <a class="mp-tile" onclick="goSec('minerals','komir')"><b>KOMIR</b><span>광종별 수출입</span></a>
+      <a class="mp-tile" onclick="goSec('minerals','usgs')"><b>USGS 2025</b><span>글로벌 매장 통계</span></a>
+    </div></div>
+  </div>
+  <div class="cat-menu">
+    <button class="cat-btn" data-cat="food" onclick="switchCategory('food',this)">식품</button>
+    <div class="megapanel"><div class="mp-grid">
+      <a class="mp-tile" onclick="goSec('food','price')"><b>품목 가격</b><span>농수산 도소매가</span></a>
+      <a class="mp-tile" onclick="goSec('food','trend')"><b>부류별 동향</b><span>급등·급락</span></a>
+      <a class="mp-tile" onclick="goSec('food','index')"><b>물가지수</b><span>CPI·생활물가</span></a>
+      <a class="mp-tile" onclick="goSec('food','news')"><b>식품 뉴스</b><span>장바구니 물가</span></a>
+    </div></div>
+  </div>
+  <div class="cat-menu">
+    <button class="cat-btn" data-cat="energy" onclick="switchCategory('energy',this)">에너지원료</button>
+    <div class="megapanel"><div class="mp-grid">
+      <a class="mp-tile" onclick="goSec('energy','price')"><b>유가 · 가격</b><span>WTI·두바이·주유소</span></a>
+      <a class="mp-tile" onclick="goSec('energy','supply')"><b>석유 수급</b><span>생산·소비·수출</span></a>
+      <a class="mp-tile" onclick="goSec('energy','gas')"><b>가스 · LPG</b><span>LNG·도시가스</span></a>
+      <a class="mp-tile" onclick="goSec('energy','world')"><b>세계 석유</b><span>주요국 생산·매장</span></a>
+      <a class="mp-tile" onclick="goSec('energy','import')"><b>수입 · 자주개발</b><span>국가별·자주개발률</span></a>
+      <a class="mp-tile" onclick="goSec('energy','news')"><b>에너지 뉴스</b><span>유가·에너지 동향</span></a>
+    </div></div>
+  </div>
+  <div class="cb-right">
+    <a href="/conference" class="cb-link">⚖️ AI 회의실</a>
+    <a href="/" class="to-space" title="허브 홈으로">🏠 허브 홈</a>
+  </div>
 </div>
 
 <!-- TICKER (핵심광물 전용) -->
@@ -1687,6 +2269,7 @@ tr:hover td{{background:var(--bg3);}}
   <span class="nav-brand"><span class="sys-dot"></span>K-RESOURCE MONITOR</span>
   <div id="subnav-minerals">
     <a href="#" class="active" data-tab="supply"    onclick="switchTab('supply',this);return false;">수급 현황</a>
+    <a href="#" data-tab="mindex"    onclick="switchTab('mindex',this);return false;">📈 가격지수</a>
     <a href="#" data-tab="map"       onclick="switchTab('map',this);return false;">글로벌 매장량</a>
     <a href="#" data-tab="risk"      onclick="switchTab('risk',this);return false;">🚦 리스크 신호등</a>
     <a href="#" data-tab="news"      onclick="switchTab('news',this);return false;">뉴스 피드</a>
@@ -1705,6 +2288,7 @@ tr:hover td{{background:var(--bg3);}}
     <a href="#" data-tab="oil-supply" class="oil-subnav" onclick="switchOilTab('supply',this);return false;">석유 수급</a>
     <a href="#" data-tab="oil-gas"    class="oil-subnav" onclick="switchOilTab('gas',this);return false;">가스 · LPG</a>
     <a href="#" data-tab="oil-world"  class="oil-subnav" onclick="switchOilTab('world',this);return false;">세계 석유</a>
+    <a href="#" data-tab="oil-import" class="oil-subnav" onclick="switchOilTab('import',this);return false;">🌍 수입·자주개발</a>
     <a href="#" data-tab="oil-news"   class="oil-subnav" onclick="switchOilTab('news',this);return false;">에너지 뉴스</a>
   </div>
   <div class="nav-right">
@@ -1713,6 +2297,59 @@ tr:hover td{{background:var(--bg3);}}
   </div>
 </nav>
 
+<!-- ===== 히어로 배너 (슬라이드쇼 + 통합검색) ===== -->
+<div class="hero" id="hero">
+  <div class="hero-clip">
+    <div class="hero-track" id="heroTrack">
+      <a class="hero-slide hs-min" onclick="goSec('minerals','supply')">
+        <div class="hs-in"><div class="hs-eyebrow">Critical Minerals</div>
+          <div class="hs-title">핵심광물 공급망을 <b>실시간으로</b></div>
+          <div class="hs-sub">리튬·희토류·니켈 — 수입 의존 95%의 흐름을 한눈에</div></div></a>
+      <a class="hero-slide hs-food" onclick="goSec('food','price')">
+        <div class="hs-in"><div class="hs-eyebrow">Food &amp; Prices</div>
+          <div class="hs-title">장바구니 물가, <b>가장 정직한 지표</b></div>
+          <div class="hs-sub">쌀에서 커피까지 — 오늘의 농수산 도소매 가격</div></div></a>
+      <a class="hero-slide hs-energy" onclick="goSec('energy','price')">
+        <div class="hs-in"><div class="hs-eyebrow">Energy</div>
+          <div class="hs-title">유가 한 방울이 <b>모든 가격을 다시 쓴다</b></div>
+          <div class="hs-sub">원유·가스·전기료까지 — 에너지 흐름 추적</div></div></a>
+      <a class="hero-slide hs-ai" href="/conference">
+        <div class="hs-in"><div class="hs-eyebrow">AI Insight</div>
+          <div class="hs-title">전문가 AI가 <b>자원을 토론한다</b></div>
+          <div class="hs-sub">대상 맞춤 다중 전문가 회의 — AI 회의실 →</div></div></a>
+    </div>
+  </div>
+  <button class="hero-nav prev" onclick="heroGo(-1)">‹</button>
+  <button class="hero-nav next" onclick="heroGo(1)">›</button>
+  <div class="hero-dots" id="heroDots"></div>
+  <div class="hero-search">
+    <span class="hsr-cat">통합 검색</span>
+    <input id="heroQ" placeholder="광물·품목·키워드를 검색하세요" onkeydown="if(event.key==='Enter')heroSearch()">
+    <button class="hsr-btn" onclick="heroSearch()" title="검색">🔍</button>
+  </div>
+</div>
+
+<!-- ===== 메인(홈) 랜딩 — 카테고리 바로가기 + 오늘의 지표 ===== -->
+<div id="home-landing">
+  <div class="hl-wrap">
+    <div class="hl-head">
+      <div class="hl-eyebrow">Resource Intelligence</div>
+      <h2 class="hl-title">무엇을 살펴볼까요?</h2>
+      <p class="hl-sub">핵심광물 · 식품 · 에너지 — 카테고리를 선택해 대시보드로 들어가세요.</p>
+    </div>
+    <div class="hl-cards">
+      <a class="hl-card hl-min" href="/dashboard?cat=minerals"><div class="hl-ic">🔩</div><div class="hl-nm">핵심광물</div><div class="hl-dc">리튬·희토류 공급망과 글로벌 매장량</div><div class="hl-go">대시보드 →</div></a>
+      <a class="hl-card hl-food" href="/dashboard?cat=food"><div class="hl-ic">🥬</div><div class="hl-nm">식품</div><div class="hl-dc">장바구니 물가와 농수산 도소매가</div><div class="hl-go">대시보드 →</div></a>
+      <a class="hl-card hl-energy" href="/dashboard?cat=energy"><div class="hl-ic">🛢️</div><div class="hl-nm">에너지</div><div class="hl-dc">유가·가스·전기료 흐름 추적</div><div class="hl-go">대시보드 →</div></a>
+    </div>
+    <div class="hl-stats">
+      <div class="hl-stat"><span>오늘 휘발유</span><b>{oil_gas_s}원</b></div>
+      <div class="hl-stat"><span>총 광물 수입액</span><b>${total:,.0f}</b></div>
+      <div class="hl-stat"><span>수집 뉴스</span><b>{len(news)}건</b></div>
+    </div>
+  </div>
+</div>
+
 <!-- ===== 핵심광물 카테고리 (기존 탭 6개) ===== -->
 <div id="cat-minerals">
 
@@ -1720,66 +2357,33 @@ tr:hover td{{background:var(--bg3);}}
      TAB: 수급 현황
      ============================ -->
 <div id="tab-supply" class="tab-panel active">
-  <!-- 사이드바 -->
-  <aside class="sidebar">
-    <div class="sb-section">
-      <div class="sb-title">USGS 2025 매장량</div>
-      {''.join(f'<div class="sb-stat"><span class="sb-stat-name">{mn}</span><span class="sb-stat-val amber">{info["매장량_만톤"]:,}만t</span></div>' for mn,info in USGS_DATA.items())}
-    </div>
-    <div class="sb-section">
-      <div class="sb-title">1위 생산국</div>
-      {''.join(f'<div class="sb-stat"><span class="sb-stat-name">{mn}</span><span class="sb-stat-val" style="font-size:11px;color:#888">{info["1위국"]}</span></div>' for mn,info in USGS_DATA.items())}
-    </div>
-    <div class="sb-section">
-      <div class="sb-title">구독자</div>
-      <div class="sb-stat"><span class="sb-stat-name">등록</span><span class="sb-stat-val">{len(subs)}명</span></div>
-    </div>
-  </aside>
-
-  <!-- 메인 -->
-  <div class="main">
-    <!-- 상단 통계 카드 -->
-    <div class="stat-row">
-      <div class="stat-card red">
-        <div class="sc-label">총 수입액</div>
-        <div class="sc-val red">${total:,.0f}</div>
-        <div class="sc-sub">KOMIR 기준</div>
-      </div>
-      <div class="stat-card">
-        <div class="sc-label">최대 수입 광물</div>
-        <div class="sc-val">{top_min}</div>
-        <div class="sc-sub">수입액 1위</div>
-      </div>
-      <div class="stat-card">
-        <div class="sc-label">최대 수입국</div>
-        <div class="sc-val">{top_cntry}</div>
-        <div class="sc-sub">국가별 1위</div>
-      </div>
-      <div class="stat-card">
-        <div class="sc-label">뉴스</div>
-        <div class="sc-val">{len(news)}</div>
-        <div class="sc-sub">수집된 기사</div>
-      </div>
+  <div class="dash">
+    <!-- KPI 행 -->
+    <div class="stat-row dash-kpis">
+      <div class="stat-card red"><div class="sc-label">총 수입액</div><div class="sc-val red">${total:,.0f}</div><div class="sc-sub">KOMIR 기준</div></div>
+      <div class="stat-card"><div class="sc-label">최대 수입 광물</div><div class="sc-val">{top_min}</div><div class="sc-sub">수입액 1위</div></div>
+      <div class="stat-card"><div class="sc-label">최대 수입국</div><div class="sc-val">{top_cntry}</div><div class="sc-sub">국가별 1위</div></div>
+      <div class="stat-card"><div class="sc-label">공급 리스크 경보</div><div class="sc-val">{len(_risk_high)}<small style="font-size:14px;font-weight:600">건</small></div><div class="sc-sub">수급 불안 광종</div></div>
+      <div class="stat-card"><div class="sc-label">뉴스</div><div class="sc-val">{len(news)}</div><div class="sc-sub">수집된 기사</div></div>
     </div>
 
-    <!-- 차트 -->
-    <div class="charts-row">
-      <div class="chart-box">
-        <div class="chart-title">광물별 수입액 (상위 7)</div>
-        <div style="flex:1;position:relative;min-height:0;"><canvas id="chartMin"></canvas></div>
+    <!-- 3열 격자 -->
+    <div class="dash-cols">
+      <!-- 좌: 순위·생산국 -->
+      <div class="dash-col">
+        <div class="wpanel grow"><div class="wp-head">⛏ 글로벌 매장량 순위 <span class="wp-sub">USGS 2025</span></div><div class="wp-body">{usgs_rank_html}</div></div>
+        <div class="wpanel"><div class="wp-head">🏳 주요 생산국 (1위)</div><div class="wp-body">{prod_html}</div></div>
       </div>
-      <div class="chart-box">
-        <div class="chart-title">국가별 수입액 (상위 7)</div>
-        <div style="flex:1;position:relative;min-height:0;"><canvas id="chartCnt"></canvas></div>
+      <!-- 중: 차트 -->
+      <div class="dash-col">
+        <div class="wpanel grow"><div class="wp-head">📊 광물별 수입액 <span class="wp-sub">상위 7</span></div><div class="wp-chart"><canvas id="chartMin"></canvas></div></div>
+        <div class="wpanel grow"><div class="wp-head">🌍 국가별 수입액 <span class="wp-sub">상위 7</span></div><div class="wp-chart"><canvas id="chartCnt"></canvas></div></div>
       </div>
-    </div>
-
-    <!-- 광물별 수입 테이블 -->
-    <div class="section">
-      <div class="sec-head">광물별 수입 현황</div>
-      <table>
-        <tbody>{trade_rows}</tbody>
-      </table>
+      <!-- 우: 데이터 표 -->
+      <div class="dash-col">
+        <div class="wpanel grow"><div class="wp-head">📋 광물별 수입 현황 <span class="wp-sub">KOMIR</span></div>
+          <div class="wp-body"><table class="wp-table"><tbody>{trade_rows}</tbody></table></div></div>
+      </div>
     </div>
   </div>
 </div>
@@ -1839,6 +2443,17 @@ tr:hover td{{background:var(--bg3);}}
 <!-- ============================
      TAB: 뉴스 피드
      ============================ -->
+<div id="tab-mindex" class="tab-panel">
+  <div class="page-title">📈 광물 가격지수 <span style="color:var(--muted2);font-weight:400;font-size:12px">· 한국광해광업공단 파생지수 · 2016년1월=1000 기준 · 2012~2025 월별</span></div>
+  <div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:12px 16px;margin-bottom:14px;font-size:13px;color:var(--muted);">💡 4개 지수로 광물 시장을 한눈에 — <b>희소금속</b>엔 리튬·희토류·코발트, <b>에너지광물</b>엔 연료탄·우라늄이 들어갑니다. 지수가 오르면 해당 광물군 가격 상승.</div>
+  <div class="risk-grid">{midx_cards}</div>
+  <div class="section" style="padding:14px 16px;margin-top:14px;">
+    <div class="chart-title">광물군별 가격지수 추이 (월별)</div>
+    <div style="height:320px;position:relative;"><canvas id="mindexChart"></canvas></div>
+  </div>
+  <div style="text-align:center;margin-top:16px;"><a href="/conference" class="nav-conf">⚖️ AI 전문가 회의실에서 광물 시장 토론하기 →</a></div>
+</div>
+
 <div id="tab-risk" class="tab-panel">
   <div class="page-title">🚦 자원 리스크 신호등 — 수급안정화지수 <span style="color:var(--muted2);font-weight:400;font-size:12px">· 한국광해광업공단 · 지수 높을수록 수급 안정</span></div>
   <div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:12px 16px;margin-bottom:14px;font-size:13px;color:var(--muted);">💡 {risk_summary} <span style="color:var(--muted2)">— 네이버엔 없는 공급 리스크 진단. 자세한 영향은 AI 회의실에서.</span></div>
@@ -2005,12 +2620,12 @@ tr:hover td{{background:var(--bg3);}}
       <div class="fuel-card">
         <div class="fl-label">보통휘발유</div>
         <div class="fl-price">{oil_gas_s}<span>원/L</span></div>
-        <div class="fl-sub">전월 <b style="color:{oil_gas_mom_c}">{oil_gas_mom_t}</b> · 전년 <b style="color:{oil_gas_yoy_c}">{oil_gas_yoy_t}</b></div>
+        <div class="fl-sub">{oil_gas_dod_lead}전월 <b style="color:{oil_gas_mom_c}">{oil_gas_mom_t}</b> · 전년 <b style="color:{oil_gas_yoy_c}">{oil_gas_yoy_t}</b></div>
       </div>
       <div class="fuel-card">
         <div class="fl-label">자동차경유</div>
         <div class="fl-price">{oil_diesel_s}<span>원/L</span></div>
-        <div class="fl-sub">전월 <b style="color:{oil_diesel_mom_c}">{oil_diesel_mom_t}</b></div>
+        <div class="fl-sub">{oil_diesel_dod_lead}전월 <b style="color:{oil_diesel_mom_c}">{oil_diesel_mom_t}</b></div>
       </div>
       <div class="fuel-card">
         <div class="fl-label">원유 수입가</div>
@@ -2079,10 +2694,28 @@ tr:hover td{{background:var(--bg3);}}
     </div>
   </div>
 
+  <!-- 수입·자주개발 -->
+  <div class="food-panel" id="ep-import">
+    <div class="page-title">🌍 석유제품 수입국 & 자원 자주개발률 <span style="color:var(--muted2);font-weight:400;font-size:12px">· 한국석유공사 · 산업통상부</span></div>
+    <div class="sec-head" style="border:0;padding:4px 0 8px;color:#f59e0b">국가별 석유제품 수입 — {eimp_year}년 상위</div>
+    <div class="stat-row" style="flex-wrap:wrap">{eimp_rows}</div>
+    <div class="charts-row" style="height:auto;align-items:flex-start;margin-top:8px;">
+      <div class="section" style="flex:1;padding:14px 16px;">
+        <div class="chart-title">수입국 비중 ({eimp_year})</div>
+        <div style="height:280px;position:relative;"><canvas id="eimpChart"></canvas></div>
+      </div>
+      <div class="section" style="flex:1;padding:14px 16px;">
+        <div class="chart-title">자원 자주개발률 추이 (%)</div>
+        <div style="height:280px;position:relative;"><canvas id="rdevChart"></canvas></div>
+      </div>
+    </div>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:12px 16px;margin-top:6px;font-size:13px;color:var(--muted);">💡 <b>자주개발률</b> = 우리 기업이 직접 개발·확보한 자원 비율. 높을수록 해외 의존·공급망 충격에 덜 흔들립니다.</div>
+  </div>
+
 </div>
 
 
-<script>var FOOD_TREND = {food_trend_js}; var FOOD_IDX = {food_idx_js}; var OIL = {oil_js}; var RISK = {risk_js}; var NEWS = {news_js}; var FOODNEWS = {food_news_js}; var ENERGYNEWS = {energy_news_js};</script>
+<script>var FOOD_TREND = {food_trend_js}; var FOOD_IDX = {food_idx_js}; var OIL = {oil_js}; var RISK = {risk_js}; var MIDX = {midx_js}; var EIMP = {eimp_js}; var RDEV = {rdev_js}; var NEWS = {news_js}; var FOODNEWS = {food_news_js}; var ENERGYNEWS = {energy_news_js};</script>
 <script>{CAT_JS}</script>
 
 <script>
@@ -2094,12 +2727,13 @@ function switchTab(name, el) {{
   if (el) el.classList.add('active');
   if (name === 'map' && !window._mapInited) initMap();
   if (name === 'risk' && typeof drawRiskChart === 'function') drawRiskChart();
+  if (name === 'mindex' && typeof drawMineralIndex === 'function') drawMineralIndex();
 }}
 
 // 다른 페이지(회의실 등)에서 #map / #news 등으로 들어오면 해당 탭으로 이동
 (function(){{
   var h = (location.hash || '').replace('#','');
-  var valid = ['supply','map','news','subscribe','komir','usgs'];
+  var valid = ['supply','mindex','map','news','subscribe','komir','usgs'];
   if (valid.indexOf(h) >= 0) {{
     switchTab(h, document.querySelector('.nav a[data-tab="' + h + '"]'));
   }}
@@ -2363,7 +2997,7 @@ let _mapMode = 'reserves';
 let _routeLayers = [];
 
 function setMode(mode, btn) {{
-  _mapMode = mode;
+  _mapMode = mode; window._mapMode = mode;
   document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
   if (mode === 'reserves') {{
@@ -2500,6 +3134,12 @@ const CHOKEPOINTS = [
   {{ key:'CAPE_HORN',name:'케이프혼',      pos:WP.CAPE_HORN, color:'#ffcc44', risk:'low',
      reason:'칠레산 리튬·구리의 아시아행 경로. 강풍·너울로 운항 위험. 파나마 막힐 경우 대안 경로' }},
 ];
+
+// 3D 지구(globe.gl) 스크립트에서 공유하도록 window에 노출 (const/let은 기본적으로 window 미등록)
+window.WORLD_RESERVES = WORLD_RESERVES;
+window.CHOKEPOINTS = CHOKEPOINTS;
+window._currentMineral = _currentMineral;
+window._mapMode = _mapMode;
 
 let _chokeLayers = [];
 function renderChokepoints() {{
@@ -2944,7 +3584,7 @@ function updateRoutePanel(routes, mineral, isTon) {{
 }}
 
 function selectMineral(mineral, btn) {{
-  _currentMineral = mineral;
+  _currentMineral = mineral; window._currentMineral = mineral;
   document.querySelectorAll('.mineral-btn').forEach(b => b.classList.remove('active'));
   if (btn) btn.classList.add('active');
   if (_mapMode === 'routes') {{
@@ -2956,6 +3596,7 @@ function selectMineral(mineral, btn) {{
 }}
 
 </script>
+{BACKDROP}
 </body>
 </html>"""
 
@@ -2964,7 +3605,13 @@ function selectMineral(mineral, btn) {{
 #  ③ 라우트
 # ═══════════════════════════════════════════════════════════════
 @app.route("/")
-def index(): return Response(render_dashboard(), mimetype="text/html")
+def index(): return Response(render_dashboard(home=True), mimetype="text/html")   # 메인 = 슬라이드+검색
+
+@app.route("/dashboard")
+def dashboard(): return Response(render_dashboard(home=False), mimetype="text/html")  # 카테고리 화면 (검색 없음)
+
+@app.route("/search")
+def search(): return Response(render_search(request.args.get("q", "")), mimetype="text/html")
 
 @app.route("/api/geojson")
 def api_geojson():
@@ -3223,6 +3870,10 @@ def cron_daily():
         ok, _ = send_mail(e, subj, build_newsletter(e)); sent += ok; failed += (not ok)
     return jsonify(ok=True, sent=sent, failed=failed, total=len(subs))
 
+@app.route("/intro")
+def intro():
+    return Response(render_showcase(), mimetype="text/html")
+
 @app.route("/conference")
 def conference():
     if not _conf_authed():
@@ -3259,13 +3910,15 @@ def conference_chat():
         "investor": ("일반 투자자", "이 분석의 청중은 '일반 개인투자자'입니다. 해당 자원의 수급 리스크가 "
             "어떤 산업 섹터·테마(예: 2차전지, 방산, 정유·화학, 반도체, 식품주)에 호재/악재로 작용하는지 "
             "투자 관점에서 짚어주세요. 단, 특정 종목 추천이나 매수·매도 조언은 절대 하지 말고, "
-            "'정보·교육 차원의 섹터 영향'으로만 설명하세요."),
+            "'정보·교육 차원의 섹터 영향'으로만 설명하세요. (회의 종합 시 목표 산출물: 투자 포인트 3 + 리스크 체크리스트)"),
         "business": ("기업 조달·구매 담당", "청중은 '기업의 구매·조달 담당자'입니다. 대체 조달처 확보, 재고·비축 수준, "
-            "장기계약·가격 헤지, 공급 차질 시 생산 영향 등 '실무 대응 전략' 중심으로 구체적으로 조언하세요."),
+            "장기계약·가격 헤지, 공급 차질 시 생산 영향 등 '실무 대응 전략' 중심으로 구체적으로 조언하세요. "
+            "(회의 종합 시 목표 산출물: 리스크 히트맵 + 액션 아이템)"),
         "consumer": ("일반 소비자", "청중은 '일반 소비자'입니다. 전문용어는 풀어 쓰고, 이 이슈가 장바구니 물가·"
-            "주유비·전기료 등 '생활에 미치는 영향'과 체감되는 숫자 중심으로 쉽고 친근하게 설명하세요."),
+            "주유비·전기료 등 '생활에 미치는 영향'과 체감되는 숫자 중심으로 쉽고 친근하게 설명하세요. "
+            "(회의 종합 시 목표 산출물: 3줄 요약 + 생활 Q&A)"),
         "policy": ("정책·연구자", "청중은 '정책 입안자·연구자'입니다. 국가 차원의 비축·국산화·외교·제도·전략 관점에서 "
-            "근거와 사례를 들어 심도 있게 논하세요."),
+            "근거와 사례를 들어 심도 있게 논하세요. (회의 종합 시 목표 산출물: 정책 권고안 + 우선순위 매트릭스)"),
     }
     aud_name, aud_ctx = AUDIENCE_CTX.get(audience, AUDIENCE_CTX["consumer"])
 
@@ -3322,11 +3975,12 @@ def conference_chat():
                     "\"앞서 말씀드린 데 더해—\" 같은 식으로 자연스럽게 이어, 한 단계 더 들어가세요."
                 )
 
-        sys_prompt = expert["system"] + (
+        sys_prompt = SHARED_A2A_PREAMBLE + "\n\n[당신의 역할]\n" + expert["system"] + (
             f"\n\n[대상 맞춤] {aud_ctx}"
             "\n\n[회의 형식] 이것은 여러 전문가와 진행자가 함께하는 실시간 회의입니다. "
             "아래 회의록을 읽고, 다른 전문가나 진행자의 발언을 직접 인용하며 동의하거나 반박한 뒤 "
-            "자신의 핵심 의견을 200자 내외로 말하세요. 이미 나온 말을 반복하지 말고 논의를 진전시키세요. "
+            "자신의 핵심 의견을 200자 내외로 말하세요. 위 공통 규칙을 따르되, 특히 수치·사실 끝에는 "
+            "[데이터셋명] 출처칩을 붙이세요. 이미 나온 말을 반복하지 말고 논의를 진전시키세요. "
             "발언 앞에 자신의 이름이나 '[이름]' 같은 라벨을 붙이지 말고, 바로 본문부터 말하세요."
         ) + repeat_guard
         convo = transcript_text(history) or f"회의 주제: {topic}"
@@ -3364,8 +4018,307 @@ def conference_chat():
 
 
 # ═══════════════════════════════════════════════════════════════
+def render_search(q):
+    import html as _html
+    qq = (q or "").strip()
+    qe = _html.escape(qq)
+    news = fetch_search_news(qq) if qq else []
+
+    # ── 보유 데이터에서 검색어 관련 정보 싹 끌어오기 (통합검색) ──
+    def _card(title, rows, lt, lu):
+        rs = "".join(f'<div class="drow"><span>{_html.escape(str(k))}</span><b>{_html.escape(str(v))}</b></div>' for k, v in rows)
+        return f'<div class="dcard"><div class="dct">{_html.escape(title)}</div>{rs}<a class="dlink" href="{lu}">{_html.escape(lt)} →</a></div>'
+    data_blocks = []
+    if qq:
+        mineral = next((m for m in USGS_DATA if m in qq), None)
+        if mineral:
+            u = USGS_DATA[mineral]
+            data_blocks.append(_card(f"📊 매장량 · {mineral}", [
+                ("USGS 매장량", f"{u['매장량_만톤']:,} 만t"), ("연 생산량", f"{u['생산량_만톤']:,} 만t"),
+                ("1위 생산국", u['1위국']), ("출처", u.get('출처', 'USGS 2025'))],
+                "글로벌 매장량 보기", f"/dashboard?cat=minerals&min={mineral}"))
+            rk = next((r for r in load_risk_data() if r.get('name') == mineral), None)
+            if rk:
+                lv = rk['latest']; sig = '🟢 안정' if lv >= 55 else ('🟡 주의' if lv >= 30 else '🔴 위험')
+                data_blocks.append(_card(f"🚦 공급 리스크 · {mineral}", [
+                    ("수급안정화지수", f"{lv:.1f} / 100"), ("신호", sig),
+                    ("전월 대비", f"{lv - rk.get('prev', lv):+.1f}")],
+                    "리스크 신호등", "/dashboard?cat=minerals&sec=risk"))
+            cust = [r for r in fetch_customs() if mineral in str(r.get('광물명', ''))]
+            if cust:
+                cust.sort(key=lambda r: r.get('수입금액(달러)', 0) or 0, reverse=True)
+                tot = sum((r.get('수입금액(달러)', 0) or 0) for r in cust)
+                rows = [("총 수입액", f"${tot:,.0f}")] + [(r.get('국가명', '—'), f"${(r.get('수입금액(달러)', 0) or 0):,.0f}") for r in cust[:3]]
+                data_blocks.append(_card(f"💰 수입 현황 · {mineral}", rows, "KOMIR 수출입", "/dashboard?cat=minerals&sec=komir"))
+        if re.search(r"유가|휘발유|경유|기름|석유|원유|가스|에너지", qq):
+            op = fetch_opinet()
+            if op and (op.get('휘발유') or op.get('경유')):
+                data_blocks.append(_card("⛽ 오늘의 유가 (실시간)", [
+                    ("휘발유", f"{op.get('휘발유', 0):,.0f} 원/L"), ("경유", f"{op.get('경유', 0):,.0f} 원/L")],
+                    "에너지 대시보드", "/dashboard?cat=energy&sec=price"))
+        try:
+            fmatch = [it for it in (fetch_food_prices() or []) if qq in str(it.get('품목', '')) or qq in str(it.get('품종', ''))]
+        except Exception:
+            fmatch = []
+        if fmatch:
+            rows = [(f"{it.get('품목','')}·{it.get('품종','')} ({it.get('구분','')})", f"{(it.get('현재가',0) or 0):,.0f}원/{it.get('단위','')}") for it in fmatch[:5]]
+            data_blocks.append(_card("🥬 식품 시세", rows, "식품 대시보드", "/dashboard?cat=food&sec=price"))
+    data_html = "".join(data_blocks) or '<div class="empty" style="padding:24px">보유 데이터에 직접 매칭되는 항목이 없어요 — 아래 뉴스를 확인하세요.</div>'
+
+    sc = []
+    for m in ["리튬", "코발트", "니켈", "흑연", "희토류", "망간"]:
+        if m in qq: sc.append((f"🔩 {m} · 글로벌 매장량", f"/dashboard?cat=minerals&min={m}"))
+    if re.search(r"유가|기름|휘발유|경유|가스|석유|에너지|원유|전기", qq): sc.append(("🛢️ 에너지 · 유가·가격", "/dashboard?cat=energy&sec=price"))
+    if re.search(r"물가|장바구니|식품|농산|수산|채소|과일|쌀|곡물|축산|커피", qq): sc.append(("🥬 식품 · 품목 가격", "/dashboard?cat=food&sec=price"))
+    if not sc:
+        sc = [("🔩 핵심광물", "/dashboard?cat=minerals"), ("🥬 식품", "/dashboard?cat=food"), ("🛢️ 에너지", "/dashboard?cat=energy")]
+    sc_html = "".join(f'<a class="sc" href="{u}">{_html.escape(t)}</a>' for t, u in sc)
+    news_html = "".join(
+        f'<a class="rcard" href="{_html.escape(n["링크"])}" target="_blank" rel="noopener">'
+        f'<div class="rt">{_html.escape(n["제목"])}</div><div class="rs">{_html.escape(n["요약"])}</div>'
+        f'<div class="rd">{_html.escape(n["발행일"])}</div></a>' for n in news)
+    if not news_html:
+        news_html = '<div class="empty">' + ('검색 결과가 없습니다. 다른 키워드로 시도해보세요.' if qq else '검색어를 입력하세요.') + '</div>'
+    PAGE = r"""<!DOCTYPE html><html lang="ko"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>__Q__ 검색 — K-RESOURCE</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=Noto+Sans+KR:wght@400;500;700;900&family=Noto+Serif+KR:wght@500;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:radial-gradient(circle at 50% -8%,#11111c,#0a0a12 55%,#06060b) fixed;color:#e8e4da;font-family:'Inter','Noto Sans KR',sans-serif;min-height:100vh}
+.top{display:flex;align-items:center;gap:18px;padding:16px 6vw;border-bottom:1px solid rgba(233,195,73,.14);position:sticky;top:0;background:rgba(8,8,14,.92);backdrop-filter:blur(10px);z-index:10}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none;flex-shrink:0}
+.bmark{width:32px;height:32px;border-radius:9px;background:linear-gradient(135deg,#f6e7b4,#caa24e);color:#1a1400;display:flex;align-items:center;justify-content:center;font-weight:900}
+.bname{font-weight:900;letter-spacing:.05em;color:#f6e7b4;font-size:15px}
+form.sbar{flex:1;max-width:640px;display:flex;align-items:center;gap:10px;background:#fff;border-radius:13px;padding:8px 10px 8px 18px}
+form.sbar input{flex:1;border:0;outline:0;font-size:14px;color:#222}
+form.sbar button{width:38px;height:38px;border:0;border-radius:10px;background:linear-gradient(135deg,#f4e3ad,#e9c349);color:#1a1400;font-size:15px;cursor:pointer}
+.home{margin-left:auto;color:var(--m,#b9b3a6);text-decoration:none;font-size:13px;font-weight:700;border:1px solid rgba(255,255,255,.15);padding:7px 14px;border-radius:20px;white-space:nowrap}
+.home:hover{color:#fff;border-color:#e9c349}
+.wrap{max-width:1100px;margin:0 auto;padding:34px 6vw 70px}
+.qh{font-family:'Noto Serif KR',serif;font-size:clamp(22px,3vw,32px);font-weight:700;margin-bottom:6px}
+.qh b{color:#f4e3ad}
+.qsub{color:#9a9488;font-size:13px;margin-bottom:26px}
+.sclabel{font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:#caa24e;font-weight:700;margin-bottom:12px}
+.scs{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:34px}
+.sc{text-decoration:none;color:#e8e4da;background:rgba(233,195,73,.08);border:1px solid rgba(233,195,73,.3);border-radius:24px;padding:9px 17px;font-size:13px;font-weight:600;transition:.18s}
+.sc:hover{background:rgba(233,195,73,.2);color:#fff;transform:translateY(-2px)}
+.rgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}
+.rcard{display:block;text-decoration:none;background:rgba(18,22,31,.85);border:1px solid rgba(255,255,255,.08);border-radius:15px;padding:18px 20px;transition:.2s}
+.rcard:hover{border-color:rgba(233,195,73,.5);transform:translateY(-3px);box-shadow:0 14px 32px rgba(0,0,0,.45)}
+.rt{font-size:15px;font-weight:700;color:#f0ece2;line-height:1.45;margin-bottom:8px}
+.rs{font-size:13px;color:#9a9488;line-height:1.6;margin-bottom:10px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.rd{font-size:11px;color:#6f6a5e;font-family:monospace}
+.empty{padding:60px;text-align:center;color:#7a7468;grid-column:1/-1}
+.dgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px;margin-bottom:38px}
+.dcard{background:rgba(20,24,33,.9);border:1px solid rgba(233,195,73,.18);border-radius:16px;padding:18px 20px;display:flex;flex-direction:column}
+.dct{font-size:14px;font-weight:800;color:#f4e3ad;margin-bottom:12px}
+.drow{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.05);font-size:13px}
+.drow span{color:#9a9488}.drow b{color:#ece9e0;font-family:monospace;font-weight:700}
+.dlink{margin-top:13px;font-size:12px;font-weight:700;color:#caa24e;text-decoration:none}
+.dlink:hover{color:#f6e7b4}
+</style></head><body>
+<div class="top">
+  <a class="brand" href="/"><img src="/static/logo.png" alt="K-RESOURCE" style="height:28px;display:block"></a>
+  <form class="sbar" action="/search" method="get">
+    <input name="q" value="__Q__" placeholder="광물·품목·키워드를 검색하세요" autofocus>
+    <button type="submit">🔍</button>
+  </form>
+  <a class="home" href="/">🏠 메인</a>
+</div>
+<div class="wrap">
+  <div class="qh"><b>__Q__</b> 검색 결과</div>
+  <div class="qsub">뉴스 __N__건 · 네이버 뉴스 기준</div>
+  <div class="sclabel">관련 바로가기</div>
+  <div class="scs">__SHORTCUTS__</div>
+  <div class="sclabel">보유 데이터</div>
+  <div class="dgrid">__DATA__</div>
+  <div class="sclabel">뉴스</div>
+  <div class="rgrid">__RESULTS__</div>
+</div>
+</body></html>"""
+    return (PAGE.replace("__Q__", qe).replace("__N__", str(len(news)))
+                .replace("__SHORTCUTS__", sc_html).replace("__DATA__", data_html).replace("__RESULTS__", news_html))
+
+
 #  ④ AI 전문가 회의실 페이지
 # ═══════════════════════════════════════════════════════════════
+def render_showcase():
+    return r"""<!DOCTYPE html>
+<html lang="ko"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>K-RESOURCE — 자원, 3막</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,400&family=Noto+Serif+KR:wght@300;500;700&family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:#05050a;color:#e8e4da;font-family:'Inter','Noto Sans KR',sans-serif;overflow-x:hidden}
+#cine{position:fixed;inset:0;z-index:0;display:block}
+.grain{position:fixed;inset:0;z-index:1;pointer-events:none;opacity:.05;
+  background-image:radial-gradient(rgba(255,255,255,.6) .5px,transparent .5px);background-size:3px 3px;mix-blend-mode:overlay}
+.wrap{position:relative;z-index:2}
+#ghost{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:1;pointer-events:none;
+  font-family:'Cormorant Garamond',serif;font-weight:600;white-space:nowrap;letter-spacing:.04em;
+  font-size:26vw;line-height:1;color:transparent;-webkit-text-stroke:1px rgba(201,162,78,.10);
+  opacity:0;transition:opacity .7s ease}
+.brand{position:fixed;top:26px;left:34px;z-index:5;font-family:'Cormorant Garamond',serif;font-size:18px;letter-spacing:.42em;color:#caa24e;text-transform:uppercase}
+.prog{position:fixed;top:0;left:0;height:2px;width:0;z-index:6;background:linear-gradient(90deg,#caa24e,#f4e3ad)}
+.act{min-height:100vh;display:flex;flex-direction:column;justify-content:center;padding:0 9vw}
+.eyebrow{font-size:11px;letter-spacing:.5em;text-transform:uppercase;color:#b99a4e;font-weight:600;margin-bottom:28px}
+.title{font-family:'Noto Serif KR',serif;font-weight:700;font-size:clamp(40px,8.4vw,108px);line-height:1.03;letter-spacing:-.01em}
+.gold{background:linear-gradient(118deg,#f6e7b4,#caa24e 58%,#9c7a2f);-webkit-background-clip:text;background-clip:text;color:transparent}
+.copy{margin-top:28px;max-width:540px;font-size:clamp(15px,1.5vw,19px);line-height:1.95;color:#a9a292;font-weight:300}
+.actno{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:clamp(17px,2.1vw,24px);letter-spacing:.36em;color:#8a7330;text-transform:uppercase;margin-bottom:20px}
+.reveal{opacity:0;transform:translateY(36px);transition:opacity 1.2s cubic-bezier(.2,.7,.2,1),transform 1.2s cubic-bezier(.2,.7,.2,1)}
+.in .reveal{opacity:1;transform:none}
+.in .reveal.d1{transition-delay:.12s}.in .reveal.d2{transition-delay:.26s}.in .reveal.d3{transition-delay:.4s}
+.hint{position:fixed;bottom:30px;left:0;right:0;text-align:center;z-index:5;color:#6a6253;font-size:10px;letter-spacing:.4em;animation:bob 2s ease-in-out infinite;transition:opacity .4s}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(7px)}}
+/* 입장(finale) */
+.enter-list{margin-top:42px;max-width:680px;width:100%}
+.ecat{display:flex;align-items:baseline;gap:20px;padding:24px 4px;border-top:1px solid rgba(201,162,78,.2);
+  cursor:pointer;text-decoration:none;color:inherit;transition:padding .35s cubic-bezier(.2,.7,.2,1)}
+.enter-list .ecat:last-child{border-bottom:1px solid rgba(201,162,78,.2)}
+.ecat .no{font-family:'Cormorant Garamond',serif;font-style:italic;color:#8a7330;font-size:20px;width:42px;flex-shrink:0}
+.ecat .nm{font-family:'Noto Serif KR',serif;font-size:clamp(23px,3vw,36px);font-weight:500;flex:1;transition:color .3s}
+.ecat .tg{font-size:12px;color:#7d7666;letter-spacing:.06em;flex-shrink:0}
+.ecat .ar{color:#caa24e;font-size:22px;transition:transform .3s;flex-shrink:0}
+.ecat:hover{padding-left:20px}.ecat:hover .nm{color:#f6e7b4}.ecat:hover .ar{transform:translateX(9px)}
+.ecat.soon{cursor:default;opacity:.4}.ecat.soon:hover{padding-left:4px}.ecat.soon:hover .nm{color:inherit}
+#veil{position:fixed;inset:0;background:#05050a;z-index:60;opacity:0;pointer-events:none;transition:opacity .6s ease}
+#veil.on{opacity:1}
+</style></head><body>
+<canvas id="cine"></canvas>
+<div id="ghost"></div>
+<div class="grain"></div>
+<div class="prog" id="prog"></div>
+<div class="brand">K · RESOURCE</div>
+<div class="hint" id="hint">SCROLL ↓</div>
+<div id="veil"></div>
+
+<div class="wrap">
+  <section class="act"><div class="eyebrow reveal">A STORY IN THREE ACTS</div>
+    <h1 class="title reveal d1">자원이 세상을<br><span class="gold">움직인다</span></h1>
+    <p class="copy reveal d2">보이지 않는 흐름이 당신의 투자와 식탁을 바꾼다.<br>땅속의 권력에서, 식탁의 경제, 흐르는 에너지까지.</p>
+  </section>
+
+  <section class="act"><div class="actno reveal">제 1 막 · Act I</div>
+    <h1 class="title reveal d1">땅속의 <span class="gold">권력</span></h1>
+    <p class="copy reveal d2">리튬·희토류·니켈 — 배터리와 반도체의 심장.<br>한 나라의 곳간이 세계의 공급망을 흔든다.</p>
+  </section>
+
+  <section class="act"><div class="actno reveal">제 2 막 · Act II</div>
+    <h1 class="title reveal d1">식탁의 <span class="gold">경제</span></h1>
+    <p class="copy reveal d2">쌀에서 커피까지. 장바구니 물가는<br>가장 정직한 경제 지표다.</p>
+  </section>
+
+  <section class="act"><div class="actno reveal">제 3 막 · Act III</div>
+    <h1 class="title reveal d1">흐르는 <span class="gold">에너지</span></h1>
+    <p class="copy reveal d2">원유와 가스는 멈추지 않는다.<br>유가 한 방울이 모든 가격을 다시 쓴다.</p>
+  </section>
+
+  <section class="act"><div class="eyebrow reveal">ENTER · 입장</div>
+    <h1 class="title reveal d1">이제, <span class="gold">당신의 차례</span></h1>
+    <div class="enter-list reveal d2">
+      <a class="ecat" href="/dashboard?cat=minerals"><span class="no">01</span><span class="nm">핵심광물</span><span class="tg">리튬·희토류</span><span class="ar">→</span></a>
+      <a class="ecat" href="/dashboard?cat=food"><span class="no">02</span><span class="nm">식품</span><span class="tg">장바구니 물가</span><span class="ar">→</span></a>
+      <a class="ecat" href="/dashboard?cat=energy"><span class="no">03</span><span class="nm">에너지</span><span class="tg">유가·가스</span><span class="ar">→</span></a>
+      <div class="ecat soon"><span class="no">04</span><span class="nm">곡물 · 비철금속 · 환율</span><span class="tg">준비 중</span><span class="ar">·</span></div>
+    </div>
+  </section>
+</div>
+
+<script type="importmap">{"imports":{"three":"https://unpkg.com/three@0.160.0/build/three.module.js","three/addons/":"https://unpkg.com/three@0.160.0/examples/jsm/"}}</script>
+<script type="module">
+import * as THREE from 'three';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+
+const canvas=document.getElementById('cine');
+const renderer=new THREE.WebGLRenderer({canvas,antialias:true,alpha:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio,1.6)); renderer.setSize(innerWidth,innerHeight);
+const scene=new THREE.Scene();
+const camera=new THREE.PerspectiveCamera(50,innerWidth/innerHeight,.1,100); camera.position.z=7;
+
+const earth=new THREE.Group(); scene.add(earth);
+const TX='https://threejs.org/examples/textures/planets/';
+const tl=new THREE.TextureLoader(); const R=2.1;
+const globe=new THREE.Mesh(new THREE.SphereGeometry(R,64,64), new THREE.MeshPhongMaterial({
+  map:tl.load(TX+'earth_atmos_2048.jpg'), specularMap:tl.load(TX+'earth_specular_2048.jpg'),
+  normalMap:tl.load(TX+'earth_normal_2048.jpg'), normalScale:new THREE.Vector2(.8,.8),
+  specular:new THREE.Color(0x3a2f16), shininess:9,
+  emissiveMap:tl.load(TX+'earth_lights_2048.png'), emissive:new THREE.Color(0xffcf66), emissiveIntensity:1.05 }));
+earth.add(globe);
+const clouds=new THREE.Mesh(new THREE.SphereGeometry(R*1.01,48,48),
+  new THREE.MeshPhongMaterial({map:tl.load(TX+'earth_clouds_1024.png'),transparent:true,opacity:.32,depthWrite:false}));
+earth.add(clouds);
+const atmo=new THREE.Mesh(new THREE.SphereGeometry(R*1.16,48,48), new THREE.ShaderMaterial({
+  vertexShader:'varying vec3 vN;void main(){vN=normalize(normalMatrix*normal);gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}',
+  fragmentShader:'varying vec3 vN;void main(){float i=pow(0.74-dot(vN,vec3(0.,0.,1.)),3.0);gl_FragColor=vec4(0.91,0.76,0.29,1.0)*clamp(i,0.,1.);}',
+  blending:THREE.AdditiveBlending, side:THREE.BackSide, transparent:true, depthWrite:false }));
+earth.add(atmo);
+
+scene.add(new THREE.AmbientLight(0x141414,.5));
+const key=new THREE.DirectionalLight(0xffe6b0,3.3); key.position.set(-4.5,1.6,3); scene.add(key);
+
+// 지구 뒤 골드 광휘(halo)
+function glowTex(){ const cv=document.createElement('canvas'); cv.width=cv.height=128; const x=cv.getContext('2d');
+  const g=x.createRadialGradient(64,64,0,64,64,64); g.addColorStop(0,'rgba(233,200,110,.9)'); g.addColorStop(.3,'rgba(201,162,78,.35)'); g.addColorStop(1,'rgba(201,162,78,0)');
+  x.fillStyle=g; x.fillRect(0,0,128,128); return new THREE.CanvasTexture(cv); }
+const halo=new THREE.Sprite(new THREE.SpriteMaterial({map:glowTex(),blending:THREE.AdditiveBlending,transparent:true,depthWrite:false,depthTest:false}));
+halo.scale.setScalar(8.5); halo.position.z=-2; earth.add(halo);
+
+// 떠오르는 골드 입자(embers)
+const EN=320, ep=new Float32Array(EN*3), ev=new Float32Array(EN);
+for(let i=0;i<EN;i++){ ep[i*3]=(Math.random()-.5)*16; ep[i*3+1]=(Math.random()-.5)*14; ep[i*3+2]=(Math.random()-.5)*6-1; ev[i]=.002+Math.random()*.006; }
+const eg=new THREE.BufferGeometry(); eg.setAttribute('position',new THREE.BufferAttribute(ep,3));
+const embers=new THREE.Points(eg,new THREE.PointsMaterial({color:0xe9c86e,size:.045,transparent:true,opacity:.7,blending:THREE.AdditiveBlending,depthWrite:false}));
+scene.add(embers);
+
+const composer=new EffectComposer(renderer);
+composer.addPass(new RenderPass(scene,camera));
+composer.addPass(new UnrealBloomPass(new THREE.Vector2(innerWidth,innerHeight),.72,.65,.5));
+
+let sp=0;
+const GWORDS=['RESOURCE','MINERAL','FOOD','ENERGY','ENTER']; let _gi=-1;
+const ghost=document.getElementById('ghost');
+function onScroll(){ const h=document.body.scrollHeight-innerHeight; sp=h>0?scrollY/h:0;
+  document.getElementById('prog').style.width=(sp*100)+'%';
+  document.getElementById('hint').style.opacity = sp>.03?0:1;
+  // 거대 키네틱 배경 단어 — 막마다 교체 + 패럴럭스 드리프트
+  const f=sp*(GWORDS.length-1), gi=Math.round(f);
+  if(gi!==_gi){ _gi=gi; ghost.style.opacity=0;
+    setTimeout(()=>{ ghost.textContent=GWORDS[gi]; ghost.style.opacity=1; },180); }
+  ghost.style.transform='translate(-50%,-50%) translateX('+((f-gi)*-22).toFixed(1)+'vw)'; }
+addEventListener('scroll',onScroll); onScroll();
+addEventListener('resize',()=>{ camera.aspect=innerWidth/innerHeight; camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth,innerHeight); composer.setSize(innerWidth,innerHeight); });
+
+const io=new IntersectionObserver(es=>es.forEach(e=>{ if(e.isIntersecting) e.target.classList.add('in'); }),{threshold:.32});
+document.querySelectorAll('.act').forEach(s=>io.observe(s));
+document.querySelectorAll('.ecat[href]').forEach(a=>a.addEventListener('click',e=>{
+  e.preventDefault(); const v=document.getElementById('veil'); v.classList.add('on');
+  setTimeout(()=>{ location.href=a.getAttribute('href'); },620);
+}));
+
+const clock=new THREE.Clock();
+function animate(){ requestAnimationFrame(animate); if(document.hidden) return;
+  const t=clock.getElapsedTime();
+  earth.rotation.y=t*.03; clouds.rotation.y=t*.012;
+  const e=sp*sp*(3-2*sp);
+  earth.position.x = e*2.7; earth.position.y = e*1.15; earth.scale.setScalar(1 - e*0.46);
+  // embers 상승 + 래핑
+  const pos=embers.geometry.attributes.position;
+  for(let i=0;i<EN;i++){ let y=pos.getY(i)+ev[i]; if(y>7){ y=-7; } pos.setY(i,y); }
+  pos.needsUpdate=true; embers.rotation.y=t*.01;
+  composer.render();
+}
+animate();
+</script>
+</body></html>"""
+
+
 def render_login(err=""):
     PAGE = r"""<!DOCTYPE html>
 <html class="dark" lang="ko">
@@ -3412,18 +4365,19 @@ def render_conference():
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,400&family=Noto+Serif+KR:wght@500;700&display=swap" rel="stylesheet">
 <script>
 tailwind.config = {
   darkMode: "class",
   theme: { extend: {
     colors: {
-      "surface-variant":"#353436","outline-variant":"#45464d","surface-container-low":"#1b1b1d",
-      "surface-container-lowest":"#0e0e10","on-surface":"#e4e2e4","surface-container-high":"#2a2a2b",
-      "background":"#131315","surface-container-highest":"#353436","primary":"#bec6e0",
-      "surface-container":"#1f1f21","on-secondary":"#3c2f00","outline":"#909097",
-      "primary-container":"#0f172a","on-primary-container":"#798098","on-surface-variant":"#c6c6cd",
-      "secondary":"#e9c349","on-secondary-fixed":"#241a00","surface":"#131315","error":"#ffb4ab",
-      "tertiary":"#b9c8de"
+      "surface-variant":"#23232c","outline-variant":"#3a3a46","surface-container-low":"#101018",
+      "surface-container-lowest":"#0a0a10","on-surface":"#ece9e0","surface-container-high":"#1c1c26",
+      "background":"#08080e","surface-container-highest":"#26262f","primary":"#d8c79a",
+      "surface-container":"#14141c","on-secondary":"#241a00","outline":"#8a8a95",
+      "primary-container":"#1e1808","on-primary-container":"#f4e3ad","on-surface-variant":"#c2bfb4",
+      "secondary":"#e9c349","on-secondary-fixed":"#241a00","surface":"#0c0c12","error":"#ffb4ab",
+      "tertiary":"#cabf9a"
     },
     fontFamily: { "data-tabular":["JetBrains Mono","monospace"], "sans":["Inter","Noto Sans KR","sans-serif"] },
     fontSize: {
@@ -3438,6 +4392,10 @@ tailwind.config = {
   body{background:#131315;color:#e4e2e4;font-family:'Inter','Noto Sans KR',sans-serif;}
   .material-symbols-outlined{font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24;}
   .glass-panel{background:rgba(30,41,59,.55);backdrop-filter:blur(12px);border:1px solid #334155;}
+  .src-chip{display:inline-flex;align-items:center;gap:3px;font-size:10.5px;font-weight:600;line-height:1;
+    color:#e9c349;background:rgba(233,195,73,.12);border:1px solid rgba(233,195,73,.35);
+    padding:2px 7px;border-radius:10px;margin:0 2px;white-space:nowrap;vertical-align:1px;}
+  .src-chip::before{content:'◆';font-size:7px;opacity:.7;}
   .custom-scrollbar::-webkit-scrollbar{width:6px;}
   .custom-scrollbar::-webkit-scrollbar-track{background:transparent;}
   .custom-scrollbar::-webkit-scrollbar-thumb{background:#45464d;border-radius:10px;}
@@ -3445,43 +4403,47 @@ tailwind.config = {
   .expert-card.selected .ec-check{opacity:1 !important;}
   .tc-suggested{box-shadow:0 0 0 1px #e9c349,0 0 10px rgba(233,195,73,.35);}
   .lobby-screen,#roomScreen{display:none;}
-  .aud-btn{padding:9px 16px;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;background:#1f1f21;border:1px solid #45464d;color:#c6c6cd;transition:.15s;}
-  .aud-btn:hover{border-color:#e9c349;color:#e4e2e4;}
-  .aud-btn.active{background:#e9c349;color:#241a00;border-color:#e9c349;}
+  .aud-btn{padding:9px 16px;border-radius:12px;font-size:13px;font-weight:700;cursor:pointer;background:rgba(255,255,255,.03);border:1px solid #3a3a46;color:#c2bfb4;transition:.18s;}
+  .aud-btn:hover{border-color:#e9c349;color:#ece9e0;}
+  .aud-btn.active{background:linear-gradient(120deg,#f4e3ad,#e9c349);color:#241a00;border-color:#e9c349;box-shadow:0 0 18px rgba(233,195,73,.3);}
+
+  /* ===== 시네마틱 블랙-골드 리스킨 ===== */
+  body{background:radial-gradient(circle at 50% -10%, #11111c 0%, #0a0a12 55%, #070709 100%) fixed !important;}
+  .glass-panel{background:rgba(18,18,26,.66)!important;backdrop-filter:blur(16px)!important;border:1px solid rgba(233,195,73,.14)!important;}
+  /* 시네마틱 헤드라인 — 세리프 */
+  .text-headline-lg{font-family:'Noto Serif KR','Cormorant Garamond',serif!important;letter-spacing:-.01em;}
+  .text-headline-md{font-family:'Cormorant Garamond','Noto Serif KR',serif!important;letter-spacing:.01em;}
+  /* 사이드바·헤더 */
+  aside.fixed{background:rgba(8,8,14,.92)!important;border-right:1px solid rgba(233,195,73,.1)!important;}
+  aside nav a{border-radius:12px!important;}
+  header{background:rgba(8,8,14,.75)!important;border-bottom:1px solid rgba(233,195,73,.1)!important;}
+  /* 전문가 카드 */
+  .expert-card{border-radius:16px!important;transition:transform .2s cubic-bezier(.2,.7,.3,1),border-color .2s,box-shadow .2s!important;}
+  .expert-card:hover{transform:translateY(-3px);border-color:rgba(233,195,73,.5)!important;box-shadow:0 14px 36px rgba(0,0,0,.5)!important;}
+  .expert-card.selected{border-color:#e9c349 !important;box-shadow:0 0 0 1px #e9c349,0 0 22px rgba(233,195,73,.25)!important;}
+  /* 채팅 버블 */
+  .msg-bubble{border-radius:16px!important;line-height:1.7!important;}
+  /* 스크롤바 골드 */
+  .custom-scrollbar::-webkit-scrollbar-thumb{background:rgba(233,195,73,.3)!important;}
+  /* 브랜드 로고 블록 */
+  aside .bg-secondary{background:linear-gradient(135deg,#f4e3ad,#e9c349)!important;box-shadow:0 0 16px rgba(233,195,73,.3);}
 </style>
 </head>
 <body class="flex min-h-screen bg-background">
 
-<!-- Sidebar -->
-<aside class="fixed left-0 top-0 h-screen w-64 bg-surface-container-low border-r border-outline-variant/20 flex flex-col p-4 z-50">
-  <div class="flex items-center gap-3 px-2 mb-8">
-    <div class="w-10 h-10 bg-secondary rounded-lg flex items-center justify-center text-primary-container font-black text-xl">K</div>
-    <div>
-      <h1 class="text-base font-black text-secondary uppercase tracking-wider leading-none">K-Mineral AI</h1>
-      <p class="text-on-surface-variant text-[10px] uppercase tracking-widest mt-1">Strategic Insight</p>
-    </div>
-  </div>
-  <nav class="flex-1 space-y-1 font-data-tabular">
-    <a href="/" class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-variant/50 rounded-lg transition"><span class="material-symbols-outlined">dashboard</span><span class="text-sm">Dashboard</span></a>
-    <a href="/#map" class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-variant/50 rounded-lg transition"><span class="material-symbols-outlined">public</span><span class="text-sm">Supply Chain Map</span></a>
-    <a href="/#news" class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-variant/50 rounded-lg transition"><span class="material-symbols-outlined">rss_feed</span><span class="text-sm">News Feed</span></a>
-    <a href="/conference" class="flex items-center gap-3 px-4 py-3 bg-primary-container text-on-primary-container rounded-lg font-bold"><span class="material-symbols-outlined">forum</span><span class="text-sm">AI Meeting Room</span></a>
-    <a href="/#komir" class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-variant/50 rounded-lg transition"><span class="material-symbols-outlined">database</span><span class="text-sm">Raw Data</span></a>
-  </nav>
-  <div class="mt-auto pt-4 border-t border-outline-variant/20 space-y-2 px-2">
-    <div class="flex items-center gap-2 text-on-surface-variant text-[11px]"><span class="material-symbols-outlined text-sm text-secondary" style="font-variation-settings:'FILL' 1">schedule</span>System Status: Live</div>
-    <div class="flex items-center gap-2 text-on-surface-variant text-[11px]"><span class="material-symbols-outlined text-sm text-secondary" style="font-variation-settings:'FILL' 1">check_circle</span>API: Stable</div>
-  </div>
-</aside>
-
-<!-- Main -->
-<main class="ml-64 flex-1 h-screen flex flex-col bg-background overflow-hidden">
+<!-- Main (사이드바 없음 — 회의에 집중) -->
+<main class="flex-1 h-screen flex flex-col bg-background overflow-hidden">
   <header class="h-16 shrink-0 flex items-center justify-between px-8 border-b border-outline-variant/30 bg-surface/70 backdrop-blur-xl">
-    <div class="flex items-center gap-3">
-      <span class="material-symbols-outlined text-secondary">forum</span>
-      <h2 class="text-headline-md text-secondary">AI 전문가 회의실</h2>
+    <a href="/" class="flex items-center gap-3 no-underline" title="허브 홈">
+      <img src="/static/logo.png" alt="K-RESOURCE" class="h-8">
+      <span class="text-on-surface-variant text-sm font-bold">· AI 전문가 회의실</span>
+    </a>
+    <div class="flex items-center gap-4">
+      <span id="confClock" class="font-data-tabular text-xs text-on-surface-variant">__NOW__ KST ● LIVE</span>
+      <a href="/" class="flex items-center gap-2 px-4 py-2 rounded-full border border-secondary/40 text-secondary text-sm font-bold hover:bg-secondary hover:text-on-secondary-fixed transition">
+        <span class="material-symbols-outlined text-base">logout</span> 회의실 나가기
+      </a>
     </div>
-    <span id="confClock" class="font-data-tabular text-xs text-on-surface-variant">__NOW__ KST ● LIVE</span>
   </header>
 
   <div class="flex-1 min-h-0 relative">
@@ -3717,7 +4679,14 @@ function speakExpert(key) {
               currentBubble.textContent += d.text;
               chatArea.scrollTop = chatArea.scrollHeight;
             } else if (d.speaker_end) {
-              if (currentBubble) chatHistory.push({role:'assistant', name:EXPERTS[d.speaker_end]?.name||d.speaker_end, content:currentBubble.textContent});
+              if (currentBubble) {
+                var _btxt = currentBubble.textContent;
+                chatHistory.push({role:'assistant', name:EXPERTS[d.speaker_end]?.name||d.speaker_end, content:_btxt});
+                // 출처칩 렌더: [데이터셋명] → 칩 (HTML 이스케이프 후 치환, XSS 안전)
+                var _esc = _btxt.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+                _esc = _esc.replace(/\[([^\[\]]{1,40})\]/g, '<span class="src-chip">$1</span>');
+                currentBubble.innerHTML = _esc;
+              }
               currentBubble = null;
             }
           } catch(e) {}

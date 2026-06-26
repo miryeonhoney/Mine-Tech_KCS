@@ -13,6 +13,10 @@ __pycache__/
 # ── 웹앱이 쓰지 않는 대용량 파일 (배포 제외) ──
 *.mp4
 *.png
+# 단, 히어로 슬라이드 이미지·로고는 배포에 포함
+!static/hero/
+!static/hero/*.png
+!static/logo*.png
 
 # ── 무관한 일렉트론 앱 / node ──
 CM-A2A/
@@ -29,6 +33,7 @@ fix_*.py
 minerals_agent/
 *.db
 
-# ── 별도 대용량 데이터셋 (원본 — 커밋 금지, 가공본 *_data.json 만 배포) ──
+# ── 별도 대용량 데이터셋 (원본 — 커밋 금지, 가공본 *_data.json / *_data2.json 만 배포) ──
 데이터/
 석유데이터/
+데이터2/
