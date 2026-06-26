@@ -2008,6 +2008,13 @@ window._applyScenes('minerals');
 <title>핵심광물 위기 현황 — MINERAL CRISIS DESK</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Noto+Sans+KR:wght@400;500;700;900&family=IBM+Plex+Mono:wght@400;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Noto+Serif+KR:wght@300;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<style>
+/* ── 글꼴 통일: Pretendard ── */
+:root{{--sans:'Pretendard','Noto Sans KR',-apple-system,sans-serif;--mono:'Pretendard','Noto Sans KR',-apple-system,sans-serif;}}
+html body, html body *:not([class*="material-symbols"]){{font-family:'Pretendard','Noto Sans KR',-apple-system,BlinkMacSystemFont,sans-serif !important;}}
+body{{font-variant-numeric:tabular-nums;}}
+</style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -4130,6 +4137,12 @@ def render_search(q):
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>__Q__ 검색 — K-RESOURCE</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=Noto+Sans+KR:wght@400;500;700;900&family=Noto+Serif+KR:wght@500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<style>
+:root{--sans:'Pretendard','Noto Sans KR',-apple-system,sans-serif;--mono:'Pretendard','Noto Sans KR',-apple-system,sans-serif;}
+html body, html body *:not([class*="material-symbols"]){font-family:'Pretendard','Noto Sans KR',-apple-system,BlinkMacSystemFont,sans-serif !important;}
+body{font-variant-numeric:tabular-nums;}
+</style>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{background:radial-gradient(circle at 50% -8%,#11111c,#0a0a12 55%,#06060b) fixed;color:#e8e4da;font-family:'Inter','Noto Sans KR',sans-serif;min-height:100vh}
@@ -4196,6 +4209,12 @@ def render_showcase():
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>K-RESOURCE — 자원, 3막</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,400&family=Noto+Serif+KR:wght@300;500;700&family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<style>
+:root{--sans:'Pretendard','Noto Sans KR',-apple-system,sans-serif;--mono:'Pretendard','Noto Sans KR',-apple-system,sans-serif;}
+html body, html body *:not([class*="material-symbols"]){font-family:'Pretendard','Noto Sans KR',-apple-system,BlinkMacSystemFont,sans-serif !important;}
+body{font-variant-numeric:tabular-nums;}
+</style>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 html{scroll-behavior:smooth}
@@ -4375,6 +4394,12 @@ def render_login(err=""):
 <title>로그인 — AI 전문가 회의실</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&family=Noto+Sans+KR:wght@400;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<style>
+:root{--sans:'Pretendard','Noto Sans KR',-apple-system,sans-serif;--mono:'Pretendard','Noto Sans KR',-apple-system,sans-serif;}
+html body, html body *:not([class*="material-symbols"]){font-family:'Pretendard','Noto Sans KR',-apple-system,BlinkMacSystemFont,sans-serif !important;}
+body{font-variant-numeric:tabular-nums;}
+</style>
 <style>body{background:#131315;color:#e4e2e4;font-family:'Inter','Noto Sans KR',sans-serif;}</style>
 </head>
 <body class="min-h-screen flex items-center justify-center p-6">
@@ -4607,6 +4632,12 @@ def render_conference():
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,400&family=Noto+Serif+KR:wght@500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<style>
+:root{--sans:'Pretendard','Noto Sans KR',-apple-system,sans-serif;--mono:'Pretendard','Noto Sans KR',-apple-system,sans-serif;}
+html body, html body *:not([class*="material-symbols"]){font-family:'Pretendard','Noto Sans KR',-apple-system,BlinkMacSystemFont,sans-serif !important;}
+body{font-variant-numeric:tabular-nums;}
+</style>
 <script>
 tailwind.config = {
   darkMode: "class",
