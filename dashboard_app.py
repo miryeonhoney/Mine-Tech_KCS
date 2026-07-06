@@ -5522,6 +5522,18 @@ function speakExpert(key) {
     headers:{'Content-Type':'application/json'},
     body: JSON.stringify({speaker: key, history: chatHistory, audience: selectedAudience, recentViz: recentViz})
   }).then(r => {
+    if (!r.ok) {
+      ti.style.display = 'none'; busy = false; renderTurnControls();
+      const chatArea = document.getElementById('chatArea');
+      const warn = document.createElement('div');
+      warn.className = 'text-xs font-bold px-4 py-3 rounded-lg border';
+      warn.style.cssText = 'color:#ff7a7a;border-color:#ff7a7a55;background:#ff7a7a11';
+      warn.textContent = (r.status === 401)
+        ? '⚠️ 세션이 만료되었습니다. 회의실을 나갔다가 다시 로그인해 주세요.'
+        : ('⚠️ 서버 오류 (HTTP ' + r.status + ') — 잠시 후 다시 시도해 주세요.');
+      chatArea.appendChild(warn); chatArea.scrollTop = chatArea.scrollHeight;
+      return;
+    }
     const reader = r.body.getReader();
     const decoder = new TextDecoder();
     let buf = '';
@@ -5557,6 +5569,11 @@ function speakExpert(key) {
             } else if (d.text && currentBubble) {
               currentBubble.textContent += d.text;
               chatArea.scrollTop = chatArea.scrollHeight;
+            } else if (d.error) {
+              if (currentBubble) {
+                currentBubble.textContent = '⚠️ 발언 생성 실패: ' + d.error;
+                currentBubble.style.color = '#ff7a7a';
+              }
             } else if (d.speaker_end) {
               if (currentBubble) {
                 var _btxt = currentBubble.textContent;
