@@ -4392,7 +4392,10 @@ def conference_chat():
             _cat = build_viz_catalog()
             _my = [k for k in EXPERT_VIZ.get(speaker, []) if k in _cat]
             if _my:
-                _lines = "\n".join(f"- {k}: {_cat[k]['title']}" for k in _my)
+                _lines = "\n".join(
+                    f"- {k}: {_cat[k]['title']}"
+                    + (f" — 최신: {_cat[k]['note']}" if _cat[k].get("note") else "")
+                    for k in _my)
                 viz_block = (
                     "\n\n[시각자료 — 근거 차트] 다음 자료를 화면에 띄울 수 있습니다:\n" + _lines +
                     "\n사용법: 발언에서 특정 수치·추세·자원·가격을 언급하고 위 목록에 관련 차트가 있으면, "
@@ -4414,9 +4417,20 @@ def conference_chat():
             "발언 앞에 자신의 이름이나 '[이름]' 같은 라벨을 붙이지 말고, 바로 본문부터 말하세요."
         ) + viz_block + repeat_guard
         convo = transcript_text(history) or f"회의 주제: {topic}"
+        # 진행자가 방금 끼어들어 질문했다면 — 그 질문에 대한 직접 답변이 최우선
+        mod_q = ""
+        if len(history) > 1 and history[-1].get("role") == "user":
+            mod_q = (
+                f"\n\n[진행자 질문 — 최우선] 방금 진행자가 이렇게 물었습니다: \"{history[-1].get('content', '')[:300]}\"\n"
+                "이번 발언은 반드시 이 질문에 대한 직접적인 답으로 시작하세요. "
+                "질문과 무관하게 하던 논지를 이어가거나 일반론을 말하지 마세요. "
+                "위 [시각자료] 목록의 최신 수치가 질문과 관련 있으면 그 실제 수치·추세로 답하고 해당 차트를 띄우세요. "
+                "정확한 수치가 없으면 없다고 말하고 확인 방법을 안내하세요."
+            )
         user_prompt = (
             f"[회의 주제]\n{topic}\n\n"
-            f"[지금까지의 회의록]\n{convo}\n\n"
+            f"[지금까지의 회의록]\n{convo}"
+            f"{mod_q}\n\n"
             f"이제 {expert['name']}으로서 발언하세요."
             + ("  (반드시 앞서 당신이 한 말과 다른, 새로운 내용을 더하세요.)" if own_prior else "")
         )
