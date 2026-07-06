@@ -4160,9 +4160,11 @@ def news_brief():
                   "오늘의 에너지 시장 핵심 흐름을 2문장으로 요약하고, 주유비·난방비 등 생활·투자 관점 시사점을 한 줄 덧붙여라. "
                   "특정 종목 추천이나 매수·매도 조언은 하지 말 것. 전체 3문장 이내.")
     else:
-        items = fetch_audience_news()
-        sysmsg = ("너는 자원·원자재 시장 애널리스트다. 아래 뉴스 헤드라인들을 종합해 "
-                  "오늘의 핵심 흐름을 2문장으로 요약하고, 투자·생활 관점의 시사점을 한 줄 덧붙여라. "
+        items = fetch_news()
+        sysmsg = ("너는 핵심광물·공급망 애널리스트다. 아래 핵심광물(리튬·니켈·코발트·희토류 등) 뉴스 "
+                  "헤드라인을 종합해 오늘의 광물 수급·공급망 핵심 흐름을 2문장으로 요약하고, "
+                  "관련 산업(배터리·방산·반도체 소재 등) 관점 시사점을 한 줄 덧붙여라. "
+                  "광물과 무관한 증시 일반·거시경제 얘기는 하지 마라. "
                   "특정 종목 추천이나 매수·매도 조언은 하지 말고 정보·교육 차원으로만. 전체 3문장 이내.")
     heads = [(n.get("제목") or n.get("title", "")) for n in items[:12] if (n.get("제목") or n.get("title"))]
     if not heads:
@@ -4170,7 +4172,7 @@ def news_brief():
     brief = ""
     try:
         r = OpenAI(api_key=OPENAI_API_KEY).chat.completions.create(
-            model=DEFAULT_OPENAI_MODEL, max_completion_tokens=220,
+            model=DEFAULT_OPENAI_MODEL, max_completion_tokens=500,
             messages=[
                 {"role": "system", "content": sysmsg},
                 {"role": "user", "content": "\n".join(heads)},
