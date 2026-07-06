@@ -2682,7 +2682,6 @@ tr:hover td{{background:var(--bg3);}}
       <button class="mineral-btn" onclick="selectMineral('흑연',this)">흑연</button>
       <button class="mineral-btn" onclick="selectMineral('희토류',this)">희토류</button>
       <button class="mineral-btn" onclick="selectMineral('망간',this)">망간</button>
-      <button class="mineral-btn" onclick="selectMineral('전체',this)">전체</button>
       <span class="risk-badge low" id="risk-badge"><span class="rb-dot"></span><span id="risk-badge-txt">RISK: —</span></span>
     </div>
     <div class="map-body">
