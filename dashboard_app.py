@@ -1421,6 +1421,29 @@ def render_dashboard(home=False):
     _tick.append("산업부 공공데이터 실시간 교차 계산")
     ticker_items = " &nbsp;|&nbsp; ".join(_tick)
 
+    # ── 메인(홈) 오늘의 리스크 스트립 ──
+    def _hl_rk(icon, label, href, nm, score, grade):
+        col = "#ff7a7a" if grade == "위험" else ("#f2c94c" if grade == "주의" else "#5ad1b0")
+        gi = "🔴" if grade == "위험" else ("🟡" if grade == "주의" else "🟢")
+        return (f'<a class="hl-rk" href="{href}"><span class="hl-rk-cat">{icon} {label}</span>'
+                f'<b style="color:{col}">{nm} {score:.1f}</b>'
+                f'<span class="hl-rk-gr" style="color:{col}">{gi} {grade} · 자세히 →</span></a>')
+    _hl_parts = []
+    if krisk:
+        _hk, _hv = max(krisk.items(), key=lambda x: x[1]["score"])
+        _hl_parts.append(_hl_rk("🔩", "핵심광물 K-RISK", "/dashboard?cat=minerals&sec=risk", _hk, _hv["score"], _hv["grade"]))
+    if frisk:
+        _hl_parts.append(_hl_rk("🥬", "식품 F-RISK", "/dashboard?cat=food&sec=risk", frisk[0]["nm"], frisk[0]["score"], frisk[0]["grade"]))
+    if erisk:
+        _hek, _hev = max(erisk.items(), key=lambda x: x[1]["score"])
+        _hl_parts.append(_hl_rk("🛢️", "에너지 E-RISK", "/dashboard?cat=energy&sec=risk", _hek, _hev["score"], _hev["grade"]))
+    _hl_parts.append('<a class="hl-rk cta" href="/conference">⚖️ 이 위험들, AI 전문가 회의실에서 토론 →</a>')
+    home_risk_html = (
+        '<div class="hl-risk"><div class="hl-risk-head">🚦 오늘의 리스크 '
+        '<span>산업부 공공데이터 실시간 교차 계산 — 위험을 감지하면 회의가 소집됩니다</span></div>'
+        f'<div class="hl-risk-row">{"".join(_hl_parts)}</div></div>'
+    ) if (krisk or frisk or erisk) else ""
+
     # 식품 뉴스
     fnews = fetch_food_news()
     food_news_html = "".join(f"""
@@ -1844,6 +1867,17 @@ body.is-home #home-landing{display:block;padding:44px 6vw 64px;}
 .hl-dc{font-size:13px;color:var(--muted);margin-top:7px;position:relative;}
 .hl-go{margin-top:20px;font-size:13px;font-weight:700;color:#f4e3ad;position:relative;}
 .hl-card:hover{transform:translateY(-6px);border-color:rgba(233,195,73,.5);box-shadow:0 22px 50px rgba(0,0,0,.5);}
+.hl-risk{margin:0 0 28px;background:var(--bg2);border:1px solid var(--border);border-radius:18px;padding:18px 22px;}
+.hl-risk-head{font-size:14px;font-weight:800;color:var(--text);margin-bottom:13px;}
+.hl-risk-head span{color:var(--muted2);font-weight:500;font-size:11.5px;margin-left:7px;}
+.hl-risk-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;}
+.hl-rk{display:flex;flex-direction:column;gap:5px;text-decoration:none;background:var(--bg3);border:1px solid var(--border2);border-radius:13px;padding:13px 15px;transition:.18s;}
+.hl-rk:hover{border-color:rgba(233,195,73,.5);transform:translateY(-2px);}
+.hl-rk-cat{font-size:11px;color:var(--muted2);font-weight:700;}
+.hl-rk b{font-size:17px;letter-spacing:-.01em;}
+.hl-rk-gr{font-size:11px;font-weight:700;}
+.hl-rk.cta{justify-content:center;align-items:center;text-align:center;font-weight:800;color:#e9c349;font-size:13px;border-color:rgba(233,195,73,.35);}
+@media(max-width:900px){.hl-risk-row{grid-template-columns:1fr 1fr;}}
 .hl-stats{display:flex;justify-content:center;gap:46px;flex-wrap:wrap;padding:24px;border-top:1px solid rgba(255,255,255,.07);}
 .hl-stat{text-align:center;}
 .hl-stat span{display:block;font-size:11px;color:var(--muted2);letter-spacing:.1em;margin-bottom:7px;}
@@ -2520,10 +2554,8 @@ tr:hover td{{background:var(--bg3);}}
       <a class="mp-tile" onclick="goSec('minerals','supply')"><b>수급 현황</b><span>수입·생산 한눈에</span></a>
       <a class="mp-tile" onclick="goSec('minerals','mindex')"><b>가격지수</b><span>광해광업공단 파생지수</span></a>
       <a class="mp-tile" onclick="goSec('minerals','map')"><b>글로벌 매장량</b><span>세계 분포·수입루트</span></a>
-      <a class="mp-tile" onclick="goSec('minerals','risk')"><b>리스크 신호등</b><span>수급안정화지수</span></a>
+      <a class="mp-tile" onclick="goSec('minerals','risk')"><b>리스크 신호등</b><span>K-RISK 종합 위험</span></a>
       <a class="mp-tile" onclick="goSec('minerals','news')"><b>뉴스 피드</b><span>대상별 자원 뉴스</span></a>
-      <a class="mp-tile" onclick="goSec('minerals','komir')"><b>KOMIR</b><span>광종별 수출입</span></a>
-      <a class="mp-tile" onclick="goSec('minerals','usgs')"><b>USGS 2025</b><span>글로벌 매장 통계</span></a>
     </div></div>
   </div>
   <div class="cat-menu">
@@ -2569,8 +2601,6 @@ tr:hover td{{background:var(--bg3);}}
     <a href="#" data-tab="map"       onclick="switchTab('map',this);return false;">글로벌 매장량</a>
     <a href="#" data-tab="risk"      onclick="switchTab('risk',this);return false;">🚦 리스크 신호등</a>
     <a href="#" data-tab="news"      onclick="switchTab('news',this);return false;">뉴스 피드</a>
-    <a href="#" data-tab="komir"     onclick="switchTab('komir',this);return false;">KOMIR</a>
-    <a href="#" data-tab="usgs"      onclick="switchTab('usgs',this);return false;">USGS 2025</a>
   </div>
   <div id="subnav-food" style="display:none">
     <a href="#" data-tab="food-price" class="food-subnav active" onclick="switchFoodTab('price',this);return false;">품목 가격</a>
@@ -2639,6 +2669,7 @@ tr:hover td{{background:var(--bg3);}}
       <a class="hl-card hl-food" href="/dashboard?cat=food"><div class="hl-ic">🥬</div><div class="hl-nm">식품</div><div class="hl-dc">장바구니 물가와 농수산 도소매가</div><div class="hl-go">대시보드 →</div></a>
       <a class="hl-card hl-energy" href="/dashboard?cat=energy"><div class="hl-ic">🛢️</div><div class="hl-nm">에너지</div><div class="hl-dc">유가·가스·전기료 흐름 추적</div><div class="hl-go">대시보드 →</div></a>
     </div>
+    {home_risk_html}
     <div class="hl-stats">
       <div class="hl-stat"><span>오늘 휘발유</span><b>{oil_gas_s}원</b></div>
       <div class="hl-stat"><span>총 광물 수입액</span><b>${total:,.0f}</b></div>
@@ -2801,36 +2832,6 @@ tr:hover td{{background:var(--bg3);}}
      ============================ -->
 <!-- 리포트 구독 섹션은 메인 화면(home-landing)으로 이동함 -->
 
-<!-- ============================
-     TAB: KOMIR
-     ============================ -->
-<div id="tab-komir" class="tab-panel">
-  <div class="page-title">KOMIR — 광종별 국가별 수출입 현황</div>
-  <div class="section">
-    <div class="sec-head">수출입 데이터 (최근 30건)</div>
-    <table>
-      <thead>
-        <tr>
-          <td class="t-nm" style="color:#888;font-size:11px;">광물명</td>
-          <td class="t-nm" style="color:#888;font-size:11px;">국가</td>
-          <td class="t-num" style="color:#888;font-size:11px;">수입액(USD)</td>
-          <td class="t-num" style="color:#888;font-size:11px;">수출액(USD)</td>
-        </tr>
-      </thead>
-      <tbody>{komir_rows}</tbody>
-    </table>
-  </div>
-</div>
-
-<!-- ============================
-     TAB: USGS 2025
-     ============================ -->
-<div id="tab-usgs" class="tab-panel">
-  <div class="page-title">USGS Mineral Commodity Summaries 2025</div>
-  <div class="usgs-grid">
-    {usgs_html}
-  </div>
-</div>
 </div><!-- /#cat-minerals -->
 
 <!-- ===== 식품 카테고리 ===== -->
@@ -3077,7 +3078,7 @@ function switchTab(name, el) {{
 // 다른 페이지(회의실 등)에서 #map / #news 등으로 들어오면 해당 탭으로 이동
 (function(){{
   var h = (location.hash || '').replace('#','');
-  var valid = ['supply','mindex','map','news','subscribe','komir','usgs'];
+  var valid = ['supply','mindex','map','news','subscribe','risk'];
   if (valid.indexOf(h) >= 0) {{
     switchTab(h, document.querySelector('.nav a[data-tab="' + h + '"]'));
   }}
@@ -4472,7 +4473,7 @@ def render_search(q):
                 cust.sort(key=lambda r: r.get('수입금액(달러)', 0) or 0, reverse=True)
                 tot = sum((r.get('수입금액(달러)', 0) or 0) for r in cust)
                 rows = [("총 수입액", f"${tot:,.0f}")] + [(r.get('국가명', '—'), f"${(r.get('수입금액(달러)', 0) or 0):,.0f}") for r in cust[:3]]
-                data_blocks.append(_card(f"💰 수입 현황 · {mineral}", rows, "KOMIR 수출입", "/dashboard?cat=minerals&sec=komir"))
+                data_blocks.append(_card(f"💰 수입 현황 · {mineral}", rows, "광물 수급 현황", "/dashboard?cat=minerals&sec=supply"))
         if re.search(r"유가|휘발유|경유|기름|석유|원유|가스|에너지", qq):
             op = fetch_opinet()
             if op and (op.get('휘발유') or op.get('경유')):
