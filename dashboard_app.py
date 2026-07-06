@@ -717,6 +717,86 @@ def compute_k_risk():
     cache_set("k_risk", out, ttl=3600)
     return out
 
+# ── E-RISK 에너지 원료별 공급 리스크 ──────────────────────────
+# 0.30×가격변동성(24개월 σ/μ) + 0.25×단기상승(6개월) + 0.25×수입집중도(HHI)
+# + 0.20×지정학(중동·러시아 수입비중) − 0.10×비축완충(비축일수/90일) — 보고서 산식의 비축 항 반영.
+K_MIDEAST_RU = {"아랍에미레이트", "아랍에미리트", "사우디아라비아", "쿠웨이트", "카타르",
+                "이라크", "오만", "이란", "러시아", "러시아연방", "알제리", "리비아"}
+
+def compute_e_risk():
+    c = cache_get("e_risk")
+    if c is not None: return c
+    out = {}
+    try:
+        oil = load_oil_data() or {}
+        eimp = load_json(os.path.join(os.path.dirname(__file__), "energy_import_data2.json")) or {}
+        tc = eimp.get("top_countries") or [] if isinstance(eimp, dict) else []
+        tot = sum(x.get("vol", 0) for x in tc)
+        hhi = sum((x.get("vol", 0) / tot) ** 2 for x in tc) * 100 if tot else 50.0
+        geo = (sum(x.get("vol", 0) for x in tc
+                   if str(x.get("name", "")).replace(" ", "") in K_MIDEAST_RU) / tot * 100
+               if tot else 0.0)
+        rd = (oil.get("reserve_days") or {}).get("days") or []
+        buf = min((rd[-1] if rd else 0) / 90.0, 1.0) * 10.0
+        series = {}
+        P = oil.get("price") or {}
+        G = oil.get("gas") or {}
+        for k in ("원유수입가", "휘발유", "경유", "등유"):
+            if P.get(k): series[k] = P[k]
+        for k in ("LNG", "LPG", "벙커C"):
+            if G.get(k): series[k] = G[k]
+        for name, vals in series.items():
+            v = [x for x in vals[-24:] if isinstance(x, (int, float)) and x]
+            if len(v) < 8: continue
+            m = sum(v) / len(v)
+            sd = (sum((x - m) ** 2 for x in v) / len(v)) ** 0.5
+            volat = min(100.0, sd / m * 250) if m else 0.0
+            r6 = (v[-1] / v[-7] - 1) * 100 if len(v) >= 7 and v[-7] else 0.0
+            surge = max(0.0, min(100.0, r6 * 8))
+            score = round(max(0.0, min(100.0,
+                0.30 * volat + 0.25 * surge + 0.25 * hhi + 0.20 * geo - buf)), 1)
+            grade = "위험" if score >= 70 else ("주의" if score >= 40 else "안정")
+            out[name] = {"score": score, "grade": grade,
+                         "요소": {"가격변동성": round(volat, 1), "단기상승": round(surge, 1),
+                                  "수입집중도": round(hhi, 1), "지정학": round(geo, 1),
+                                  "비축완충": round(buf, 1)}}
+    except Exception as e:
+        print(f"[E-RISK] 계산 오류: {e}")
+    cache_set("e_risk", out, ttl=3600)
+    return out
+
+# ── F-RISK 식품 품목별 가격 리스크 ────────────────────────────
+# KAMIS 도소매 등락률 융합: 0.40×단기급등(전주) + 0.35×중기상승(전월) + 0.25×연간상승(전년)
+F_NON_FOOD = {"거베라", "국화", "글라디올러스", "카네이션", "백합", "안개꽃", "장미", "튤립", "프리지아"}
+
+def compute_f_risk(food_rows):
+    out = []
+    try:
+        acc = {}
+        for f in food_rows or []:
+            cur = f.get("현재가") or 0
+            if cur <= 0 or f.get("품목") in F_NON_FOOD: continue
+            a = acc.setdefault(f.get("품목", ""), {"rw": [], "rm": [], "ry": []})
+            for key, base in (("rw", f.get("전주")), ("rm", f.get("전월")), ("ry", f.get("전년"))):
+                if base and base > 0:
+                    a[key].append((cur - base) / base * 100)
+        for nm, a in acc.items():
+            if not nm or not (a["rw"] or a["rm"] or a["ry"]): continue
+            rw = sum(a["rw"]) / len(a["rw"]) if a["rw"] else 0.0
+            rm = sum(a["rm"]) / len(a["rm"]) if a["rm"] else 0.0
+            ry = sum(a["ry"]) / len(a["ry"]) if a["ry"] else 0.0
+            sw = max(0.0, min(100.0, rw * 12))
+            sm = max(0.0, min(100.0, rm * 6))
+            sy = max(0.0, min(100.0, ry * 3))
+            score = round(max(0.0, min(100.0, 0.40 * sw + 0.35 * sm + 0.25 * sy)), 1)
+            grade = "위험" if score >= 70 else ("주의" if score >= 40 else "안정")
+            out.append({"nm": nm, "score": score, "grade": grade,
+                        "rw": round(rw, 1), "rm": round(rm, 1), "ry": round(ry, 1)})
+        out.sort(key=lambda x: -x["score"])
+    except Exception as e:
+        print(f"[F-RISK] 계산 오류: {e}")
+    return out
+
 FOOD_NEWS_KEYWORDS = ["장바구니 물가", "농수산물 가격", "채소 가격", "과일 가격", "축산물 가격", "밥상물가"]
 
 def fetch_food_news():
@@ -1238,6 +1318,51 @@ def render_dashboard(home=False):
          "v": [f["전년"], f["전월"], f["전주"], f["전일"], f["현재가"]]}
         for f in food], ensure_ascii=False)
     food_idx_js = json.dumps(load_food_indices(), ensure_ascii=False)
+
+    # ── F-RISK 품목별 식품 가격 리스크 카드 ──
+    frisk = compute_f_risk(food)
+    def _grade_col(g):
+        return ("#ff7a7a", "🔴") if g == "위험" else (("#f2c94c", "🟡") if g == "주의" else ("#5ad1b0", "🟢"))
+    def _frisk_card(x):
+        col, ico = _grade_col(x["grade"])
+        return (f'<div class="risk-card" style="border-left:4px solid {col}">'
+                f'<div class="rk-top"><span class="rk-nm">{STAPLE_ICON.get(x["nm"], "🛒")} {x["nm"]}</span>'
+                f'<span class="rk-tag" style="background:{col}22;color:{col}">{ico} {x["grade"]}</span></div>'
+                f'<div class="rk-val" style="color:{col}">{x["score"]:.1f}<span>/100</span></div>'
+                f'<div class="rk-sub" style="line-height:1.7">전주 {x["rw"]:+.1f}% · 전월 {x["rm"]:+.1f}%<br>전년 {x["ry"]:+.1f}%</div></div>')
+    frisk_cards = "".join(_frisk_card(x) for x in frisk[:24]) or '<div class="empty">F-RISK 계산 데이터 없음</div>'
+    frisk_note = f"전체 {len(frisk)}개 품목 중 위험 점수 상위 {min(24, len(frisk))}개 표시"
+    _fr_red = [x["nm"] for x in frisk if x["grade"] == "위험"]
+    _fr_yel = [x["nm"] for x in frisk if x["grade"] == "주의"]
+    if _fr_red:
+        frisk_summary = 'F-RISK 기준 <b style="color:#ff7a7a">' + " · ".join(_fr_red[:6]) + "</b> 의 가격 급등 위험이 높습니다."
+    elif _fr_yel:
+        frisk_summary = 'F-RISK 기준 <b style="color:#f2c94c">' + " · ".join(_fr_yel[:6]) + "</b> 이(가) 주의(🟡) 단계입니다."
+    else:
+        frisk_summary = "F-RISK 기준 주요 품목 가격은 안정(🟢) 범위입니다."
+
+    # ── E-RISK 에너지 원료별 리스크 카드 ──
+    erisk = compute_e_risk()
+    def _erisk_card(name, d):
+        col, ico = _grade_col(d["grade"])
+        p = d["요소"]
+        return (f'<div class="risk-card" style="border-left:4px solid {col}">'
+                f'<div class="rk-top"><span class="rk-nm">{name}</span>'
+                f'<span class="rk-tag" style="background:{col}22;color:{col}">{ico} {d["grade"]}</span></div>'
+                f'<div class="rk-val" style="color:{col}">{d["score"]:.1f}<span>/100</span></div>'
+                f'<div class="rk-sub" style="line-height:1.7">변동성 {p["가격변동성"]:.0f} · 단기 {p["단기상승"]:.0f} · 집중 {p["수입집중도"]:.0f}<br>'
+                f'지정학 {p["지정학"]:.0f} · 비축완충 −{p["비축완충"]:.1f}</div></div>')
+    erisk_cards = ("".join(_erisk_card(k, v) for k, v in
+                           sorted(erisk.items(), key=lambda x: -x[1]["score"]))
+                   or '<div class="empty">E-RISK 계산 데이터 없음</div>')
+    _er_red = [k for k, v in erisk.items() if v["grade"] == "위험"]
+    _er_yel = [k for k, v in erisk.items() if v["grade"] == "주의"]
+    if _er_red:
+        erisk_summary = 'E-RISK 기준 <b style="color:#ff7a7a">' + " · ".join(_er_red) + "</b> 이(가) 위험(🔴) 단계입니다."
+    elif _er_yel:
+        erisk_summary = 'E-RISK 기준 <b style="color:#f2c94c">' + " · ".join(_er_yel) + "</b> 이(가) 주의(🟡) 단계입니다."
+    else:
+        erisk_summary = "E-RISK 기준 에너지 원료 공급은 안정(🟢) 범위입니다."
 
     # 식품 뉴스
     fnews = fetch_food_news()
@@ -1864,7 +1989,7 @@ function countUp(){
 setTimeout(countUp, 2350);
 var _oilPriceDrawn=false,_oilSupplyDrawn=false,_oilPriceChart=null,_oilSupplyChart=null;
 function switchOilTab(name, el){
-  ['price','supply','gas','world','news','import'].forEach(function(n){var p=document.getElementById('ep-'+n);if(p)p.classList.toggle('active',n===name);});
+  ['price','supply','gas','world','news','import','risk'].forEach(function(n){var p=document.getElementById('ep-'+n);if(p)p.classList.toggle('active',n===name);});
   _setActive('.oil-subnav', el);
   if(name==='price') drawOilPrice();
   if(name==='supply') drawOilSupply();
@@ -2010,7 +2135,7 @@ function drawMineralIndex(){
 
 var _foodIdxDrawn=false, _trendChart=null, _lifeChart=null, _cpiChart=null;
 function switchFoodTab(name, el){
-  ['price','trend','index','news'].forEach(function(n){
+  ['price','trend','index','risk','news'].forEach(function(n){
     var p=document.getElementById('fp-'+n); if(p) p.classList.toggle('active', n===name);
   });
   _setActive('.food-subnav', el);
@@ -2390,6 +2515,7 @@ tr:hover td{{background:var(--bg3);}}
     <a href="#" data-tab="food-price" class="food-subnav active" onclick="switchFoodTab('price',this);return false;">품목 가격</a>
     <a href="#" data-tab="food-trend" class="food-subnav" onclick="switchFoodTab('trend',this);return false;">부류별 동향</a>
     <a href="#" data-tab="food-index" class="food-subnav" onclick="switchFoodTab('index',this);return false;">물가지수</a>
+    <a href="#" data-tab="food-risk" class="food-subnav" onclick="switchFoodTab('risk',this);return false;">🚦 리스크 신호등</a>
     <a href="#" data-tab="food-news"  class="food-subnav" onclick="switchFoodTab('news',this);return false;">식품 뉴스</a>
   </div>
   <div id="subnav-energy" style="display:none">
@@ -2398,6 +2524,7 @@ tr:hover td{{background:var(--bg3);}}
     <a href="#" data-tab="oil-gas"    class="oil-subnav" onclick="switchOilTab('gas',this);return false;">가스 · LPG</a>
     <a href="#" data-tab="oil-world"  class="oil-subnav" onclick="switchOilTab('world',this);return false;">세계 석유</a>
     <a href="#" data-tab="oil-import" class="oil-subnav" onclick="switchOilTab('import',this);return false;">🌍 수입·자주개발</a>
+    <a href="#" data-tab="oil-risk"   class="oil-subnav" onclick="switchOilTab('risk',this);return false;">🚦 리스크 신호등</a>
     <a href="#" data-tab="oil-news"   class="oil-subnav" onclick="switchOilTab('news',this);return false;">에너지 뉴스</a>
   </div>
   <div class="nav-right">
@@ -2720,6 +2847,18 @@ tr:hover td{{background:var(--bg3);}}
     </div>
   </div>
 
+  <!-- 식품 리스크 신호등 -->
+  <div class="food-panel" id="fp-risk">
+    <div class="page-title">🚦 F-RISK 식품 가격 리스크 <span style="color:var(--muted2);font-weight:400;font-size:12px">· aT KAMIS 도소매가 교차 계산 · 0~100, 높을수록 위험</span></div>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:12px 16px;margin-bottom:14px;font-size:13px;color:var(--muted);">💡 {frisk_summary} <span style="color:var(--muted2)">— 품목별 단기·중기·연간 등락을 하나의 위험 점수로 융합. 자세한 영향은 AI 회의실에서.</span></div>
+    <div class="risk-grid">{frisk_cards}</div>
+    <div style="font-size:11.5px;color:var(--muted2);margin:10px 2px 0;line-height:1.75;">
+      산식 <b>F-RISK = 0.40×단기급등(전주 대비) + 0.35×중기상승(전월 대비) + 0.25×연간상승(전년 대비)</b>
+      · 🟢 0~39 안정 🟡 40~69 주의 🔴 70~100 위험 · {frisk_note}<br>
+      데이터: 한국농수산식품유통공사 KAMIS 도소매 가격 — 조사일 기준 자동 재계산. 하락(음수) 등락은 위험 0으로 처리.
+    </div>
+  </div>
+
   <!-- 식품 뉴스 -->
   <div class="food-panel" id="fp-news">
     <div class="page-title">식품 · 물가 뉴스</div>
@@ -2789,6 +2928,18 @@ tr:hover td{{background:var(--bg3);}}
   </div>
 
   <!-- 에너지 뉴스 -->
+  <!-- 에너지 리스크 신호등 -->
+  <div class="food-panel" id="ep-risk">
+    <div class="page-title">🚦 E-RISK 에너지 원료 공급 리스크 <span style="color:var(--muted2);font-weight:400;font-size:12px">· 산업부 공공데이터 교차 계산 · 0~100, 높을수록 위험</span></div>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:12px 16px;margin-bottom:14px;font-size:13px;color:var(--muted);">💡 {erisk_summary} <span style="color:var(--muted2)">— 가격·수입 구조·지정학에 비축 완충까지 반영한 융합 점수. 자세한 영향은 AI 회의실에서.</span></div>
+    <div class="risk-grid">{erisk_cards}</div>
+    <div style="font-size:11.5px;color:var(--muted2);margin:10px 2px 0;line-height:1.75;">
+      산식 <b>E-RISK = 0.30×가격변동성(24개월) + 0.25×단기상승(6개월) + 0.25×수입집중도(HHI) + 0.20×지정학(중동·러시아 비중) − 0.10×비축완충(비축일수/90일)</b>
+      · 🟢 0~39 안정 🟡 40~69 주의 🔴 70~100 위험<br>
+      데이터: 한국석유공사 유가·비축일수·석유제품 수입국, 한국가스공사 LNG·LPG — 갱신 시 자동 재계산. 수입집중도·지정학은 석유제품 수입국 통계 기준.
+    </div>
+  </div>
+
   <div class="food-panel" id="ep-news">
     <div class="page-title">에너지 · 유가 뉴스</div>
     <div id="energyBrief" class="ai-brief" style="display:none">🤖 AI가 오늘의 에너지 뉴스를 분석 중...</div>
@@ -4538,10 +4689,10 @@ EXPERT_VIZ = {
     "통상":   ["komir_trade", "energy_import", "reserves"],
     "지정학": ["k_risk", "reserves", "komir_trade", "energy_import"],
     "정책":   ["k_risk", "resource_dev", "oil_reserve", "mineral_index"],
-    "식품":   ["food_life"],
-    "축산":   ["food_life", "resource_dev"],
-    "석유":   ["oil_price", "fuel_today", "oil_reserve", "energy_import"],
-    "가스":   ["oil_price", "energy_import"],
+    "식품":   ["f_risk", "food_life"],
+    "축산":   ["f_risk", "food_life", "resource_dev"],
+    "석유":   ["e_risk", "oil_price", "fuel_today", "oil_reserve", "energy_import"],
+    "가스":   ["e_risk", "oil_price", "energy_import"],
 }
 
 
@@ -4584,6 +4735,37 @@ def build_viz_catalog():
             }
     except Exception as e:
         print("[VIZ k_risk]", e)
+
+    # 1-c) F-RISK 식품 품목별 가격 리스크 (상위 10)
+    try:
+        fr = compute_f_risk(fetch_food_prices())[:10]
+        if fr:
+            cat["f_risk"] = {
+                "title": "F-RISK 식품 가격 리스크 상위 품목", "type": "bar",
+                "labels": [x["nm"] for x in fr],
+                "series": [{"name": "F-RISK(0~100)", "data": [x["score"] for x in fr],
+                            "color": "#f2c94c"}],
+                "note": f"최고위험 {fr[0]['nm']} {fr[0]['score']} ({fr[0]['grade']}) · 전주·전월·전년 등락 융합",
+                "source": "aT KAMIS 교차 계산(F-RISK)",
+            }
+    except Exception as e:
+        print("[VIZ f_risk]", e)
+
+    # 1-d) E-RISK 에너지 원료별 공급 리스크
+    try:
+        er = compute_e_risk() or {}
+        if er:
+            items = sorted(er.items(), key=lambda x: -x[1]["score"])
+            cat["e_risk"] = {
+                "title": "E-RISK 에너지 원료 공급 리스크", "type": "bar",
+                "labels": [k for k, _ in items],
+                "series": [{"name": "E-RISK(0~100)", "data": [v["score"] for _, v in items],
+                            "color": "#f59e0b"}],
+                "note": f"최고위험 {items[0][0]} {items[0][1]['score']} ({items[0][1]['grade']}) · 비축완충 반영",
+                "source": "석유공사·가스공사 교차 계산(E-RISK)",
+            }
+    except Exception as e:
+        print("[VIZ e_risk]", e)
 
     # 2) 광물 가격지수 (종합·카테고리)
     try:
