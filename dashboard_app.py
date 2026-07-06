@@ -4975,29 +4975,45 @@ def render_conference():
     expertviz_json = json.dumps(
         {k: [vk for vk in v if vk in _cat] for k, v in EXPERT_VIZ.items()}, ensure_ascii=False
     )
-    # 오늘의 리스크 안건 — K/F/E-RISK가 감지한 위험을 회의 안건으로 자동 제안
+    # 오늘의 리스크 안건 — K/F/E-RISK가 감지한 위험을 회의 안건 + AI 추천 전문가 조합으로 자동 제안
+    def _valid_ex(lst):
+        out = []
+        for e in lst:
+            if e in MINERAL_EXPERTS and e not in out:
+                out.append(e)
+        return out
     agenda = []
+    kr = {}
     try:
-        kr = compute_k_risk()
+        kr = compute_k_risk() or {}
         for k, v in sorted(kr.items(), key=lambda x: -x[1]["score"])[:2]:
             ico = "🔴" if v["grade"] == "위험" else ("🟡" if v["grade"] == "주의" else "🟢")
-            agenda.append(f"{ico} [K-RISK {v['score']}] {k} 공급망 위험이 '{v['grade']}' 단계입니다. 원인 진단과 한국의 대응 전략은?")
+            agenda.append({
+                "q": f"{ico} [K-RISK {v['score']}] {k} 공급망 위험이 '{v['grade']}' 단계입니다. 원인 진단과 한국의 대응 전략은?",
+                "ex": _valid_ex(([k] if k in MINERAL_EXPERTS else ["통상"]) + ["지정학", "정책", "경제"])})
     except Exception: pass
     try:
         fr = compute_f_risk(fetch_food_prices())
         if fr and fr[0]["score"] >= 40:
             x = fr[0]
             ico = "🔴" if x["grade"] == "위험" else "🟡"
-            agenda.append(f"{ico} [F-RISK {x['score']}] {x['nm']} 가격이 급등 중입니다(전월 {x['rm']:+.0f}%). 장바구니 물가 파급과 전망은?")
+            agenda.append({
+                "q": f"{ico} [F-RISK {x['score']}] {x['nm']} 가격이 급등 중입니다(전월 {x['rm']:+.0f}%). 장바구니 물가 파급과 전망은?",
+                "ex": _valid_ex(["식품", "경제", "정책"])})
     except Exception: pass
     try:
         er = compute_e_risk()
         if er:
             k, v = max(er.items(), key=lambda x: x[1]["score"])
             ico = "🔴" if v["grade"] == "위험" else ("🟡" if v["grade"] == "주의" else "🟢")
-            agenda.append(f"{ico} [E-RISK {v['score']}] 에너지 원료 중 {k} 리스크가 가장 높습니다('{v['grade']}'). 수급·가격 영향은?")
+            _e1 = "가스" if k in ("LNG", "LPG") else "석유"
+            agenda.append({
+                "q": f"{ico} [E-RISK {v['score']}] 에너지 원료 중 {k} 리스크가 가장 높습니다('{v['grade']}'). 수급·가격 영향은?",
+                "ex": _valid_ex([_e1, "경제", "지정학"])})
     except Exception: pass
     agenda_json = json.dumps(agenda, ensure_ascii=False)
+    krisk_json = json.dumps({k: {"score": v["score"], "grade": v["grade"]} for k, v in kr.items()},
+                            ensure_ascii=False)
     now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     PAGE = r"""<!DOCTYPE html>
 <html class="dark" lang="ko">
@@ -5052,6 +5068,7 @@ tailwind.config = {
   .expert-card.selected{border-color:#e9c349 !important;box-shadow:0 0 0 1px #e9c349,0 0 16px rgba(233,195,73,.18);}
   .expert-card.selected .ec-check{opacity:1 !important;}
   .tc-suggested{box-shadow:0 0 0 1px #e9c349,0 0 10px rgba(233,195,73,.35);}
+  .agenda-chip.agenda-active{border-color:#e9c349;box-shadow:0 0 0 1px #e9c349,0 0 12px rgba(233,195,73,.3);color:#e9c349;}
   .lobby-screen,#roomScreen{display:none;}
   .aud-btn{padding:9px 16px;border-radius:12px;font-size:13px;font-weight:700;cursor:pointer;background:rgba(255,255,255,.03);border:1px solid #3a3a46;color:#c2bfb4;transition:.18s;}
   .aud-btn:hover{border-color:#e9c349;color:#ece9e0;}
@@ -5126,7 +5143,11 @@ tailwind.config = {
             <button class="aud-btn" data-aud="policy" onclick="setAudience('policy',this)">🏛️ 정책 · 연구</button>
           </div>
         </div>
-        <div class="text-[10px] font-bold text-outline uppercase tracking-widest mb-3 font-data-tabular">② 전문가 선택</div>
+        <div class="mb-7" id="riskAgendaWrap">
+          <div class="text-[10px] font-bold text-outline uppercase tracking-widest mb-3 font-data-tabular">② 오늘의 리스크 안건 <span class="text-secondary">— K·F·E-RISK가 감지한 위험 · 클릭하면 AI 추천 전문가 조합까지 자동 선택</span></div>
+          <div id="riskAgenda" class="flex flex-col gap-2"></div>
+        </div>
+        <div class="text-[10px] font-bold text-outline uppercase tracking-widest mb-3 font-data-tabular">③ 전문가 선택 <span class="text-outline">— 직접 고르거나, 위 안건 클릭으로 자동 구성</span></div>
         <div id="expertGrid" class="space-y-6"></div>
         <div class="flex items-center justify-between mt-8">
           <span id="selCount" class="font-data-tabular text-xs text-on-surface-variant">0명 선택됨</span>
@@ -5142,8 +5163,6 @@ tailwind.config = {
         <p class="text-on-surface-variant text-sm mb-8"><span class="text-secondary font-bold">STEP 2.</span> 선택한 전문가들에게 던질 회의 안건(질문)을 입력하세요.</p>
         <div class="text-[10px] font-bold text-outline uppercase tracking-widest mb-3 font-data-tabular">회의에 참여할 전문가</div>
         <div id="teamSummary" class="flex flex-wrap gap-2 mb-6 min-h-[28px]"></div>
-        <div id="riskAgendaLb" class="text-[10px] font-bold text-outline uppercase tracking-widest mb-3 font-data-tabular">오늘의 리스크 안건 <span class="text-secondary">— K·F·E-RISK가 감지한 위험 (클릭하면 안건으로)</span></div>
-        <div id="riskAgenda" class="flex flex-col gap-2 mb-6"></div>
         <div class="text-[10px] font-bold text-outline uppercase tracking-widest mb-3 font-data-tabular">질문 입력</div>
         <textarea id="questionInput" rows="3" class="w-full bg-surface-container-lowest border border-outline-variant/30 rounded-lg p-4 text-sm text-on-surface focus:ring-1 focus:ring-secondary outline-none resize-none mb-3" placeholder="예: 중국의 희토류 수출 규제가 한국 배터리 산업에 미치는 영향은?"></textarea>
         <p class="text-[11px] text-on-surface-variant mb-8">회의가 시작되면 한 명씩 발언합니다. 발언이 끝날 때마다 <b class="text-secondary">다음 발언자</b>를 직접 고르거나, 직접 발언할 수 있어요.</p>
@@ -5181,18 +5200,7 @@ const EXPERTS = __EXPERTS_JSON__;
 const VIZ = __VIZ_JSON__;
 const EXPERT_VIZ = __EXPERTVIZ_JSON__;
 const RISK_AGENDA = __AGENDA_JSON__;
-(function(){
-  var box = document.getElementById('riskAgenda'), lb = document.getElementById('riskAgendaLb');
-  if(!box) return;
-  if(!RISK_AGENDA.length){ box.style.display='none'; if(lb) lb.style.display='none'; return; }
-  RISK_AGENDA.forEach(function(q){
-    var b = document.createElement('button');
-    b.className = 'text-xs text-left border border-outline-variant/40 rounded-lg px-3 py-2.5 text-on-surface-variant hover:border-secondary hover:text-secondary transition';
-    b.textContent = q;
-    b.onclick = function(){ var t = document.getElementById('questionInput'); t.value = q.replace(/^[🔴🟡🟢]\s*/, ''); t.focus(); };
-    box.appendChild(b);
-  });
-})();
+const KRISK = __KRISK_JSON__;
 let vizSeq = 0;
 let recentViz = [];   // 최근 띄운 차트 키 (연속 중복 방지)
 let selectedExperts = [];
@@ -5228,9 +5236,14 @@ cats.forEach(cat => {
     const card = document.createElement('div');
     card.className = 'expert-card bg-surface-container border border-outline-variant/30 rounded-xl p-3 flex items-center gap-3 cursor-pointer transition-all hover:border-secondary/50';
     card.dataset.key = key;
+    const kr = KRISK[key];
+    const krBadge = kr ? '<span class="text-[10px] font-data-tabular font-bold shrink-0" title="K-RISK 실시간 점수" style="color:'
+      + (kr.grade === '위험' ? '#ff7a7a' : (kr.grade === '주의' ? '#f2c94c' : '#5ad1b0'))
+      + '">' + kr.score + '</span>' : '';
     card.innerHTML = '<span class="text-2xl">'+ex.avatar+'</span>'
       + '<div class="flex-1 min-w-0"><div class="text-sm font-bold truncate" style="color:'+ex.color+'">'+ex.name+'</div>'
       + '<div class="text-[11px] text-on-surface-variant truncate">'+ex.title+'</div></div>'
+      + krBadge
       + '<span class="ec-check material-symbols-outlined text-secondary text-lg opacity-0 transition-opacity">check_circle</span>';
     card.onclick = () => { card.classList.toggle('selected'); updateSelection(); };
     cg.appendChild(card);
@@ -5245,6 +5258,34 @@ function updateSelection() {
   document.getElementById('selCount').textContent = selectedExperts.length + '명 선택됨';
 }
 updateSelection();
+
+// 오늘의 리스크 안건 — 클릭 시 AI 추천 전문가 조합 자동 선택 + 안건 프리필
+(function(){
+  var box = document.getElementById('riskAgenda'), wrap = document.getElementById('riskAgendaWrap');
+  if(!box) return;
+  if(!RISK_AGENDA.length){ if(wrap) wrap.style.display='none'; return; }
+  RISK_AGENDA.forEach(function(a){
+    var names = (a.ex || []).map(function(k){ return EXPERTS[k] ? EXPERTS[k].avatar + ' ' + EXPERTS[k].name : k; }).join(' · ');
+    var b = document.createElement('button');
+    b.className = 'agenda-chip text-xs text-left border border-outline-variant/40 rounded-lg px-3 py-2.5 text-on-surface-variant hover:border-secondary hover:text-secondary transition w-full';
+    b.innerHTML = '<span class="font-bold">' + a.q + '</span>'
+      + '<span class="block mt-1 text-[10px] text-outline">🤖 AI 추천 조합 — ' + names + '</span>';
+    b.onclick = function(){ applyAgenda(a, b); };
+    box.appendChild(b);
+  });
+})();
+function applyAgenda(a, btn){
+  document.querySelectorAll('.agenda-chip').forEach(function(x){ x.classList.remove('agenda-active'); });
+  if(btn) btn.classList.add('agenda-active');
+  document.querySelectorAll('.expert-card').forEach(function(c){
+    c.classList.toggle('selected', (a.ex || []).indexOf(c.dataset.key) >= 0);
+  });
+  updateSelection();
+  var t = document.getElementById('questionInput');
+  if(t) t.value = a.q.replace(/^[🔴🟡🟢]\s*/, '');
+  var g = document.getElementById('expertGrid');
+  if(g) g.scrollIntoView({behavior:'smooth', block:'start'});
+}
 
 function showScreen(id) {
   ['step1Screen','step2Screen','roomScreen'].forEach(s => document.getElementById(s).style.display = 'none');
@@ -5462,6 +5503,7 @@ setInterval(() => {
                 .replace("__VIZ_JSON__", viz_json)
                 .replace("__EXPERTVIZ_JSON__", expertviz_json)
                 .replace("__AGENDA_JSON__", agenda_json)
+                .replace("__KRISK_JSON__", krisk_json)
                 .replace("__NOW__", now))
 
 
