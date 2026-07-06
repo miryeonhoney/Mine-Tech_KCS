@@ -858,14 +858,26 @@ def fetch_energy_news():
     cache_set("energy_news", out)
     return out
 
-def fetch_audience_news():
-    c = cache_get("anews")
+# 식품·에너지도 대상별 뉴스 — 같은 물가·유가 이슈도 보는 사람에 따라 다른 키워드
+FOOD_NEWS_AUDIENCE = {
+    "투자자": ["음식료 관련주", "농산물 선물 가격", "식품주 실적"],
+    "기업":   ["식자재 수급", "식품 원자재 가격", "외식업계 원가"],
+    "소비자": ["장바구니 물가", "밥상물가", "제철 농산물 가격"],
+}
+ENERGY_NEWS_AUDIENCE = {
+    "투자자": ["정유주", "국제유가 전망", "에너지 관련주"],
+    "기업":   ["산업용 전기요금", "석유 수급", "기업 연료비"],
+    "소비자": ["기름값", "휘발유 가격", "도시가스 요금"],
+}
+
+def _fetch_audience_news(cache_key, aud_map):
+    c = cache_get(cache_key)
     if c is not None: return c
     out = []
     if NAVER_CLIENT_ID and not NAVER_CLIENT_ID.startswith("여기에"):
         hdrs = {"X-Naver-Client-Id": NAVER_CLIENT_ID, "X-Naver-Client-Secret": NAVER_CLIENT_SECRET}
         seen = set()
-        for aud, kws in NEWS_AUDIENCE.items():
+        for aud, kws in aud_map.items():
             for kw in kws:
                 try:
                     r = requests.get("https://openapi.naver.com/v1/search/news.json",
@@ -881,8 +893,12 @@ def fetch_audience_news():
                                     "언론사링크": lnk, "발행일시": dt, "검색키워드": kw, "aud": aud})
                 except: continue
                 time.sleep(0.12)
-    cache_set("anews", out)
+    cache_set(cache_key, out)
     return out
+
+def fetch_audience_news():        return _fetch_audience_news("anews",   NEWS_AUDIENCE)
+def fetch_food_audience_news():   return _fetch_audience_news("f_anews", FOOD_NEWS_AUDIENCE)
+def fetch_energy_audience_news(): return _fetch_audience_news("e_anews", ENERGY_NEWS_AUDIENCE)
 
 def by_mineral(rows):
     s = {}
@@ -1373,7 +1389,16 @@ def render_dashboard(home=False):
       <div class="nc-sm">{n.get('요약','')}</div>
       <div class="nc-dt">{n.get('발행일시','')}</div>
     </a>""" for n in fnews[:12]) or '<div class="empty">식품 뉴스를 불러올 수 없습니다.</div>'
-    food_news_js = json.dumps(fnews[:12], ensure_ascii=False)
+    def _dedup_news(items):
+        seen, out = set(), []
+        for n in items:
+            k = n.get("언론사링크") or n.get("제목", "")
+            if k in seen: continue
+            seen.add(k); out.append(n)
+        return out
+    _fmerged = _dedup_news(sorted(fnews[:12] + fetch_food_audience_news(),
+                                  key=lambda n: n.get("발행일시", ""), reverse=True))
+    food_news_js = json.dumps(_fmerged, ensure_ascii=False)
 
     # ── 에너지원료(석유) 카테고리 데이터 ──
     oil = load_oil_data()
@@ -1396,7 +1421,9 @@ def render_dashboard(home=False):
         f'<div class="sc-sub">{(c["vol"]/_etot*100):.0f}% · 천 배럴</div></div>'
         for c in _et[:6]) if _et else '<div class="empty">수입 데이터 없음</div>'
     eimp_year = eimp.get("latest_year", "")
-    energy_news_js = json.dumps(fetch_energy_news()[:12], ensure_ascii=False)
+    _emerged = _dedup_news(sorted(fetch_energy_news()[:12] + fetch_energy_audience_news(),
+                                  key=lambda n: n.get("발행일시", ""), reverse=True))
+    energy_news_js = json.dumps(_emerged, ensure_ascii=False)
     def _lastv(arr):
         for v in reversed(arr or []):
             if v is not None: return v
@@ -1994,7 +2021,7 @@ function switchOilTab(name, el){
   if(name==='price') drawOilPrice();
   if(name==='supply') drawOilSupply();
   if(name==='gas') drawGasChart();
-  if(name==='news'){ if(typeof ENERGYNEWS!=='undefined') renderFeed(ENERGYNEWS,'enewsHero','enewsGrid',null); fetchNewsBrief('energy','energyBrief'); }
+  if(name==='news'){ if(typeof ENERGYNEWS!=='undefined' && !window._enewsInit){ window._enewsInit=true; renderFeed(ENERGYNEWS,'enewsHero','enewsGrid','전체'); } fetchNewsBrief('energy','energyBrief'); }
   if(name==='import') drawImportCharts();
 }
 var _impDrawn=false,_eimpChart=null,_rdevChart=null;
@@ -2096,13 +2123,15 @@ function renderFeed(data, heroId, gridId, aud){
   list.slice(1).forEach(function(n){ grid.appendChild(_newsCard(n, false)); });
 }
 function filterNews(aud, el){ _setActive('.news-aud-btn', el); renderFeed(NEWS,'newsHero','newsGrid',aud); }
+function filterFoodNews(aud, el){ _setActive('.fnews-aud-btn', el); renderFeed(FOODNEWS,'fnewsHero','fnewsGrid',aud); }
+function filterEnergyNews(aud, el){ _setActive('.enews-aud-btn', el); renderFeed(ENERGYNEWS,'enewsHero','enewsGrid',aud); }
 if(typeof NEWS!=='undefined') renderFeed(NEWS,'newsHero','newsGrid','전체');
-if(typeof FOODNEWS!=='undefined') renderFeed(FOODNEWS,'fnewsHero','fnewsGrid',null);
+if(typeof FOODNEWS!=='undefined') renderFeed(FOODNEWS,'fnewsHero','fnewsGrid','전체');
 // 카테고리별 뉴스 AI 브리핑 (한 번만 로드)
 function fetchNewsBrief(cat, elId){
   var el=document.getElementById(elId); if(!el || el._loaded) return; el._loaded=true;
   fetch('/api/news-brief'+(cat?('?cat='+cat):'')).then(function(r){return r.json();}).then(function(d){
-    if(d && d.ok && d.brief){ el.textContent='🤖 AI 브리핑 — '+d.brief; el.style.display='block'; }
+    if(d && d.ok && d.brief){ el.textContent='🤖 AI 브리핑 — '+String(d.brief).replace(/\*\*/g,''); el.style.display='block'; }
   }).catch(function(){});
 }
 fetchNewsBrief('', 'aiBrief');   // 핵심광물(기본)
@@ -2861,8 +2890,14 @@ tr:hover td{{background:var(--bg3);}}
 
   <!-- 식품 뉴스 -->
   <div class="food-panel" id="fp-news">
-    <div class="page-title">식품 · 물가 뉴스</div>
+    <div class="page-title">식품 · 물가 뉴스 — 대상별</div>
     <div id="foodBrief" class="ai-brief" style="display:none">🤖 AI가 오늘의 식품 뉴스를 분석 중...</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;">
+      <button class="mineral-btn fnews-aud-btn active" onclick="filterFoodNews('전체',this)">전체</button>
+      <button class="mineral-btn fnews-aud-btn" onclick="filterFoodNews('투자자',this)">📈 투자자용</button>
+      <button class="mineral-btn fnews-aud-btn" onclick="filterFoodNews('기업',this)">🏢 기업용</button>
+      <button class="mineral-btn fnews-aud-btn" onclick="filterFoodNews('소비자',this)">🛒 소비자용</button>
+    </div>
     <div id="fnewsHero"></div>
     <div class="news-grid" id="fnewsGrid"></div>
   </div>
@@ -2941,8 +2976,14 @@ tr:hover td{{background:var(--bg3);}}
   </div>
 
   <div class="food-panel" id="ep-news">
-    <div class="page-title">에너지 · 유가 뉴스</div>
+    <div class="page-title">에너지 · 유가 뉴스 — 대상별</div>
     <div id="energyBrief" class="ai-brief" style="display:none">🤖 AI가 오늘의 에너지 뉴스를 분석 중...</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;">
+      <button class="mineral-btn enews-aud-btn active" onclick="filterEnergyNews('전체',this)">전체</button>
+      <button class="mineral-btn enews-aud-btn" onclick="filterEnergyNews('투자자',this)">📈 투자자용</button>
+      <button class="mineral-btn enews-aud-btn" onclick="filterEnergyNews('기업',this)">🏢 기업용</button>
+      <button class="mineral-btn enews-aud-btn" onclick="filterEnergyNews('소비자',this)">🛒 소비자용</button>
+    </div>
     <div id="enewsHero"></div>
     <div class="news-grid" id="enewsGrid"></div>
   </div>
