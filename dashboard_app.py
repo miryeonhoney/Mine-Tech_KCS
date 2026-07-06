@@ -5204,6 +5204,42 @@ tailwind.config = {
   .sum-ul{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:6px;}
   .sum-ul li{font-size:13px;line-height:1.7;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:9px;padding:9px 13px;}
   .sum-meta-row{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:11px;margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid rgba(255,255,255,.08);}
+  /* ── 회의 결과 보고서 오버레이 (카드뉴스) ── */
+  #summaryOverlay{position:fixed;inset:0;z-index:60;display:none;}
+  #summaryOverlay .sum-bk{position:absolute;inset:0;background:rgba(4,6,10,.78);backdrop-filter:blur(6px);}
+  .sum-doc{position:relative;max-width:920px;margin:24px auto;height:calc(100% - 48px);overflow-y:auto;
+    border-radius:20px;background:#0e1118;border:1px solid rgba(233,195,73,.35);box-shadow:0 30px 90px rgba(0,0,0,.6);}
+  .sum-cover{position:relative;background:linear-gradient(135deg,#1b2a4a 0%,#101827 55%,#0e1118 100%);padding:44px 48px 34px;overflow:hidden;}
+  .sum-cover::after{content:'';position:absolute;inset:0;background:radial-gradient(120% 140% at 85% -10%,rgba(233,195,73,.16),transparent 55%);pointer-events:none;}
+  .sum-brand{font-size:11px;font-weight:800;letter-spacing:.22em;color:#e9c349;text-transform:uppercase;margin-bottom:14px;}
+  .sum-doc-title{font-size:30px;font-weight:900;color:#fff;letter-spacing:-.01em;margin-bottom:8px;}
+  .sum-agenda{font-size:14px;color:#c7d2e8;line-height:1.6;max-width:640px;}
+  .sum-cover-meta{display:flex;flex-wrap:wrap;gap:8px 18px;margin-top:20px;font-size:12px;color:#8fa0bd;}
+  .sum-cover-meta b{color:#e6ecf7;font-weight:700;}
+  .sum-exp-chip{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:700;border:1px solid rgba(255,255,255,.16);
+    border-radius:999px;padding:4px 12px;background:rgba(255,255,255,.04);}
+  .sum-docbody{padding:34px 48px 40px;}
+  .sum-hero2{font-size:22px;font-weight:900;color:#f4e3ad;line-height:1.5;padding:22px 26px;margin-bottom:28px;
+    background:rgba(233,195,73,.07);border:1px solid rgba(233,195,73,.3);border-left:5px solid #e9c349;border-radius:14px;}
+  .sum-h{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:900;color:#e9c349;letter-spacing:.08em;margin:26px 0 12px;text-transform:uppercase;}
+  .sum-h::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,rgba(233,195,73,.4),transparent);}
+  .sum-grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;}
+  .sum-key{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.09);border-radius:14px;padding:16px 16px 14px;}
+  .sum-key .no{font-size:24px;font-weight:900;color:#e9c34955;font-family:'JetBrains Mono',monospace;line-height:1;margin-bottom:8px;}
+  .sum-key .tx{font-size:13px;line-height:1.7;color:#dfe3ec;}
+  .sum-imp{display:flex;gap:12px;align-items:flex-start;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:12px 16px;margin-bottom:8px;}
+  .sum-imp .bd{flex-shrink:0;width:24px;height:24px;border-radius:7px;background:rgba(233,195,73,.14);color:#e9c349;font-weight:900;font-size:12px;display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;}
+  .sum-imp .tx{font-size:13.5px;line-height:1.7;color:#dfe3ec;}
+  .sum-issue{background:linear-gradient(135deg,rgba(255,122,122,.07),transparent 70%);border:1px solid rgba(255,122,122,.25);border-radius:12px;padding:14px 18px;font-size:13.5px;line-height:1.7;color:#eadfdf;margin-bottom:8px;}
+  .sum-next{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;font-weight:600;color:#bfe3d4;background:rgba(90,209,176,.08);
+    border:1px solid rgba(90,209,176,.3);border-radius:999px;padding:7px 15px;margin:0 8px 8px 0;line-height:1.5;}
+  .sum-foot{margin-top:30px;padding-top:16px;border-top:1px solid rgba(255,255,255,.08);display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;font-size:11px;color:#78839a;}
+  .sum-actions{position:sticky;top:14px;float:right;display:flex;gap:8px;margin:14px 16px 0 0;z-index:5;}
+  .sum-actions button{font-size:12px;font-weight:800;border-radius:10px;padding:8px 14px;border:1px solid rgba(255,255,255,.22);
+    background:rgba(10,12,18,.8);color:#e6e6ec;cursor:pointer;backdrop-filter:blur(4px);}
+  .sum-actions button:hover{border-color:#e9c349;color:#e9c349;}
+  .sum-doc .viz-card{margin-top:10px;}
+  @media(max-width:760px){.sum-grid3{grid-template-columns:1fr;}.sum-cover,.sum-docbody{padding-left:22px;padding-right:22px;}}
   .lobby-screen,#roomScreen{display:none;}
   .aud-btn{padding:9px 16px;border-radius:12px;font-size:13px;font-weight:700;cursor:pointer;background:rgba(255,255,255,.03);border:1px solid #3a3a46;color:#c2bfb4;transition:.18s;}
   .aud-btn:hover{border-color:#e9c349;color:#ece9e0;}
@@ -5329,6 +5365,12 @@ tailwind.config = {
     </div>
 
   </div>
+
+  <!-- 회의 결과 보고서 오버레이 -->
+  <div id="summaryOverlay">
+    <div class="sum-bk" onclick="closeSummary()"></div>
+    <div class="sum-doc custom-scrollbar" id="sumDoc"></div>
+  </div>
 </main>
 
 <script>
@@ -5410,51 +5452,32 @@ updateSelection();
     box.appendChild(b);
   });
 })();
-// 회의록 요약 — 서기 AI가 결론·시사점·쟁점으로 정리
+// 회의록 요약 — 화면 전체를 덮는 보고서형 카드뉴스 오버레이
 let _summing = false;
 function makeSummary(){
   if(_summing || busy) return;
   if(!chatHistory.some(function(h){ return h.role === 'assistant'; })) return;
   _summing = true;
-  var area = document.getElementById('chatArea');
-  var card = document.createElement('div');
-  card.className = 'rounded-xl border border-secondary/40 bg-surface-container p-5';
-  card.innerHTML = '<div class="text-xs font-bold text-secondary mb-2">📝 회의 요약 리포트 <span class="sum-meta text-outline font-normal">— 서기 AI가 정리 중...</span></div>'
-    + '<div class="sum-body text-sm text-on-surface whitespace-pre-wrap leading-relaxed">회의록을 읽고 있습니다...</div>';
-  area.appendChild(card); area.scrollTop = area.scrollHeight;
+  var ov = document.getElementById('summaryOverlay'), doc = document.getElementById('sumDoc');
+  ov.style.display = 'block';
+  doc.innerHTML = '<div style="padding:100px 40px;text-align:center;color:#8a8a95;font-size:14px;line-height:2">📝<br>서기 AI가 회의록을 읽고<br>결과 보고서를 작성하는 중입니다...</div>';
   fetch('/api/conference/summary', {method:'POST', headers:{'Content-Type':'application/json'},
     body: JSON.stringify({history: chatHistory, audience: selectedAudience})})
     .then(function(r){ return r.json(); })
     .then(function(d){
-      var b = card.querySelector('.sum-body');
-      if(d && d.ok){
-        card.querySelector('.sum-meta').textContent = '— ' + new Date().toLocaleString('ko-KR');
-        // 메타: 참여 전문가 + 발언 수
-        var parts = selectedExperts.map(function(k){ var ex = EXPERTS[k];
-          return ex ? '<span style="color:'+ex.color+';font-weight:700">'+ex.avatar+' '+ex.name+'</span>' : ''; }).join(' <span class="text-outline">·</span> ');
-        var nTalk = chatHistory.filter(function(h){ return h.role === 'assistant'; }).length;
-        var AUD_LB = {investor:'📈 일반 투자자', business:'🏢 기업·조달', consumer:'🛒 일반 소비자', policy:'🏛️ 정책·연구'};
-        b.outerHTML = '<div class="sum-meta-row">'
-          + '<span class="text-outline">참여</span><span>' + parts + '</span>'
-          + '<span class="text-outline">발언</span><span class="font-data-tabular">' + nTalk + '회</span>'
-          + '<span class="text-outline">청중</span><span>' + (AUD_LB[selectedAudience] || selectedAudience) + '</span>'
-          + '</div>' + renderSummaryRich(d.summary);
-        var dl = document.createElement('button');
-        dl.className = 'mt-2 text-xs font-bold border border-outline-variant/40 rounded-lg px-3 py-1.5 hover:border-secondary hover:text-secondary transition';
-        dl.textContent = '⬇ 회의록 + 요약 다운로드 (.txt)';
-        dl.onclick = function(){ downloadMinutes(d.summary); };
-        card.appendChild(dl);
-      } else {
-        b.textContent = '요약 실패: ' + ((d && d.message) || '알 수 없는 오류');
-      }
-      area.scrollTop = area.scrollHeight; _summing = false;
+      if(d && d.ok){ renderSummaryDoc(d.summary, doc); }
+      else { doc.innerHTML = '<div style="padding:80px 40px;text-align:center;color:#ff7a7a">요약 실패: ' + ((d && d.message) || '알 수 없는 오류') + '</div>'; }
+      _summing = false;
     })
-    .catch(function(e){ card.querySelector('.sum-body').textContent = '요약 실패: ' + e; _summing = false; });
+    .catch(function(e){
+      doc.innerHTML = '<div style="padding:80px 40px;text-align:center;color:#ff7a7a">요약 실패: ' + e + '</div>';
+      _summing = false;
+    });
 }
-function renderSummaryRich(raw){
-  var esc = String(raw).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-  esc = esc.replace(/\*\*([^*]+)\*\*/g, '$1');
-  esc = esc.replace(/\[([^\[\]]{1,40})\]/g, '<span class="src-chip">$1</span>');
+function closeSummary(){ document.getElementById('summaryOverlay').style.display = 'none'; }
+function _escH(s){ return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function parseSummary(raw){
+  var esc = _escH(raw).replace(/\*\*([^*]+)\*\*/g, '$1');
   var lines = esc.split('\n'), oneline = '', sections = [], cur = null;
   lines.forEach(function(l){
     var t = l.trim();
@@ -5464,15 +5487,58 @@ function renderSummaryRich(raw){
     if(cur) cur.items.push(t.replace(/^[-·•]\s*|^\d+[)\.]\s*/, ''));
     else if(!oneline) oneline = t;
   });
-  var icons = [['핵심 결론','🎯'], ['시사점','💡'], ['쟁점','⚔️'], ['후속','🔍']];
-  var html = oneline ? '<div class="sum-hero">“ ' + oneline + ' ”</div>' : '';
-  sections.forEach(function(s){
-    var ico = '📌';
-    icons.forEach(function(p){ if(s.title.indexOf(p[0]) !== -1) ico = p[1]; });
-    html += '<div class="sum-sec"><div class="sum-sec-t">' + ico + ' ' + s.title + '</div><ul class="sum-ul">'
-      + s.items.map(function(it){ return '<li>' + it + '</li>'; }).join('') + '</ul></div>';
+  return {oneline: oneline, sections: sections};
+}
+function renderSummaryDoc(raw, doc){
+  window._lastSummary = raw;
+  var p = parseSummary(raw);
+  function chip(t){ return t.replace(/\[([^\[\]]{1,40})\]/g, '<span class="src-chip">$1</span>'); }
+  var topicMsg = '';
+  for(var i = 0; i < chatHistory.length; i++){ if(chatHistory[i].role === 'user'){ topicMsg = chatHistory[i].content; break; } }
+  var AUD_LB = {investor:'📈 일반 투자자', business:'🏢 기업·조달', consumer:'🛒 일반 소비자', policy:'🏛️ 정책·연구'};
+  var chips = selectedExperts.map(function(k){ var ex = EXPERTS[k];
+    return ex ? '<span class="sum-exp-chip" style="color:'+ex.color+'">'+ex.avatar+' '+ex.name+'</span>' : ''; }).join('');
+  var nTalk = chatHistory.filter(function(h){ return h.role === 'assistant'; }).length;
+  var html = '<div class="sum-actions">'
+    + '<button onclick="downloadMinutes(window._lastSummary||\'\')">⬇ 회의록 저장</button>'
+    + '<button onclick="closeSummary()">✕ 닫기</button></div>';
+  html += '<div class="sum-cover">'
+    + '<div class="sum-brand">◆ K-RESOURCE · AI 전문가 회의실</div>'
+    + '<div class="sum-doc-title">회의 결과 보고서</div>'
+    + '<div class="sum-agenda">안건 — ' + _escH(topicMsg) + '</div>'
+    + '<div class="sum-cover-meta"><span>일시 <b>' + new Date().toLocaleString('ko-KR') + '</b></span>'
+    + '<span>청중 <b>' + (AUD_LB[selectedAudience] || selectedAudience) + '</b></span>'
+    + '<span>발언 <b>' + nTalk + '회</b></span></div>'
+    + '<div style="margin-top:16px;display:flex;flex-wrap:wrap;gap:8px">' + chips + '</div></div>';
+  html += '<div class="sum-docbody">';
+  if(p.oneline) html += '<div class="sum-hero2">“ ' + chip(p.oneline) + ' ”</div>';
+  p.sections.forEach(function(s){
+    if(s.title.indexOf('핵심 결론') !== -1){
+      html += '<div class="sum-h">🎯 ' + s.title + '</div><div class="sum-grid3">'
+        + s.items.map(function(it, i){ return '<div class="sum-key"><div class="no">0' + (i + 1) + '</div><div class="tx">' + chip(it) + '</div></div>'; }).join('') + '</div>';
+    } else if(s.title.indexOf('시사점') !== -1){
+      html += '<div class="sum-h">💡 ' + s.title + '</div>'
+        + s.items.map(function(it, i){ return '<div class="sum-imp"><div class="bd">' + (i + 1) + '</div><div class="tx">' + chip(it) + '</div></div>'; }).join('');
+    } else if(s.title.indexOf('쟁점') !== -1){
+      html += '<div class="sum-h">⚔️ ' + s.title + '</div>'
+        + s.items.map(function(it){ return '<div class="sum-issue">' + chip(it) + '</div>'; }).join('');
+    } else if(s.title.indexOf('후속') !== -1){
+      html += '<div class="sum-h">🔍 ' + s.title + '</div><div>'
+        + s.items.map(function(it){ return '<span class="sum-next">📎 ' + chip(it) + '</span>'; }).join('') + '</div>';
+    } else {
+      html += '<div class="sum-h">📌 ' + s.title + '</div>'
+        + s.items.map(function(it){ return '<div class="sum-imp"><div class="bd">·</div><div class="tx">' + chip(it) + '</div></div>'; }).join('');
+    }
   });
-  return html || '<div class="text-sm text-on-surface whitespace-pre-wrap leading-relaxed">' + esc + '</div>';
+  html += '<div class="sum-h">📊 근거 데이터</div><div id="sumVizBox"></div>';
+  html += '<div class="sum-foot"><span>산업통상부·산하기관 공공데이터 기반 · 모든 수치는 [데이터셋] 출처칩을 따릅니다</span><span>K-RESOURCE 자동 생성 보고서</span></div></div>';
+  doc.innerHTML = html;
+  // 근거 차트 — 토론에서 마지막으로 인용된 차트, 없으면 K-RISK
+  var vk = recentViz[recentViz.length - 1] || (VIZ['k_risk'] ? 'k_risk' : null);
+  var box = document.getElementById('sumVizBox');
+  if(vk && VIZ[vk] && box){ renderVizCard(VIZ[vk], box, '#e9c349'); }
+  else if(box){ box.previousElementSibling.style.display = 'none'; box.style.display = 'none'; }
+  doc.scrollTop = 0;
 }
 function downloadMinutes(summary){
   var lines = ['K-RESOURCE AI 전문가 회의록', '일시: ' + new Date().toLocaleString('ko-KR'), '', '[요약]', summary, '', '[전체 회의록]'];
