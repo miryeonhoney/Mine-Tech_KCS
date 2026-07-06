@@ -1082,7 +1082,17 @@ def send_mail(to, subj, html):
     except Exception as e: return False, str(e)
 
 def build_newsletter(to=None):
-    customs = fetch_customs(); news = fetch_news()[:8]
+    customs = fetch_customs()
+    # 제목에 광물 용어가 있는 기사 우선, 요약에만 있는 기사는 후순위
+    def _rel_score(n):
+        ti, sm = (n.get("제목", "") or ""), (n.get("요약", "") or "")
+        return ((2 if any(k in ti for k in MINERAL_NEWS_TERMS) else 0)
+                + (1 if any(k in sm for k in MINERAL_NEWS_TERMS) else 0))
+    _cand = sorted(((_rel_score(n), i, n) for i, n in enumerate(fetch_news())),
+                   key=lambda x: (-x[0], x[1]))
+    news = [n for s, _, n in _cand if s >= 2][:8]          # 제목 매칭 우선
+    if len(news) < 5:                                       # 부족할 때만 요약 매칭으로 보충
+        news += [n for s, _, n in _cand if s == 1][:5 - len(news)]
     summary = by_mineral(customs)[:5]
     rows = "".join(
         f'<tr><td style="padding:8px;border-bottom:1px solid #eee;">{nm}</td>'
