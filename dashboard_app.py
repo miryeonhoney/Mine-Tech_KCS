@@ -826,9 +826,9 @@ def fetch_food_news():
 
 # 대상별 뉴스 — 같은 자원 이슈도 누구에게 보여줄지에 따라 다른 키워드
 NEWS_AUDIENCE = {
-    "투자자": ["원자재 관련주", "2차전지 테마주", "핵심광물 수혜주"],
-    "기업":   ["원자재 공급망", "핵심광물 수출규제", "원자재 수급"],
-    "소비자": ["장바구니 물가", "기름값", "생활물가"],
+    "투자자": ["2차전지 테마주", "핵심광물 수혜주", "희토류 관련주"],
+    "기업":   ["핵심광물 공급망", "핵심광물 수출규제", "광물 수급"],
+    "소비자": ["배터리 가격", "전기차 가격", "금값"],
 }
 
 ENERGY_NEWS_KEYWORDS = ["국제유가", "휘발유 가격", "정유업계", "석유 수급", "천연가스 가격"]
@@ -894,6 +894,14 @@ def _fetch_audience_news(cache_key, aud_map):
                 except: continue
                 time.sleep(0.12)
     cache_set(cache_key, out)
+    return out
+
+def dedup_news(items):
+    seen, out = set(), []
+    for n in items:
+        k = n.get("언론사링크") or n.get("제목", "")
+        if k in seen: continue
+        seen.add(k); out.append(n)
     return out
 
 def fetch_audience_news():        return _fetch_audience_news("anews",   NEWS_AUDIENCE)
@@ -1132,17 +1140,11 @@ def render_dashboard(home=False):
         ensure_ascii=False)
     imports_unit_js = json.dumps(imports_unit)
 
-    # 대상별 뉴스
+    # 대상별 뉴스 — 광물 기사(기본) + 광물 대상별 기사 병합
     anews = fetch_audience_news()
-    _AUD_LB = {"투자자": "📈 투자자", "기업": "🏢 기업", "소비자": "🛒 소비자"}
-    anews_html = "".join(f"""
-    <a href="{n['언론사링크']}" target="_blank" class="nc" data-aud="{n['aud']}">
-      <span class="nc-kw">{_AUD_LB.get(n['aud'], n['aud'])} · {n['검색키워드']}</span>
-      <div class="nc-ti">{n['제목']}</div>
-      <div class="nc-sm">{n['요약']}</div>
-      <div class="nc-dt">{n['발행일시']}</div>
-    </a>""" for n in anews) or '<div class="empty">뉴스를 불러올 수 없습니다 (네이버 API 키 확인).</div>'
-    news_js = json.dumps(anews, ensure_ascii=False)
+    _mmerged = dedup_news(sorted(news[:12] + anews,
+                                 key=lambda n: n.get("발행일시", ""), reverse=True))
+    news_js = json.dumps(_mmerged, ensure_ascii=False)
 
     # ── 자원 리스크 신호등 (수급안정화지수, 한국광해광업공단) ──
     risk = load_risk_data()
@@ -1453,14 +1455,7 @@ def render_dashboard(home=False):
       <div class="nc-sm">{n.get('요약','')}</div>
       <div class="nc-dt">{n.get('발행일시','')}</div>
     </a>""" for n in fnews[:12]) or '<div class="empty">식품 뉴스를 불러올 수 없습니다.</div>'
-    def _dedup_news(items):
-        seen, out = set(), []
-        for n in items:
-            k = n.get("언론사링크") or n.get("제목", "")
-            if k in seen: continue
-            seen.add(k); out.append(n)
-        return out
-    _fmerged = _dedup_news(sorted(fnews[:12] + fetch_food_audience_news(),
+    _fmerged = dedup_news(sorted(fnews[:12] + fetch_food_audience_news(),
                                   key=lambda n: n.get("발행일시", ""), reverse=True))
     food_news_js = json.dumps(_fmerged, ensure_ascii=False)
 
@@ -1485,7 +1480,7 @@ def render_dashboard(home=False):
         f'<div class="sc-sub">{(c["vol"]/_etot*100):.0f}% · 천 배럴</div></div>'
         for c in _et[:6]) if _et else '<div class="empty">수입 데이터 없음</div>'
     eimp_year = eimp.get("latest_year", "")
-    _emerged = _dedup_news(sorted(fetch_energy_news()[:12] + fetch_energy_audience_news(),
+    _emerged = dedup_news(sorted(fetch_energy_news()[:12] + fetch_energy_audience_news(),
                                   key=lambda n: n.get("발행일시", ""), reverse=True))
     energy_news_js = json.dumps(_emerged, ensure_ascii=False)
     def _lastv(arr):
