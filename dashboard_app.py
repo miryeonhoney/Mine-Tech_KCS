@@ -835,8 +835,17 @@ def fetch_food_news():
 NEWS_AUDIENCE = {
     "투자자": ["2차전지 테마주", "핵심광물 수혜주", "희토류 관련주"],
     "기업":   ["핵심광물 공급망", "핵심광물 수출규제", "광물 수급"],
-    "소비자": ["배터리 가격", "전기차 가격", "금값"],
+    "소비자": ["전기차 배터리 원자재", "리튬 가격", "니켈 가격"],
 }
+
+# 광물 뉴스 관련성 필터 — 제목·요약에 아래 단어가 하나도 없으면 광물 뉴스로 보지 않는다
+MINERAL_NEWS_TERMS = ("리튬", "니켈", "코발트", "희토류", "텅스텐", "망간", "흑연", "광물", "광산",
+                      "광종", "제련", "2차전지", "양극재", "음극재", "희소금속", "몰리브덴",
+                      "구리", "아연", "공급망", "원자재", "배터리")
+
+def mineral_relevant(n):
+    t = (n.get("제목", "") or "") + " " + (n.get("요약", "") or "")
+    return any(k in t for k in MINERAL_NEWS_TERMS)
 
 ENERGY_NEWS_KEYWORDS = ["국제유가", "휘발유 가격", "정유업계", "석유 수급", "천연가스 가격"]
 
@@ -1147,9 +1156,9 @@ def render_dashboard(home=False):
         ensure_ascii=False)
     imports_unit_js = json.dumps(imports_unit)
 
-    # 대상별 뉴스 — 광물 기사(기본) + 광물 대상별 기사 병합
+    # 대상별 뉴스 — 광물 기사(기본) + 광물 대상별 기사 병합 후 관련성 필터
     anews = fetch_audience_news()
-    _mmerged = dedup_news(sorted(news[:12] + anews,
+    _mmerged = dedup_news(sorted([n for n in news[:12] + anews if mineral_relevant(n)],
                                  key=lambda n: n.get("발행일시", ""), reverse=True))
     news_js = json.dumps(_mmerged, ensure_ascii=False)
 
