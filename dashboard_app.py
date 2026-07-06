@@ -4494,6 +4494,7 @@ def conference_summary():
                 {"role": "user", "content":
                     f"청중: {aud}\n\n[회의록]\n{convo}\n\n"
                     f"다음 형식으로 요약하라:\n"
+                    f"한 줄 결론: (회의 안건에 대한 답을 40자 이내로 압축한 한 문장)\n"
                     f"■ 핵심 결론 (3줄)\n■ {aud} 관점 시사점 (번호 3~4개)\n"
                     f"■ 전문가 간 쟁점 (있으면 1~2개, 없으면 생략)\n■ 후속 확인이 필요한 데이터 (1~2개)"},
             ])
@@ -5197,6 +5198,12 @@ tailwind.config = {
   .expert-card.selected .ec-check{opacity:1 !important;}
   .tc-suggested{box-shadow:0 0 0 1px #e9c349,0 0 10px rgba(233,195,73,.35);}
   .agenda-chip.agenda-active{border-color:#e9c349;box-shadow:0 0 0 1px #e9c349,0 0 12px rgba(233,195,73,.3);color:#e9c349;}
+  .sum-hero{font-size:15px;font-weight:800;color:#f4e3ad;background:rgba(233,195,73,.09);border-left:3px solid #e9c349;border-radius:8px;padding:12px 16px;margin:2px 0 16px;line-height:1.6;}
+  .sum-sec{margin-bottom:14px;}
+  .sum-sec-t{font-size:12px;font-weight:800;color:#e9c349;letter-spacing:.05em;margin-bottom:7px;text-transform:uppercase;}
+  .sum-ul{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:6px;}
+  .sum-ul li{font-size:13px;line-height:1.7;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:9px;padding:9px 13px;}
+  .sum-meta-row{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:11px;margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid rgba(255,255,255,.08);}
   .lobby-screen,#roomScreen{display:none;}
   .aud-btn{padding:9px 16px;border-radius:12px;font-size:13px;font-weight:700;cursor:pointer;background:rgba(255,255,255,.03);border:1px solid #3a3a46;color:#c2bfb4;transition:.18s;}
   .aud-btn:hover{border-color:#e9c349;color:#ece9e0;}
@@ -5421,10 +5428,19 @@ function makeSummary(){
     .then(function(d){
       var b = card.querySelector('.sum-body');
       if(d && d.ok){
-        b.textContent = d.summary;
         card.querySelector('.sum-meta').textContent = '— ' + new Date().toLocaleString('ko-KR');
+        // 메타: 참여 전문가 + 발언 수
+        var parts = selectedExperts.map(function(k){ var ex = EXPERTS[k];
+          return ex ? '<span style="color:'+ex.color+';font-weight:700">'+ex.avatar+' '+ex.name+'</span>' : ''; }).join(' <span class="text-outline">·</span> ');
+        var nTalk = chatHistory.filter(function(h){ return h.role === 'assistant'; }).length;
+        var AUD_LB = {investor:'📈 일반 투자자', business:'🏢 기업·조달', consumer:'🛒 일반 소비자', policy:'🏛️ 정책·연구'};
+        b.outerHTML = '<div class="sum-meta-row">'
+          + '<span class="text-outline">참여</span><span>' + parts + '</span>'
+          + '<span class="text-outline">발언</span><span class="font-data-tabular">' + nTalk + '회</span>'
+          + '<span class="text-outline">청중</span><span>' + (AUD_LB[selectedAudience] || selectedAudience) + '</span>'
+          + '</div>' + renderSummaryRich(d.summary);
         var dl = document.createElement('button');
-        dl.className = 'mt-3 text-xs font-bold border border-outline-variant/40 rounded-lg px-3 py-1.5 hover:border-secondary hover:text-secondary transition';
+        dl.className = 'mt-2 text-xs font-bold border border-outline-variant/40 rounded-lg px-3 py-1.5 hover:border-secondary hover:text-secondary transition';
         dl.textContent = '⬇ 회의록 + 요약 다운로드 (.txt)';
         dl.onclick = function(){ downloadMinutes(d.summary); };
         card.appendChild(dl);
@@ -5434,6 +5450,29 @@ function makeSummary(){
       area.scrollTop = area.scrollHeight; _summing = false;
     })
     .catch(function(e){ card.querySelector('.sum-body').textContent = '요약 실패: ' + e; _summing = false; });
+}
+function renderSummaryRich(raw){
+  var esc = String(raw).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  esc = esc.replace(/\*\*([^*]+)\*\*/g, '$1');
+  esc = esc.replace(/\[([^\[\]]{1,40})\]/g, '<span class="src-chip">$1</span>');
+  var lines = esc.split('\n'), oneline = '', sections = [], cur = null;
+  lines.forEach(function(l){
+    var t = l.trim();
+    if(!t) return;
+    if(t.indexOf('한 줄 결론') === 0){ oneline = t.replace(/^한 줄 결론\s*[:：]\s*/, ''); return; }
+    if(t.charAt(0) === '■'){ cur = {title: t.slice(1).trim(), items: []}; sections.push(cur); return; }
+    if(cur) cur.items.push(t.replace(/^[-·•]\s*|^\d+[)\.]\s*/, ''));
+    else if(!oneline) oneline = t;
+  });
+  var icons = [['핵심 결론','🎯'], ['시사점','💡'], ['쟁점','⚔️'], ['후속','🔍']];
+  var html = oneline ? '<div class="sum-hero">“ ' + oneline + ' ”</div>' : '';
+  sections.forEach(function(s){
+    var ico = '📌';
+    icons.forEach(function(p){ if(s.title.indexOf(p[0]) !== -1) ico = p[1]; });
+    html += '<div class="sum-sec"><div class="sum-sec-t">' + ico + ' ' + s.title + '</div><ul class="sum-ul">'
+      + s.items.map(function(it){ return '<li>' + it + '</li>'; }).join('') + '</ul></div>';
+  });
+  return html || '<div class="text-sm text-on-surface whitespace-pre-wrap leading-relaxed">' + esc + '</div>';
 }
 function downloadMinutes(summary){
   var lines = ['K-RESOURCE AI 전문가 회의록', '일시: ' + new Date().toLocaleString('ko-KR'), '', '[요약]', summary, '', '[전체 회의록]'];
