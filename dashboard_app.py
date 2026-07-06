@@ -380,6 +380,10 @@ def _conf_authed():
     """회의실 접근 허용 여부. 비밀번호 미설정(로컬)이면 항상 허용."""
     return (not CONFERENCE_PASSWORD) or (session.get("conf_ok") is True)
 
+def _strip_surrogates(s):
+    """이모지가 반쪽으로 잘린 서로게이트 문자를 제거 — UTF-8 인코딩 오류 방지."""
+    return "".join(ch for ch in (s or "") if not 0xD800 <= ord(ch) <= 0xDFFF)
+
 _cache = {}
 
 def cache_get(k):
@@ -4304,7 +4308,8 @@ def conference_chat():
         return jsonify(ok=False, message="인증이 필요합니다. 다시 로그인하세요."), 401
     data    = request.get_json(silent=True) or {}
     speaker = data.get("speaker")
-    history = data.get("history", [])
+    history = [{**h, "content": _strip_surrogates(h.get("content", ""))}
+               for h in (data.get("history") or []) if isinstance(h, dict)]
     audience = data.get("audience", "consumer")
     recent_viz = data.get("recentViz", []) or []
     if not speaker or speaker not in MINERAL_EXPERTS:
@@ -4448,7 +4453,8 @@ def conference_summary():
     if not _conf_authed():
         return jsonify(ok=False, message="인증이 필요합니다."), 401
     data = request.get_json(silent=True) or {}
-    history = data.get("history", [])
+    history = [{**h, "content": _strip_surrogates(h.get("content", ""))}
+               for h in (data.get("history") or []) if isinstance(h, dict)]
     audience = data.get("audience", "consumer")
     if not any(h.get("role") == "assistant" for h in history):
         return jsonify(ok=False, message="요약할 전문가 발언이 없습니다."), 400
@@ -5435,7 +5441,7 @@ function applyAgenda(a, btn){
   });
   updateSelection();
   var t = document.getElementById('questionInput');
-  if(t) t.value = a.q.replace(/^[🔴🟡🟢]\s*/, '');
+  if(t) t.value = a.q.replace(/^(🔴|🟡|🟢)\s*/, '');
   var g = document.getElementById('expertGrid');
   if(g) g.scrollIntoView({behavior:'smooth', block:'start'});
 }
