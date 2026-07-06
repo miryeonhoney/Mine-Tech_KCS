@@ -5204,11 +5204,26 @@ tailwind.config = {
   .sum-ul{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:6px;}
   .sum-ul li{font-size:13px;line-height:1.7;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:9px;padding:9px 13px;}
   .sum-meta-row{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:11px;margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid rgba(255,255,255,.08);}
-  /* ── 회의 결과 보고서 오버레이 (카드뉴스) ── */
+  /* ── 회의 결과 보고서 오버레이 (전면 대시보드형) ── */
   #summaryOverlay{position:fixed;inset:0;z-index:60;display:none;}
-  #summaryOverlay .sum-bk{position:absolute;inset:0;background:rgba(4,6,10,.78);backdrop-filter:blur(6px);}
-  .sum-doc{position:relative;max-width:920px;margin:24px auto;height:calc(100% - 48px);overflow-y:auto;
+  #summaryOverlay .sum-bk{position:absolute;inset:0;background:rgba(4,6,10,.88);backdrop-filter:blur(8px);}
+  .sum-doc{position:relative;width:calc(100vw - 28px);max-width:1560px;margin:14px auto;height:calc(100% - 28px);overflow-y:auto;
     border-radius:20px;background:#0e1118;border:1px solid rgba(233,195,73,.35);box-shadow:0 30px 90px rgba(0,0,0,.6);}
+  .sum-cover-grid{display:flex;justify-content:space-between;align-items:center;gap:30px;position:relative;z-index:1;}
+  .sum-gauge{flex-shrink:0;text-align:center;}
+  .sum-gauge svg{display:block;margin:0 auto;}
+  .sum-gauge .gl{font-size:11px;font-weight:800;letter-spacing:.1em;color:#8fa0bd;margin-top:6px;}
+  .sum-statrow{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:rgba(255,255,255,.07);border-bottom:1px solid rgba(255,255,255,.07);}
+  .sum-stat{background:#11141c;padding:16px 24px;}
+  .sum-stat .v{font-size:24px;font-weight:900;font-family:'JetBrains Mono',monospace;color:#f4e3ad;line-height:1.2;}
+  .sum-stat .v small{font-size:12px;color:#8a8a95;font-weight:600;margin-left:3px;}
+  .sum-stat .l{font-size:11px;font-weight:700;color:#78839a;margin-top:3px;letter-spacing:.05em;}
+  .sum-cols{display:grid;grid-template-columns:1.55fr 1fr;gap:30px;align-items:start;}
+  .sum-quote{display:flex;gap:11px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:12px 14px;margin-bottom:8px;}
+  .sum-quote .av{flex-shrink:0;width:32px;height:32px;border-radius:9px;border:1px solid rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;font-size:16px;}
+  .sum-quote .nm{font-size:11.5px;font-weight:800;margin-bottom:3px;}
+  .sum-quote .tx{font-size:12px;line-height:1.65;color:#c9cfdc;}
+  @media(max-width:1000px){.sum-cols{grid-template-columns:1fr;}.sum-statrow{grid-template-columns:repeat(2,1fr);}}
   .sum-cover{position:relative;background:linear-gradient(135deg,#1b2a4a 0%,#101827 55%,#0e1118 100%);padding:44px 48px 34px;overflow:hidden;}
   .sum-cover::after{content:'';position:absolute;inset:0;background:radial-gradient(120% 140% at 85% -10%,rgba(233,195,73,.16),transparent 55%);pointer-events:none;}
   .sum-brand{font-size:11px;font-weight:800;letter-spacing:.22em;color:#e9c349;text-transform:uppercase;margin-bottom:14px;}
@@ -5223,7 +5238,7 @@ tailwind.config = {
     background:rgba(233,195,73,.07);border:1px solid rgba(233,195,73,.3);border-left:5px solid #e9c349;border-radius:14px;}
   .sum-h{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:900;color:#e9c349;letter-spacing:.08em;margin:26px 0 12px;text-transform:uppercase;}
   .sum-h::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,rgba(233,195,73,.4),transparent);}
-  .sum-grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;}
+  .sum-grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;}
   .sum-key{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.09);border-radius:14px;padding:16px 16px 14px;}
   .sum-key .no{font-size:24px;font-weight:900;color:#e9c34955;font-family:'JetBrains Mono',monospace;line-height:1;margin-bottom:8px;}
   .sum-key .tx{font-size:13px;line-height:1.7;color:#dfe3ec;}
@@ -5489,6 +5504,7 @@ function parseSummary(raw){
   });
   return {oneline: oneline, sections: sections};
 }
+
 function renderSummaryDoc(raw, doc){
   window._lastSummary = raw;
   var p = parseSummary(raw);
@@ -5499,19 +5515,61 @@ function renderSummaryDoc(raw, doc){
   var chips = selectedExperts.map(function(k){ var ex = EXPERTS[k];
     return ex ? '<span class="sum-exp-chip" style="color:'+ex.color+'">'+ex.avatar+' '+ex.name+'</span>' : ''; }).join('');
   var nTalk = chatHistory.filter(function(h){ return h.role === 'assistant'; }).length;
+  var srcCount = (String(raw).match(/\[[^\[\]]{1,40}\]/g) || []).length;
+  // 안건 관련 K-RISK 게이지 (안건에 광물명이 있으면)
+  var krName = null, krD = null;
+  Object.keys(KRISK || {}).forEach(function(k){ if(!krName && topicMsg.indexOf(k) !== -1){ krName = k; krD = KRISK[k]; } });
+  var gauge = '';
+  if(krD){
+    var col = krD.grade === '위험' ? '#ff7a7a' : (krD.grade === '주의' ? '#f2c94c' : '#5ad1b0');
+    var C = 2 * Math.PI * 46, fill = (krD.score / 100 * C).toFixed(1);
+    gauge = '<div class="sum-gauge"><svg width="128" height="128" viewBox="0 0 128 128">'
+      + '<circle cx="64" cy="64" r="46" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="11"/>'
+      + '<circle cx="64" cy="64" r="46" fill="none" stroke="' + col + '" stroke-width="11" stroke-linecap="round" '
+      + 'stroke-dasharray="' + fill + ' ' + C.toFixed(1) + '" transform="rotate(-90 64 64)"/>'
+      + '<text x="64" y="60" text-anchor="middle" fill="' + col + '" font-size="26" font-weight="900" font-family="JetBrains Mono,monospace">' + krD.score + '</text>'
+      + '<text x="64" y="80" text-anchor="middle" fill="#8fa0bd" font-size="11" font-weight="700">' + krD.grade + '</text></svg>'
+      + '<div class="gl">' + krName + ' K-RISK</div></div>';
+  }
+  // 차트: 토론에서 인용된 최근 차트 최대 2개 (없으면 K-RISK 차트)
+  var vizKeys = [];
+  for(var vi = recentViz.length - 1; vi >= 0 && vizKeys.length < 2; vi--){
+    if(vizKeys.indexOf(recentViz[vi]) === -1 && VIZ[recentViz[vi]]) vizKeys.push(recentViz[vi]);
+  }
+  if(!vizKeys.length && VIZ['k_risk']) vizKeys.push('k_risk');
+  // 패널 한마디: 전문가별 마지막 발언 발췌
+  var quotes = '';
+  selectedExperts.forEach(function(k){
+    var ex = EXPERTS[k]; if(!ex) return;
+    var last = null;
+    chatHistory.forEach(function(h){ if(h.role === 'assistant' && h.name === ex.name) last = h.content; });
+    if(!last) return;
+    var t = last.replace(/\[\[\s*viz\s*:[^\]]*\]\]/gi, '').trim();
+    if(t.length > 110) t = t.slice(0, 110) + '…';
+    quotes += '<div class="sum-quote"><div class="av" style="border-color:' + ex.color + '66">' + ex.avatar + '</div>'
+      + '<div><div class="nm" style="color:' + ex.color + '">' + ex.name + '</div>'
+      + '<div class="tx">“ ' + chip(_escH(t)) + ' ”</div></div></div>';
+  });
   var html = '<div class="sum-actions">'
     + '<button onclick="downloadMinutes(window._lastSummary||\'\')">⬇ 회의록 저장</button>'
     + '<button onclick="closeSummary()">✕ 닫기</button></div>';
-  html += '<div class="sum-cover">'
+  html += '<div class="sum-cover"><div class="sum-cover-grid"><div>'
     + '<div class="sum-brand">◆ K-RESOURCE · AI 전문가 회의실</div>'
     + '<div class="sum-doc-title">회의 결과 보고서</div>'
     + '<div class="sum-agenda">안건 — ' + _escH(topicMsg) + '</div>'
     + '<div class="sum-cover-meta"><span>일시 <b>' + new Date().toLocaleString('ko-KR') + '</b></span>'
-    + '<span>청중 <b>' + (AUD_LB[selectedAudience] || selectedAudience) + '</b></span>'
-    + '<span>발언 <b>' + nTalk + '회</b></span></div>'
-    + '<div style="margin-top:16px;display:flex;flex-wrap:wrap;gap:8px">' + chips + '</div></div>';
+    + '<span>청중 <b>' + (AUD_LB[selectedAudience] || selectedAudience) + '</b></span></div>'
+    + '<div style="margin-top:16px;display:flex;flex-wrap:wrap;gap:8px">' + chips + '</div>'
+    + '</div>' + gauge + '</div></div>';
+  html += '<div class="sum-statrow">'
+    + (krD ? '<div class="sum-stat"><div class="v" style="color:' + (krD.grade==='위험'?'#ff7a7a':(krD.grade==='주의'?'#f2c94c':'#5ad1b0')) + '">' + krD.score + '<small>/100</small></div><div class="l">' + krName + ' K-RISK</div></div>'
+           : '<div class="sum-stat"><div class="v">' + selectedExperts.length + '<small>명</small></div><div class="l">참여 전문가</div></div>')
+    + '<div class="sum-stat"><div class="v">' + nTalk + '<small>회</small></div><div class="l">전문가 발언</div></div>'
+    + '<div class="sum-stat"><div class="v">' + srcCount + '<small>건</small></div><div class="l">인용된 데이터 출처</div></div>'
+    + '<div class="sum-stat"><div class="v">' + vizKeys.length + '<small>개</small></div><div class="l">근거 차트</div></div></div>';
   html += '<div class="sum-docbody">';
   if(p.oneline) html += '<div class="sum-hero2">“ ' + chip(p.oneline) + ' ”</div>';
+  html += '<div class="sum-cols"><div>';
   p.sections.forEach(function(s){
     if(s.title.indexOf('핵심 결론') !== -1){
       html += '<div class="sum-h">🎯 ' + s.title + '</div><div class="sum-grid3">'
@@ -5530,16 +5588,17 @@ function renderSummaryDoc(raw, doc){
         + s.items.map(function(it){ return '<div class="sum-imp"><div class="bd">·</div><div class="tx">' + chip(it) + '</div></div>'; }).join('');
     }
   });
+  html += '</div><div>';
   html += '<div class="sum-h">📊 근거 데이터</div><div id="sumVizBox"></div>';
+  if(quotes) html += '<div class="sum-h">🗣 패널 한마디</div>' + quotes;
+  html += '</div></div>';
   html += '<div class="sum-foot"><span>산업통상부·산하기관 공공데이터 기반 · 모든 수치는 [데이터셋] 출처칩을 따릅니다</span><span>K-RESOURCE 자동 생성 보고서</span></div></div>';
   doc.innerHTML = html;
-  // 근거 차트 — 토론에서 마지막으로 인용된 차트, 없으면 K-RISK
-  var vk = recentViz[recentViz.length - 1] || (VIZ['k_risk'] ? 'k_risk' : null);
   var box = document.getElementById('sumVizBox');
-  if(vk && VIZ[vk] && box){ renderVizCard(VIZ[vk], box, '#e9c349'); }
-  else if(box){ box.previousElementSibling.style.display = 'none'; box.style.display = 'none'; }
+  if(box){ vizKeys.forEach(function(k){ renderVizCard(VIZ[k], box, '#e9c349'); }); }
   doc.scrollTop = 0;
 }
+
 function downloadMinutes(summary){
   var lines = ['K-RESOURCE AI 전문가 회의록', '일시: ' + new Date().toLocaleString('ko-KR'), '', '[요약]', summary, '', '[전체 회의록]'];
   chatHistory.forEach(function(h){
