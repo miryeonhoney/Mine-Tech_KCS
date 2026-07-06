@@ -1057,6 +1057,31 @@ def build_newsletter(to=None):
         f'<div style="color:#999;font-size:12px;margin-top:3px;">{n.get("검색키워드","")} · {n.get("발행일시","")}</div></div>'
         for n in news
     ) or '<div style="color:#999;">뉴스 없음</div>'
+    # 오늘의 리스크 신호등 (K/F/E-RISK 자동 계산)
+    risk_rows = ""
+    try:
+        _kr = compute_k_risk() or {}
+        _fr = compute_f_risk(fetch_food_prices())
+        _er = compute_e_risk() or {}
+        _items = [("K-RISK · " + k, v["score"], v["grade"])
+                  for k, v in sorted(_kr.items(), key=lambda x: -x[1]["score"])[:3]]
+        _items += [("F-RISK · " + x["nm"], x["score"], x["grade"]) for x in _fr[:2] if x["score"] >= 40]
+        if _er:
+            _ek, _ev = max(_er.items(), key=lambda x: x[1]["score"])
+            _items.append(("E-RISK · " + _ek, _ev["score"], _ev["grade"]))
+        _gc = {"위험": "#d64545", "주의": "#c9971b", "안정": "#2e9e6f"}
+        _gi = {"위험": "🔴", "주의": "🟡", "안정": "🟢"}
+        risk_rows = "".join(
+            f'<tr><td style="padding:7px 8px;border-bottom:1px solid #eee;">{nm}</td>'
+            f'<td style="padding:7px 8px;border-bottom:1px solid #eee;text-align:right;font-weight:700;color:{_gc.get(g,"#333")};">{_gi.get(g,"")} {s:.1f} · {g}</td></tr>'
+            for nm, s, g in _items)
+    except Exception as e:
+        print("[NEWSLETTER RISK]", e)
+    risk_block = (
+        '<h2 style="font-size:15px;color:#0b1a27;margin:0 0 12px;">🚦 오늘의 리스크 신호등 '
+        '<span style="font-size:11px;color:#999;font-weight:400;">K·F·E-RISK 자동 계산 · 0~100 높을수록 위험</span></h2>'
+        f'<table style="width:100%;border-collapse:collapse;font-size:14px;margin-bottom:18px;">{risk_rows}</table>'
+    ) if risk_rows else ""
     _date  = datetime.now().strftime("%Y년 %m월 %d일")
     _email = EMAIL_ADDRESS or "(메일 미설정)"
     _link  = unsub_link(to) if to else ""
@@ -1067,6 +1092,7 @@ def build_newsletter(to=None):
         '<h1 style="color:#fff;margin:0;font-size:22px;">핵심광물 동향 리포트</h1>'
         f'<p style="color:#7ab3cc;margin:6px 0 0;font-size:13px;">{_date}</p></div>'
         '<div style="padding:24px 32px;background:#fff;border:1px solid #e8e8e8;">'
+        f'{risk_block}'
         '<h2 style="font-size:15px;color:#0b1a27;margin:0 0 12px;">광물별 수입액</h2>'
         f'<table style="width:100%;border-collapse:collapse;font-size:14px;">{rows}</table>'
         '<h2 style="font-size:15px;color:#0b1a27;margin:12px 0 12px;">최신 뉴스</h2>'
@@ -4374,6 +4400,46 @@ def conference_chat():
                     headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"})
 
 
+@app.route("/api/conference/summary", methods=["POST"])
+def conference_summary():
+    """회의 종료 시 서기 AI가 회의록을 요약 리포트로 정리한다."""
+    if not _conf_authed():
+        return jsonify(ok=False, message="인증이 필요합니다."), 401
+    data = request.get_json(silent=True) or {}
+    history = data.get("history", [])
+    audience = data.get("audience", "consumer")
+    if not any(h.get("role") == "assistant" for h in history):
+        return jsonify(ok=False, message="요약할 전문가 발언이 없습니다."), 400
+    AUD = {"investor": "일반 투자자", "business": "기업 조달·구매 담당",
+           "consumer": "일반 소비자", "policy": "정책·연구자"}
+    aud = AUD.get(audience, "일반 소비자")
+    lines = []
+    for h in history:
+        who = "진행자" if h.get("role") == "user" else h.get("name", "전문가")
+        lines.append(f"[{who}] {h.get('content', '')}")
+    convo = "\n".join(lines)[-9000:]
+    if not OPENAI_API_KEY:
+        return jsonify(ok=False, message="API 키가 설정되지 않았습니다."), 500
+    try:
+        r = OpenAI(api_key=OPENAI_API_KEY).chat.completions.create(
+            model=DEFAULT_OPENAI_MODEL,
+            max_completion_tokens=700,
+            messages=[
+                {"role": "system", "content":
+                    "너는 자원안보 전문가 회의의 서기다. 회의록을 읽고 한국어로 간결한 회의 요약 리포트를 작성한다. "
+                    "수치를 인용할 때는 회의에서 나온 [데이터셋명] 출처 표기를 유지한다. "
+                    "마크다운 굵게(**)나 헤딩(#)은 쓰지 않는다. 회의에서 나온 내용만 쓰고 새 주장을 지어내지 않는다."},
+                {"role": "user", "content":
+                    f"청중: {aud}\n\n[회의록]\n{convo}\n\n"
+                    f"다음 형식으로 요약하라:\n"
+                    f"■ 핵심 결론 (3줄)\n■ {aud} 관점 시사점 (번호 3~4개)\n"
+                    f"■ 전문가 간 쟁점 (있으면 1~2개, 없으면 생략)\n■ 후속 확인이 필요한 데이터 (1~2개)"},
+            ])
+        return jsonify(ok=True, summary=(r.choices[0].message.content or "").strip())
+    except Exception as e:
+        return jsonify(ok=False, message=str(e)), 500
+
+
 # ═══════════════════════════════════════════════════════════════
 def render_search(q):
     import html as _html
@@ -5185,6 +5251,7 @@ tailwind.config = {
       <div id="turnControls" class="px-6 py-3 border-t border-outline-variant/20 bg-surface-container-low/40 flex items-center gap-3 flex-wrap shrink-0" style="display:none">
         <span class="text-[10px] uppercase tracking-widest text-outline font-data-tabular shrink-0">다음 발언자 ▶</span>
         <div id="tcExperts" class="flex flex-wrap gap-2"></div>
+        <button id="summaryBtn" onclick="makeSummary()" class="ml-auto shrink-0 text-xs font-bold border border-secondary/50 text-secondary rounded-lg px-3 py-1.5 hover:bg-secondary hover:text-on-secondary-fixed transition">📝 회의록 요약</button>
       </div>
       <div class="px-6 py-4 border-t border-outline-variant/20 bg-surface-container-low/60 flex gap-3 shrink-0">
         <input id="chatInput" onkeydown="if(event.key==='Enter'&&!event.isComposing)sendMessage()" placeholder="진행자로서 직접 발언 (전송 후 다음 발언자 선택)..." class="flex-1 bg-surface-container-lowest border border-outline-variant/40 rounded-lg px-4 py-2.5 text-sm text-on-surface focus:ring-1 focus:ring-secondary outline-none">
@@ -5274,6 +5341,50 @@ updateSelection();
     box.appendChild(b);
   });
 })();
+// 회의록 요약 — 서기 AI가 결론·시사점·쟁점으로 정리
+let _summing = false;
+function makeSummary(){
+  if(_summing || busy) return;
+  if(!chatHistory.some(function(h){ return h.role === 'assistant'; })) return;
+  _summing = true;
+  var area = document.getElementById('chatArea');
+  var card = document.createElement('div');
+  card.className = 'rounded-xl border border-secondary/40 bg-surface-container p-5';
+  card.innerHTML = '<div class="text-xs font-bold text-secondary mb-2">📝 회의 요약 리포트 <span class="sum-meta text-outline font-normal">— 서기 AI가 정리 중...</span></div>'
+    + '<div class="sum-body text-sm text-on-surface whitespace-pre-wrap leading-relaxed">회의록을 읽고 있습니다...</div>';
+  area.appendChild(card); area.scrollTop = area.scrollHeight;
+  fetch('/api/conference/summary', {method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({history: chatHistory, audience: selectedAudience})})
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      var b = card.querySelector('.sum-body');
+      if(d && d.ok){
+        b.textContent = d.summary;
+        card.querySelector('.sum-meta').textContent = '— ' + new Date().toLocaleString('ko-KR');
+        var dl = document.createElement('button');
+        dl.className = 'mt-3 text-xs font-bold border border-outline-variant/40 rounded-lg px-3 py-1.5 hover:border-secondary hover:text-secondary transition';
+        dl.textContent = '⬇ 회의록 + 요약 다운로드 (.txt)';
+        dl.onclick = function(){ downloadMinutes(d.summary); };
+        card.appendChild(dl);
+      } else {
+        b.textContent = '요약 실패: ' + ((d && d.message) || '알 수 없는 오류');
+      }
+      area.scrollTop = area.scrollHeight; _summing = false;
+    })
+    .catch(function(e){ card.querySelector('.sum-body').textContent = '요약 실패: ' + e; _summing = false; });
+}
+function downloadMinutes(summary){
+  var lines = ['K-RESOURCE AI 전문가 회의록', '일시: ' + new Date().toLocaleString('ko-KR'), '', '[요약]', summary, '', '[전체 회의록]'];
+  chatHistory.forEach(function(h){
+    lines.push((h.role === 'user' ? '[진행자] ' : '[' + (h.name || '전문가') + '] ') + h.content);
+  });
+  var blob = new Blob([lines.join('\n')], {type: 'text/plain;charset=utf-8'});
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'K-RESOURCE_회의록_' + new Date().toISOString().slice(0,10) + '.txt';
+  a.click(); URL.revokeObjectURL(a.href);
+}
+
 function applyAgenda(a, btn){
   document.querySelectorAll('.agenda-chip').forEach(function(x){ x.classList.remove('agenda-active'); });
   if(btn) btn.classList.add('agenda-active');
