@@ -476,12 +476,18 @@ def fetch_customs():
                 country = (it.get("국가명") or it.get("국가") or it.get("country") or "")
                 imp_amt = exp_amt = 0
                 for k, v in it.items():
-                    if "수입" in k and ("액" in k or "금액" in k):
-                        try: imp_amt = float(str(v).replace(",","") or 0)
+                    kk = str(k)
+                    # 증감·비율·수지 등 파생 필드는 제외 (음수 총액 방지)
+                    if any(x in kk for x in ("증감", "율", "비", "전년", "수지", "차액")):
+                        continue
+                    if "수입" in kk and ("금액" in kk or "액" in kk):
+                        try: imp_amt = float(str(v).replace(",", "") or 0)
                         except: pass
-                    if "수출" in k and ("액" in k or "금액" in k):
-                        try: exp_amt = float(str(v).replace(",","") or 0)
+                    if "수출" in kk and ("금액" in kk or "액" in kk):
+                        try: exp_amt = float(str(v).replace(",", "") or 0)
                         except: pass
+                if imp_amt < 0: imp_amt = 0   # 수입액은 음수가 될 수 없음
+                if exp_amt < 0: exp_amt = 0
                 all_rows.append({
                     "광물명": mineral, "국가명": country,
                     "수입금액(달러)": imp_amt, "수출금액(달러)": exp_amt,
@@ -655,6 +661,62 @@ def load_risk_data():
     except Exception:
         return []
 
+# ── K-RISK 종합 공급망 위험 점수 ──────────────────────────────
+# 따로 발표되는 산업부 지표를 교차 계산해 광물별 공급위험을 0~100 단일 점수로 융합.
+#   0.35×수급불안정(100−수급안정화지수) + 0.25×수입집중도(HHI)
+# + 0.20×지정학(고위험국 수입비중·1위 생산국) + 0.20×가격변동성(파생지수 24개월 σ/μ)
+# 시장위험지수·비축 항목은 공개 데이터 확보 시 가중 반영 예정 → 잔여 항목에 재배분한 산식.
+K_GEO_RISK_COUNTRIES = {"중국", "러시아", "러시아연방", "콩고민주공화국", "미얀마"}
+K_TOP_PRODUCER = {"리튬": "칠레", "니켈": "인도네시아", "코발트": "콩고민주공화국",
+                  "동": "칠레", "텅스텐": "중국", "몰리브덴": "중국"}
+K_MIDX_GROUP = {"리튬": "희소금속", "코발트": "희소금속", "텅스텐": "희소금속",
+                "몰리브덴": "희소금속", "니켈": "메이저금속", "동": "메이저금속"}
+
+def compute_k_risk():
+    c = cache_get("k_risk")
+    if c is not None: return c
+    out = {}
+    try:
+        risk = {r["name"]: r.get("latest") for r in (load_risk_data() or [])
+                if isinstance(r, dict) and r.get("latest") is not None}
+        midx = load_json(os.path.join(os.path.dirname(__file__), "mineral_index_data2.json"))
+        series = (midx.get("series") or {}) if isinstance(midx, dict) else {}
+        vol = {}
+        for g, s in series.items():
+            vals = [v for v in (s.get("values") or [])[-24:] if isinstance(v, (int, float))]
+            if len(vals) >= 6:
+                m = sum(vals) / len(vals)
+                sd = (sum((v - m) ** 2 for v in vals) / len(vals)) ** 0.5
+                vol[g] = min(100.0, sd / m * 250) if m else 0.0
+        imp = {}
+        for r in (fetch_customs() or []):
+            nm = str(r.get("광물명", "")).strip()
+            ct = str(r.get("국가명", "")).strip().replace(" ", "")
+            v = r.get("수입금액(달러)") or 0
+            if nm and ct and v > 0:
+                imp.setdefault(nm, {})
+                imp[nm][ct] = imp[nm].get(ct, 0) + v
+        for name, idx in risk.items():
+            s_unstab = max(0.0, min(100.0, 100.0 - idx))
+            v_score = vol.get(K_MIDX_GROUP.get(name, "종합"), vol.get("종합", 0.0))
+            by_c = imp.get(name) or {}
+            tot = sum(by_c.values())
+            hhi = sum((v / tot) ** 2 for v in by_c.values()) * 100 if tot else 50.0
+            geo_share = (sum(v for c2, v in by_c.items() if c2 in K_GEO_RISK_COUNTRIES)
+                         / tot * 100 if tot else 0.0)
+            top = K_TOP_PRODUCER.get(name) or (USGS_DATA.get(name) or {}).get("1위국", "")
+            g_score = min(100.0, geo_share + (20.0 if top in K_GEO_RISK_COUNTRIES else 0.0))
+            score = round(max(0.0, min(100.0,
+                0.35 * s_unstab + 0.25 * hhi + 0.20 * g_score + 0.20 * v_score)), 1)
+            grade = "위험" if score >= 70 else ("주의" if score >= 40 else "안정")
+            out[name] = {"score": score, "grade": grade, "1위국": top,
+                         "요소": {"수급불안정": round(s_unstab, 1), "수입집중도": round(hhi, 1),
+                                  "지정학": round(g_score, 1), "가격변동성": round(v_score, 1)}}
+    except Exception as e:
+        print(f"[K-RISK] 계산 오류: {e}")
+    cache_set("k_risk", out, ttl=3600)
+    return out
+
 FOOD_NEWS_KEYWORDS = ["장바구니 물가", "농수산물 가격", "채소 가격", "과일 가격", "축산물 가격", "밥상물가"]
 
 def fetch_food_news():
@@ -748,6 +810,7 @@ def by_mineral(rows):
         nm = r.get("광물명","기타")
         try: v = float(str(r.get("수입금액(달러)",0)).replace(",","") or 0)
         except: v = 0
+        if v < 0: v = 0   # 증감치 등 오염 데이터 방어
         s[nm] = s.get(nm,0) + v
     return sorted(s.items(), key=lambda x: x[1], reverse=True)
 
@@ -984,6 +1047,30 @@ def render_dashboard(home=False):
     _risk_high = [r["name"] for r in risk if r["latest"] < 30]
     risk_summary = ("현재 <b style=\"color:#ff7a7a\">" + " · ".join(_risk_high) + "</b> 의 수급 불안이 높습니다."
                     if _risk_high else "현재 주요 광물 수급은 비교적 안정적입니다.")
+
+    # ── K-RISK 종합 공급망 위험 점수 카드 ──
+    krisk = compute_k_risk()
+    def _krisk_card(name, d):
+        col = "#ff7a7a" if d["grade"] == "위험" else ("#f2c94c" if d["grade"] == "주의" else "#5ad1b0")
+        ico = "🔴" if d["grade"] == "위험" else ("🟡" if d["grade"] == "주의" else "🟢")
+        p = d["요소"]
+        return (f'<div class="risk-card" style="border-left:4px solid {col}">'
+                f'<div class="rk-top"><span class="rk-nm">{name}</span>'
+                f'<span class="rk-tag" style="background:{col}22;color:{col}">{ico} {d["grade"]}</span></div>'
+                f'<div class="rk-val" style="color:{col}">{d["score"]:.1f}<span>/100</span></div>'
+                f'<div class="rk-sub" style="line-height:1.7">수급불안정 {p["수급불안정"]:.0f} · 수입집중 {p["수입집중도"]:.0f}<br>'
+                f'지정학 {p["지정학"]:.0f} · 변동성 {p["가격변동성"]:.0f}</div></div>')
+    krisk_cards = ("".join(_krisk_card(k, v) for k, v in
+                           sorted(krisk.items(), key=lambda x: -x[1]["score"]))
+                   or '<div class="empty">K-RISK 계산 데이터 없음</div>')
+    _kr_red = [k for k, v in krisk.items() if v["grade"] == "위험"]
+    _kr_yel = [k for k, v in krisk.items() if v["grade"] == "주의"]
+    if _kr_red:
+        krisk_summary = 'K-RISK 기준 <b style="color:#ff7a7a">' + " · ".join(_kr_red) + "</b> 이(가) 위험(🔴) 단계입니다."
+    elif _kr_yel:
+        krisk_summary = 'K-RISK 기준 <b style="color:#f2c94c">' + " · ".join(_kr_yel) + "</b> 이(가) 주의(🟡) 단계입니다."
+    else:
+        krisk_summary = "K-RISK 기준 주요 광물 공급위험은 안정(🟢) 범위입니다."
 
     # ── 광물 가격지수 (한국광해광업공단 파생지수, 2012~ 월별) ──
     midx = load_json(os.path.join(os.path.dirname(__file__), "mineral_index_data2.json"))
@@ -1743,13 +1830,17 @@ var CAT_ACTS={
     var cat=(p && ['minerals','food','energy'].indexOf(p)>=0)?p:'minerals';
     document.body.dataset.cat = cat;
     var b=document.querySelector('.cat-btn[data-cat="'+cat+'"]'); if(b) switchCategory(cat,b);
-    // 메인 검색/메가메뉴에서 넘어온 딥링크
-    if(min){ switchTab('map', document.querySelector('.nav a[data-tab="map"]')); if(window.selectMineral) selectMineral(min, null); }
-    else if(sec){
-      if(cat==='minerals') switchTab(sec, document.querySelector('.nav a[data-tab="'+sec+'"]'));
-      else if(cat==='food') switchFoodTab(sec, document.querySelector('#subnav-food .food-subnav[data-tab="food-'+sec+'"]'));
-      else if(cat==='energy') switchOilTab(sec, document.querySelector('#subnav-energy .oil-subnav[data-tab="oil-'+sec+'"]'));
-    }
+    // 메인 검색/메가메뉴에서 넘어온 딥링크 — switchTab이 뒤 스크립트에 정의되므로 load 후 실행
+    var _deep=function(){ try{
+      if(min){ switchTab('map', document.querySelector('.nav a[data-tab="map"]')); if(window.selectMineral) selectMineral(min, null);
+        if(qp.get('mode')==='routes' && window.setMode) setTimeout(function(){ setMode('routes', document.getElementById('modeRoutes')); }, 400); }
+      else if(sec){
+        if(cat==='minerals') switchTab(sec, document.querySelector('.nav a[data-tab="'+sec+'"]'));
+        else if(cat==='food') switchFoodTab(sec, document.querySelector('#subnav-food .food-subnav[data-tab="food-'+sec+'"]'));
+        else if(cat==='energy') switchOilTab(sec, document.querySelector('#subnav-energy .oil-subnav[data-tab="oil-'+sec+'"]'));
+      }
+    }catch(e){} };
+    if(document.readyState==='complete') _deep(); else window.addEventListener('load', _deep);
     if(ar){ ar.style.display='none'; }   // 막 타이틀 카드 제거 — 바로 대시보드
     document.body.classList.add('landed');
   }catch(e){ var ar=document.getElementById('arrival'); if(ar) ar.style.display='none'; }
@@ -1763,7 +1854,8 @@ function countUp(){
     if(!m){ el._cu=1; return; }
     var num=parseFloat(m[2].replace(/,/g,'')); if(!isFinite(num)||num<=0){ el._cu=1; return; }
     el._cu=1; var pre=m[1], suf=m[3], dur=1000, t0=performance.now();
-    function step(now){ var k=Math.min((now-t0)/dur,1), e=1-Math.pow(1-k,3);
+    function step(now){ if(!(now>t0)){ el.textContent=pre+num.toLocaleString()+suf; return; }  // 타임스탬프 이상(헤드리스 등) 시 최종값 즉시 표시
+      var k=Math.min((now-t0)/dur,1), e=1-Math.pow(1-k,3);
       el.textContent=pre+Math.round(num*e).toLocaleString()+suf;
       if(k<1) requestAnimationFrame(step); else el.textContent=pre+num.toLocaleString()+suf; }
     requestAnimationFrame(step);
@@ -2485,8 +2577,17 @@ tr:hover td{{background:var(--bg3);}}
 </div>
 
 <div id="tab-risk" class="tab-panel">
-  <div class="page-title">🚦 자원 리스크 신호등 — 수급안정화지수 <span style="color:var(--muted2);font-weight:400;font-size:12px">· 한국광해광업공단 · 지수 높을수록 수급 안정</span></div>
-  <div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:12px 16px;margin-bottom:14px;font-size:13px;color:var(--muted);">💡 {risk_summary} <span style="color:var(--muted2)">— 네이버엔 없는 공급 리스크 진단. 자세한 영향은 AI 회의실에서.</span></div>
+  <div class="page-title">🚦 K-RISK 종합 공급망 위험 <span style="color:var(--muted2);font-weight:400;font-size:12px">· 산업부 공공데이터 교차 계산 · 0~100, 높을수록 위험</span></div>
+  <div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:12px 16px;margin-bottom:14px;font-size:13px;color:var(--muted);">💡 {krisk_summary} <span style="color:var(--muted2)">— 따로 발표되던 지표를 하나의 위험 점수로 융합. 자세한 영향은 AI 회의실에서.</span></div>
+  <div class="risk-grid">{krisk_cards}</div>
+  <div style="font-size:11.5px;color:var(--muted2);margin:10px 2px 0;line-height:1.75;">
+    산식 <b>K-RISK = 0.35×수급불안정(100−수급안정화지수) + 0.25×수입집중도(HHI) + 0.20×지정학 + 0.20×가격변동성</b>
+    · 🟢 0~39 안정 🟡 40~69 주의 🔴 70~100 위험<br>
+    데이터: 광해광업공단 수급안정화지수·국가별 광종 수출입·파생지수 + USGS MCS — 갱신 시 자동 재계산.
+    시장위험지수·비축 항목은 공개 데이터 확보 시 가중 반영 예정(현재 잔여 항목 재배분).
+  </div>
+  <div class="page-title" style="margin-top:22px;font-size:15px;">구성 원지표 — 수급안정화지수 <span style="color:var(--muted2);font-weight:400;font-size:12px">· 한국광해광업공단 · 지수 높을수록 수급 안정</span></div>
+  <div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:12px 16px;margin-bottom:14px;font-size:13px;color:var(--muted);">💡 {risk_summary} <span style="color:var(--muted2)">— K-RISK 수급불안정 요소의 원자료.</span></div>
   <div class="risk-grid">{risk_cards}</div>
   <div class="section" style="padding:14px 16px;margin-top:14px;">
     <div class="chart-title">수급안정화지수 추이 (최근 3년, 월별)</div>
@@ -4426,17 +4527,17 @@ body{font-variant-numeric:tabular-nums;}
 # 전문가가 발언하면서 근거로 띄울 수 있는 차트 스펙을 실데이터로 생성.
 # 각 항목: {title, type(line|bar|doughnut|stat), labels, series|stats, note, source}
 EXPERT_VIZ = {
-    "리튬":   ["risk_리튬", "reserves", "mineral_index", "komir_trade"],
-    "코발트": ["risk_코발트", "reserves", "komir_trade"],
-    "니켈":   ["risk_니켈", "reserves", "resource_dev"],
+    "리튬":   ["k_risk", "risk_리튬", "reserves", "mineral_index", "komir_trade"],
+    "코발트": ["k_risk", "risk_코발트", "reserves", "komir_trade"],
+    "니켈":   ["k_risk", "risk_니켈", "reserves", "resource_dev"],
     "희토류": ["reserves", "mineral_index", "komir_trade"],
-    "텅스텐": ["risk_텅스텐", "mineral_index", "reserves"],
+    "텅스텐": ["k_risk", "risk_텅스텐", "mineral_index", "reserves"],
     "망간":   ["reserves", "resource_dev", "mineral_index"],
     "흑연":   ["reserves", "mineral_index", "komir_trade"],
     "경제":   ["mineral_index", "oil_price", "food_life"],
     "통상":   ["komir_trade", "energy_import", "reserves"],
-    "지정학": ["reserves", "komir_trade", "energy_import"],
-    "정책":   ["resource_dev", "oil_reserve", "mineral_index"],
+    "지정학": ["k_risk", "reserves", "komir_trade", "energy_import"],
+    "정책":   ["k_risk", "resource_dev", "oil_reserve", "mineral_index"],
     "식품":   ["food_life"],
     "축산":   ["food_life", "resource_dev"],
     "석유":   ["oil_price", "fuel_today", "oil_reserve", "energy_import"],
@@ -4466,6 +4567,23 @@ def build_viz_catalog():
             }
     except Exception as e:
         print("[VIZ risk]", e)
+
+    # 1-b) K-RISK 종합 공급망 위험 점수 (광물별 바)
+    try:
+        kr = compute_k_risk() or {}
+        if kr:
+            items = sorted(kr.items(), key=lambda x: -x[1]["score"])
+            worst = items[0]
+            cat["k_risk"] = {
+                "title": "K-RISK 종합 공급망 위험 점수", "type": "bar",
+                "labels": [k for k, _ in items],
+                "series": [{"name": "K-RISK(0~100)", "data": [v["score"] for _, v in items],
+                            "color": "#ff7a7a"}],
+                "note": f"최고위험 {worst[0]} {worst[1]['score']} ({worst[1]['grade']}) · 🟢0~39 🟡40~69 🔴70~100",
+                "source": "산업부 공공데이터 교차 계산(K-RISK)",
+            }
+    except Exception as e:
+        print("[VIZ k_risk]", e)
 
     # 2) 광물 가격지수 (종합·카테고리)
     try:
