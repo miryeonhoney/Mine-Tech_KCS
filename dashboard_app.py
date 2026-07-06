@@ -2564,6 +2564,7 @@ tr:hover td{{background:var(--bg3);}}
       <a class="mp-tile" onclick="goSec('food','price')"><b>품목 가격</b><span>농수산 도소매가</span></a>
       <a class="mp-tile" onclick="goSec('food','trend')"><b>부류별 동향</b><span>급등·급락</span></a>
       <a class="mp-tile" onclick="goSec('food','index')"><b>물가지수</b><span>CPI·생활물가</span></a>
+      <a class="mp-tile" onclick="goSec('food','risk')"><b>리스크 신호등</b><span>F-RISK 가격 리스크</span></a>
       <a class="mp-tile" onclick="goSec('food','news')"><b>식품 뉴스</b><span>장바구니 물가</span></a>
     </div></div>
   </div>
@@ -2575,6 +2576,7 @@ tr:hover td{{background:var(--bg3);}}
       <a class="mp-tile" onclick="goSec('energy','gas')"><b>가스 · LPG</b><span>LNG·도시가스</span></a>
       <a class="mp-tile" onclick="goSec('energy','world')"><b>세계 석유</b><span>주요국 생산·매장</span></a>
       <a class="mp-tile" onclick="goSec('energy','import')"><b>수입 · 자주개발</b><span>국가별·자주개발률</span></a>
+      <a class="mp-tile" onclick="goSec('energy','risk')"><b>리스크 신호등</b><span>E-RISK 공급 리스크</span></a>
       <a class="mp-tile" onclick="goSec('energy','news')"><b>에너지 뉴스</b><span>유가·에너지 동향</span></a>
     </div></div>
   </div>
