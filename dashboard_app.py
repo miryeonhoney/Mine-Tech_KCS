@@ -1380,6 +1380,21 @@ def render_dashboard(home=False):
     else:
         erisk_summary = "E-RISK 기준 에너지 원료 공급은 안정(🟢) 범위입니다."
 
+    # ── 실시간 리스크 티커 (K/F/E-RISK 계산값) ──
+    def _tick_ico(g):
+        return "🔴" if g == "위험" else ("🟡" if g == "주의" else "🟢")
+    _tick = []
+    for k, v in sorted(krisk.items(), key=lambda x: -x[1]["score"])[:3]:
+        _tick.append(f"{_tick_ico(v['grade'])} K-RISK {k} {v['score']:.0f} {v['grade']}")
+    for x in frisk[:2]:
+        if x["score"] >= 40:
+            _tick.append(f"{_tick_ico(x['grade'])} F-RISK {x['nm']} {x['score']:.0f} 가격급등 {x['grade']}")
+    if erisk:
+        _ek, _ev = max(erisk.items(), key=lambda x: x[1]["score"])
+        _tick.append(f"{_tick_ico(_ev['grade'])} E-RISK {_ek} {_ev['score']:.0f} {_ev['grade']}")
+    _tick.append("산업부 공공데이터 실시간 교차 계산")
+    ticker_items = " &nbsp;|&nbsp; ".join(_tick)
+
     # 식품 뉴스
     fnews = fetch_food_news()
     food_news_html = "".join(f"""
@@ -2513,18 +2528,8 @@ tr:hover td{{background:var(--bg3);}}
 <!-- TICKER (핵심광물 전용) -->
 <div class="ticker" id="mineralTicker">
   <div class="ticker-inner">
-    ⚠ 핵심광물 공급망 위기 모니터링 &nbsp;|&nbsp;
-    리튬 수입 의존도 95% &nbsp;|&nbsp;
-    코발트 콩고 집중도 70% &nbsp;|&nbsp;
-    희토류 중국 생산 점유율 60% &nbsp;|&nbsp;
-    니켈 인도네시아 수출 규제 강화 &nbsp;|&nbsp;
-    USGS Mineral Commodity Summaries 2025 기준 &nbsp;|&nbsp;
-    ⚠ 핵심광물 공급망 위기 모니터링 &nbsp;|&nbsp;
-    리튬 수입 의존도 95% &nbsp;|&nbsp;
-    코발트 콩고 집중도 70% &nbsp;|&nbsp;
-    희토류 중국 생산 점유율 60% &nbsp;|&nbsp;
-    니켈 인도네시아 수출 규제 강화 &nbsp;|&nbsp;
-    USGS Mineral Commodity Summaries 2025 기준 &nbsp;|&nbsp;
+    ⚠ 자원 리스크 실시간 모니터링 &nbsp;|&nbsp; {ticker_items} &nbsp;|&nbsp;
+    ⚠ 자원 리스크 실시간 모니터링 &nbsp;|&nbsp; {ticker_items} &nbsp;|&nbsp;
   </div>
 </div>
 
@@ -4961,6 +4966,29 @@ def render_conference():
     expertviz_json = json.dumps(
         {k: [vk for vk in v if vk in _cat] for k, v in EXPERT_VIZ.items()}, ensure_ascii=False
     )
+    # 오늘의 리스크 안건 — K/F/E-RISK가 감지한 위험을 회의 안건으로 자동 제안
+    agenda = []
+    try:
+        kr = compute_k_risk()
+        for k, v in sorted(kr.items(), key=lambda x: -x[1]["score"])[:2]:
+            ico = "🔴" if v["grade"] == "위험" else ("🟡" if v["grade"] == "주의" else "🟢")
+            agenda.append(f"{ico} [K-RISK {v['score']}] {k} 공급망 위험이 '{v['grade']}' 단계입니다. 원인 진단과 한국의 대응 전략은?")
+    except Exception: pass
+    try:
+        fr = compute_f_risk(fetch_food_prices())
+        if fr and fr[0]["score"] >= 40:
+            x = fr[0]
+            ico = "🔴" if x["grade"] == "위험" else "🟡"
+            agenda.append(f"{ico} [F-RISK {x['score']}] {x['nm']} 가격이 급등 중입니다(전월 {x['rm']:+.0f}%). 장바구니 물가 파급과 전망은?")
+    except Exception: pass
+    try:
+        er = compute_e_risk()
+        if er:
+            k, v = max(er.items(), key=lambda x: x[1]["score"])
+            ico = "🔴" if v["grade"] == "위험" else ("🟡" if v["grade"] == "주의" else "🟢")
+            agenda.append(f"{ico} [E-RISK {v['score']}] 에너지 원료 중 {k} 리스크가 가장 높습니다('{v['grade']}'). 수급·가격 영향은?")
+    except Exception: pass
+    agenda_json = json.dumps(agenda, ensure_ascii=False)
     now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     PAGE = r"""<!DOCTYPE html>
 <html class="dark" lang="ko">
@@ -5104,6 +5132,8 @@ tailwind.config = {
         <p class="text-on-surface-variant text-sm mb-8"><span class="text-secondary font-bold">STEP 2.</span> 선택한 전문가들에게 던질 회의 안건(질문)을 입력하세요.</p>
         <div class="text-[10px] font-bold text-outline uppercase tracking-widest mb-3 font-data-tabular">회의에 참여할 전문가</div>
         <div id="teamSummary" class="flex flex-wrap gap-2 mb-6 min-h-[28px]"></div>
+        <div id="riskAgendaLb" class="text-[10px] font-bold text-outline uppercase tracking-widest mb-3 font-data-tabular">오늘의 리스크 안건 <span class="text-secondary">— K·F·E-RISK가 감지한 위험 (클릭하면 안건으로)</span></div>
+        <div id="riskAgenda" class="flex flex-col gap-2 mb-6"></div>
         <div class="text-[10px] font-bold text-outline uppercase tracking-widest mb-3 font-data-tabular">질문 입력</div>
         <textarea id="questionInput" rows="3" class="w-full bg-surface-container-lowest border border-outline-variant/30 rounded-lg p-4 text-sm text-on-surface focus:ring-1 focus:ring-secondary outline-none resize-none mb-3" placeholder="예: 중국의 희토류 수출 규제가 한국 배터리 산업에 미치는 영향은?"></textarea>
         <p class="text-[11px] text-on-surface-variant mb-8">회의가 시작되면 한 명씩 발언합니다. 발언이 끝날 때마다 <b class="text-secondary">다음 발언자</b>를 직접 고르거나, 직접 발언할 수 있어요.</p>
@@ -5140,6 +5170,19 @@ tailwind.config = {
 const EXPERTS = __EXPERTS_JSON__;
 const VIZ = __VIZ_JSON__;
 const EXPERT_VIZ = __EXPERTVIZ_JSON__;
+const RISK_AGENDA = __AGENDA_JSON__;
+(function(){
+  var box = document.getElementById('riskAgenda'), lb = document.getElementById('riskAgendaLb');
+  if(!box) return;
+  if(!RISK_AGENDA.length){ box.style.display='none'; if(lb) lb.style.display='none'; return; }
+  RISK_AGENDA.forEach(function(q){
+    var b = document.createElement('button');
+    b.className = 'text-xs text-left border border-outline-variant/40 rounded-lg px-3 py-2.5 text-on-surface-variant hover:border-secondary hover:text-secondary transition';
+    b.textContent = q;
+    b.onclick = function(){ var t = document.getElementById('questionInput'); t.value = q.replace(/^[🔴🟡🟢]\s*/, ''); t.focus(); };
+    box.appendChild(b);
+  });
+})();
 let vizSeq = 0;
 let recentViz = [];   // 최근 띄운 차트 키 (연속 중복 방지)
 let selectedExperts = [];
@@ -5408,6 +5451,7 @@ setInterval(() => {
     return (PAGE.replace("__EXPERTS_JSON__", experts_json)
                 .replace("__VIZ_JSON__", viz_json)
                 .replace("__EXPERTVIZ_JSON__", expertviz_json)
+                .replace("__AGENDA_JSON__", agenda_json)
                 .replace("__NOW__", now))
 
 
