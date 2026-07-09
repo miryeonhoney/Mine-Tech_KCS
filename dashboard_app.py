@@ -938,6 +938,75 @@ def dedup_news(items):
         out.append(n)
     return out
 
+# ── 지정학 상황실(3D 지구본)용 뉴스·이벤트 ──────────────────────
+GEO_NEWS_KEYWORDS = ["수출통제", "경제제재", "공급망 차질", "홍해 해상운임", "중동 긴장",
+                     "미중 갈등", "자원 무기화", "우크라이나 전쟁", "대만해협", "해협 봉쇄"]
+
+GEO_EXTRA_LOCS = {
+    "우크라이나": [49.0, 32.0], "이스라엘": [31.5, 34.9], "이란": [32.4, 53.7], "대만": [23.8, 121.0],
+    "북한": [40.3, 127.0], "홍해": [19.0, 39.0], "호르무즈해협": [26.6, 56.5], "말라카해협": [2.5, 101.5],
+    "수에즈운하": [30.4, 32.4], "남중국해": [13.0, 114.0], "파나마운하": [9.1, -79.7],
+    "유럽연합": [50.5, 4.5], "사우디아라비아": [24.0, 45.0], "카타르": [25.3, 51.2], "이라크": [33.2, 43.7],
+    "예멘": [15.5, 47.5], "미얀마": [21.0, 96.0], "베트남": [16.0, 107.5], "멕시코": [23.5, -102.0],
+    "영국": [52.5, -1.5], "프랑스": [46.5, 2.5], "독일": [51.0, 10.3], "튀르키예": [39.0, 35.0],
+    "한국": [36.5, 127.9], "홍콩": [22.3, 114.2], "싱가포르": [1.35, 103.8],
+}
+
+def _geo_locations():
+    locs = {k.replace(" ", ""): v for k, v in COUNTRY_COORDS.items()}
+    locs.update(GEO_EXTRA_LOCS)
+    return locs
+
+def fetch_geo_news():
+    return _fetch_audience_news("geo_news", {"지정학": GEO_NEWS_KEYWORDS})
+
+@app.route("/api/geo-events")
+def geo_events():
+    c = cache_get("geo_events")
+    if c is not None:
+        return jsonify(ok=bool(c), events=c or [])
+    arts = dedup_news(fetch_geo_news())[:24]
+    if not arts or not OPENAI_API_KEY:
+        cache_set("geo_events", [], ttl=300)
+        return jsonify(ok=False, events=[])
+    locs = _geo_locations()
+    heads = "\n".join(f"{i}. {n.get('제목','')} — {n.get('요약','')}" for i, n in enumerate(arts))
+    events = []
+    try:
+        r = OpenAI(api_key=OPENAI_API_KEY).chat.completions.create(
+            model=DEFAULT_OPENAI_MODEL, max_completion_tokens=1600,
+            messages=[
+                {"role": "system", "content":
+                    "너는 자원안보 지정학 분석가다. 뉴스 목록에서 '한국 자원 공급망에 영향을 줄 수 있는' 지정학 이벤트만 골라 분류한다. "
+                    "결과는 JSON 배열만 출력한다. 각 원소: {\"i\": 기사번호, \"loc\": 장소명, \"type\": \"전쟁|제재|외교|공급차질|시위\", "
+                    "\"sev\": 1~3(심각도), \"res\": \"관련 자원(리튬·원유 등, 없으면 빈문자열)\", \"why\": \"한국 공급망 영향 1문장\"}. "
+                    "loc은 반드시 다음 목록 중에서만 고른다: " + ", ".join(sorted(locs.keys())) + ". "
+                    "무관하거나 장소를 특정할 수 없는 기사는 제외한다."},
+                {"role": "user", "content": heads},
+            ])
+        txt = (r.choices[0].message.content or "").strip()
+        m = re.search(r"\[.*\]", txt, re.S)
+        for e in (json.loads(m.group(0)) if m else []):
+            try:
+                idx = int(e.get("i", -1))
+                loc = str(e.get("loc", "")).replace(" ", "")
+                if not (0 <= idx < len(arts)) or loc not in locs:
+                    continue
+                a = arts[idx]
+                events.append({
+                    "lat": locs[loc][0], "lng": locs[loc][1], "loc": loc,
+                    "type": e.get("type", "외교"), "sev": max(1, min(3, int(e.get("sev", 1)))),
+                    "res": str(e.get("res", ""))[:30], "why": str(e.get("why", ""))[:120],
+                    "title": a.get("제목", ""), "link": a.get("언론사링크", ""),
+                    "date": a.get("발행일시", ""),
+                })
+            except Exception:
+                continue
+    except Exception as ex:
+        print("[GEO EVENTS]", ex)
+    cache_set("geo_events", events, ttl=1800)
+    return jsonify(ok=bool(events), events=events)
+
 def fetch_audience_news():        return _fetch_audience_news("anews",   NEWS_AUDIENCE)
 def fetch_food_audience_news():   return _fetch_audience_news("f_anews", FOOD_NEWS_AUDIENCE)
 def fetch_energy_audience_news(): return _fetch_audience_news("e_anews", ENERGY_NEWS_AUDIENCE)
@@ -2622,6 +2691,7 @@ tr:hover td{{background:var(--bg3);}}
     </div></div>
   </div>
   <div class="cb-right">
+    <a href="/globe" class="cb-link">🌍 지정학 상황실</a>
     <a href="/conference" class="cb-link">⚖️ AI 회의실</a>
     <a href="/" class="to-space" title="허브 홈으로">🏠 허브 홈</a>
   </div>
@@ -4501,6 +4571,234 @@ def conference_summary():
         return jsonify(ok=True, summary=(r.choices[0].message.content or "").strip())
     except Exception as e:
         return jsonify(ok=False, message=str(e)), 500
+
+
+# ═══════════════════════════════════════════════════════════════
+#  지정학 상황실 — 3D 지구본 (실시간 뉴스 → AI 지정학 이벤트)
+# ═══════════════════════════════════════════════════════════════
+GLOBE_CHOKES = [
+    {"name": "말라카 해협", "lat": 2.5, "lng": 101.5, "risk": "critical"},
+    {"name": "호르무즈 해협", "lat": 26.6, "lng": 56.5, "risk": "critical"},
+    {"name": "밥엘만데브", "lat": 12.6, "lng": 43.4, "risk": "critical"},
+    {"name": "수에즈 운하", "lat": 30.4, "lng": 32.4, "risk": "high"},
+    {"name": "파나마 운하", "lat": 9.1, "lng": -79.7, "risk": "medium"},
+    {"name": "희망봉", "lat": -34.4, "lng": 18.5, "risk": "medium"},
+]
+GLOBE_ROUTES_DEF = [
+    ("칠레", "리튬·구리"), ("호주", "철광석·리튬"), ("인도네시아", "니켈"),
+    ("중국", "희토류·흑연"), ("콩고민주공화국", "코발트"), ("사우디아라비아", "원유"),
+    ("카타르", "LNG"), ("미국", "LNG·원유"), ("러시아", "유연탄"), ("브라질", "철광석"),
+]
+
+def render_globe():
+    locs = _geo_locations()
+    busan = [35.1, 129.04]
+    routes = []
+    for cn, res in GLOBE_ROUTES_DEF:
+        k = cn.replace(" ", "")
+        if k in locs:
+            routes.append({"startLat": locs[k][0], "startLng": locs[k][1],
+                           "endLat": busan[0], "endLng": busan[1],
+                           "label": f"{cn} → 부산 · {res}"})
+    kr = {}
+    try:
+        kr = compute_k_risk() or {}
+    except Exception:
+        pass
+    kr_strip = " · ".join(
+        f"{'🔴' if v['grade']=='위험' else ('🟡' if v['grade']=='주의' else '🟢')} {k} {v['score']:.0f}"
+        for k, v in sorted(kr.items(), key=lambda x: -x[1]["score"]))
+    PAGE = r"""<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>지정학 상황실 — K-RESOURCE</title>
+<link rel="icon" type="image/png" href="/static/logo_favicon.png">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<script src="https://unpkg.com/globe.gl@2.34.4/dist/globe.gl.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#05070c;color:#e6e9f2;font-family:Pretendard,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;overflow:hidden}
+#globeViz{position:fixed;inset:0}
+.hd{position:fixed;top:0;left:0;right:0;z-index:10;display:flex;align-items:center;justify-content:space-between;
+  padding:14px 22px;background:linear-gradient(180deg,rgba(5,7,12,.92),rgba(5,7,12,0));pointer-events:none}
+.hd>*{pointer-events:auto}
+.hd .brand{display:flex;align-items:center;gap:12px;text-decoration:none}
+.hd .brand img{height:30px}
+.hd .brand .t{font-size:15px;font-weight:900;color:#fff;letter-spacing:.02em}
+.hd .brand .s{font-size:10px;font-weight:700;color:#e9c349;letter-spacing:.24em;text-transform:uppercase}
+.hd .right{display:flex;align-items:center;gap:10px}
+.hd .clock{font-family:'JetBrains Mono',monospace;font-size:11px;color:#8fa0bd}
+.hd .clock b{color:#5ad1b0}
+.hd a.btn{font-size:12px;font-weight:800;color:#e6e9f2;text-decoration:none;border:1px solid rgba(255,255,255,.25);
+  border-radius:999px;padding:7px 15px;background:rgba(10,13,20,.7);backdrop-filter:blur(6px)}
+.hd a.btn:hover{border-color:#e9c349;color:#e9c349}
+.panel{position:fixed;top:64px;right:16px;bottom:16px;width:min(380px,calc(100vw - 32px));z-index:9;display:flex;flex-direction:column;
+  background:rgba(9,12,19,.82);border:1px solid rgba(255,255,255,.1);border-radius:16px;backdrop-filter:blur(10px);overflow:hidden}
+.panel .ph{padding:14px 16px 10px;border-bottom:1px solid rgba(255,255,255,.08)}
+.panel .ph .t{font-size:13px;font-weight:900;color:#fff}
+.panel .ph .t span{color:#e9c349}
+.panel .ph .s{font-size:10.5px;color:#7d89a3;margin-top:3px}
+.stats{display:flex;flex-wrap:wrap;gap:6px;padding:10px 16px;border-bottom:1px solid rgba(255,255,255,.08)}
+.stat{font-size:10.5px;font-weight:800;border-radius:999px;padding:4px 10px;border:1px solid rgba(255,255,255,.14)}
+.feed{flex:1;overflow-y:auto;padding:10px 12px}
+.feed::-webkit-scrollbar{width:5px}
+.feed::-webkit-scrollbar-thumb{background:rgba(255,255,255,.14);border-radius:3px}
+.ev{border:1px solid rgba(255,255,255,.09);border-left-width:3px;border-radius:11px;padding:10px 12px;margin-bottom:8px;cursor:pointer;
+  background:rgba(255,255,255,.02);transition:.15s}
+.ev:hover{background:rgba(255,255,255,.06);transform:translateX(-2px)}
+.ev .top{display:flex;align-items:center;gap:6px;margin-bottom:5px}
+.ev .tag{font-size:9.5px;font-weight:900;border-radius:5px;padding:2px 7px;letter-spacing:.04em}
+.ev .loc{font-size:10.5px;font-weight:700;color:#9fb0cc}
+.ev .dt{font-size:9.5px;color:#5d6880;margin-left:auto}
+.ev .ti{font-size:12.5px;font-weight:700;line-height:1.5;color:#e9ecf4}
+.ev .why{font-size:11px;line-height:1.6;color:#93a1bd;margin-top:5px}
+.ev .res{display:inline-block;font-size:9.5px;font-weight:800;color:#5fd0ff;margin-top:5px}
+.legend{position:fixed;left:16px;bottom:16px;z-index:9;background:rgba(9,12,19,.82);border:1px solid rgba(255,255,255,.1);
+  border-radius:13px;padding:12px 16px;backdrop-filter:blur(10px);font-size:11px}
+.legend .lt{font-size:10px;font-weight:900;letter-spacing:.12em;color:#7d89a3;margin-bottom:8px}
+.legend .li{display:flex;align-items:center;gap:8px;margin:4px 0;color:#c6cede}
+.legend .dot{width:9px;height:9px;border-radius:50%}
+.legend .ln{width:16px;height:2px;background:#e9c349;border-radius:2px}
+.krisk{position:fixed;left:16px;top:64px;z-index:9;max-width:calc(100vw - 440px);background:rgba(9,12,19,.82);
+  border:1px solid rgba(255,255,255,.1);border-radius:999px;padding:8px 16px;font-size:11px;font-weight:700;color:#c6cede;backdrop-filter:blur(10px)}
+.krisk b{color:#e9c349;margin-right:6px}
+.loading{padding:40px 20px;text-align:center;color:#7d89a3;font-size:12px;line-height:2}
+@media(max-width:760px){.panel{top:auto;height:45vh}.krisk{display:none}}
+</style>
+</head>
+<body>
+<div id="globeViz"></div>
+
+<div class="hd">
+  <a class="brand" href="/"><img src="/static/logo.png" alt="K-RESOURCE">
+    <span><span class="s">Geo Situation Room</span><br><span class="t">지정학 상황실</span></span></a>
+  <div class="right">
+    <span class="clock" id="clock">— <b>● LIVE</b></span>
+    <a class="btn" href="/dashboard?cat=minerals&sec=risk">🚦 리스크 신호등</a>
+    <a class="btn" href="/conference">⚖️ AI 회의실</a>
+    <a class="btn" href="/">🏠 허브 홈</a>
+  </div>
+</div>
+
+<div class="krisk"><b>K-RISK</b> __KRSTRIP__</div>
+
+<div class="panel">
+  <div class="ph">
+    <div class="t">실시간 지정학 이벤트 <span>— AI 분류</span></div>
+    <div class="s">뉴스를 AI가 읽고 한국 자원 공급망 영향 이벤트만 지구본에 표시합니다</div>
+  </div>
+  <div class="stats" id="stats"></div>
+  <div class="feed" id="feed"><div class="loading">🤖<br>AI가 최신 지정학 뉴스를<br>분석하고 있습니다...</div></div>
+</div>
+
+<div class="legend">
+  <div class="lt">LEGEND</div>
+  <div class="li"><span class="dot" style="background:#ff4d4d"></span> 전쟁 · 군사 충돌</div>
+  <div class="li"><span class="dot" style="background:#ff9f40"></span> 제재 · 수출통제</div>
+  <div class="li"><span class="dot" style="background:#f2c94c"></span> 외교 긴장</div>
+  <div class="li"><span class="dot" style="background:#ff7ab8"></span> 공급 차질</div>
+  <div class="li"><span class="dot" style="background:#9b8cff"></span> 시위 · 불안</div>
+  <div class="li"><span class="ln"></span> 한국 수입 루트</div>
+  <div class="li"><span style="color:#ff6a6a">⚓</span> 해상 초크포인트</div>
+</div>
+
+<script>
+const CHOKES = __CHOKE__;
+const ROUTES = __ROUTES__;
+const TYPE_COL = {'전쟁':'#ff4d4d','제재':'#ff9f40','외교':'#f2c94c','공급차질':'#ff7ab8','시위':'#9b8cff'};
+
+setInterval(function(){
+  var d = new Date(), p = function(n){ return String(n).padStart(2,'0'); };
+  document.getElementById('clock').innerHTML = d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())
+    +' '+p(d.getHours())+':'+p(d.getMinutes())+':'+p(d.getSeconds())+' KST <b>● LIVE</b>';
+}, 1000);
+
+const globe = Globe()(document.getElementById('globeViz'))
+  .globeImageUrl('https://unpkg.com/three-globe/example/img/earth-night.jpg')
+  .bumpImageUrl('https://unpkg.com/three-globe/example/img/earth-topology.png')
+  .backgroundImageUrl('https://unpkg.com/three-globe/example/img/night-sky.png')
+  .atmosphereColor('#4a7dbd')
+  .atmosphereAltitude(0.18)
+  .arcsData(ROUTES)
+  .arcColor(function(){ return ['rgba(233,195,73,.75)','rgba(233,195,73,.15)']; })
+  .arcStroke(0.45)
+  .arcDashLength(0.45).arcDashGap(0.25).arcDashAnimateTime(2600)
+  .arcLabel(function(d){ return '<div style="font-size:11px;font-weight:700">'+d.label+'</div>'; })
+  .htmlElementsData(CHOKES.concat([{name:'부산항 HUB', lat:35.1, lng:129.04, risk:'hub'}]))
+  .htmlLat('lat').htmlLng('lng').htmlAltitude(0.012)
+  .htmlElement(function(d){
+    var col = d.risk==='hub' ? '#5ad1b0' : (d.risk==='critical' ? '#ff6a6a' : (d.risk==='high' ? '#ff9f40' : '#ffd166'));
+    var el = document.createElement('div');
+    el.innerHTML = (d.risk==='hub' ? '🇰🇷 ' : '⚓ ') + d.name;
+    el.style.cssText = 'font-size:'+(d.risk==='hub'?'12px':'10.5px')+';font-weight:800;color:'+col
+      +';text-shadow:0 0 6px rgba(0,0,0,.95),0 0 12px rgba(0,0,0,.8);white-space:nowrap;'
+      +'transform:translate(-50%,-130%);pointer-events:none;font-family:Pretendard,sans-serif;';
+    return el;
+  })
+  .pointOfView({lat: 25, lng: 100, altitude: 2.1});
+
+globe.controls().autoRotate = true;
+globe.controls().autoRotateSpeed = 0.45;
+window.addEventListener('resize', function(){ globe.width(innerWidth).height(innerHeight); });
+
+fetch('/api/geo-events').then(function(r){ return r.json(); }).then(function(d){
+  var evs = (d && d.events) || [];
+  var feed = document.getElementById('feed');
+  if(!evs.length){
+    feed.innerHTML = '<div class="loading">표시할 이벤트가 없습니다.<br>잠시 후 새로고침해 주세요.</div>';
+    return;
+  }
+  globe.pointsData(evs)
+    .pointLat('lat').pointLng('lng')
+    .pointColor(function(e){ return TYPE_COL[e.type] || '#fff'; })
+    .pointAltitude(function(e){ return 0.012 * e.sev; })
+    .pointRadius(function(e){ return 0.32 + e.sev * 0.14; })
+    .pointLabel(function(e){ return '<div style="max-width:240px;font-size:11.5px;line-height:1.5"><b style="color:'
+      + (TYPE_COL[e.type]||'#fff') + '">[' + e.type + '] ' + e.loc + '</b><br>' + e.title + '</div>'; });
+  globe.ringsData(evs.filter(function(e){ return e.sev >= 2; }))
+    .ringLat('lat').ringLng('lng')
+    .ringColor(function(e){ return function(t){ var c = TYPE_COL[e.type] || '#fff';
+      return c + Math.round((1 - t) * 200).toString(16).padStart(2,'0'); }; })
+    .ringMaxRadius(function(e){ return e.sev * 3.2; })
+    .ringPropagationSpeed(1.6).ringRepeatPeriod(1100);
+  // 통계 칩
+  var cnt = {};
+  evs.forEach(function(e){ cnt[e.type] = (cnt[e.type] || 0) + 1; });
+  document.getElementById('stats').innerHTML = Object.keys(cnt).map(function(k){
+    return '<span class="stat" style="color:' + (TYPE_COL[k]||'#fff') + ';border-color:' + (TYPE_COL[k]||'#fff') + '55">'
+      + k + ' ' + cnt[k] + '</span>';
+  }).join('') + '<span class="stat" style="color:#8fa0bd">총 ' + evs.length + '건</span>';
+  // 피드
+  feed.innerHTML = evs.map(function(e, i){
+    var c = TYPE_COL[e.type] || '#fff';
+    return '<div class="ev" style="border-left-color:' + c + '" onclick="focusEv(' + i + ')">'
+      + '<div class="top"><span class="tag" style="background:' + c + '22;color:' + c + '">' + e.type + ' · S' + e.sev + '</span>'
+      + '<span class="loc">📍 ' + e.loc + '</span><span class="dt">' + (e.date || '').slice(5, 16) + '</span></div>'
+      + '<div class="ti">' + e.title + '</div>'
+      + (e.why ? '<div class="why">' + e.why + '</div>' : '')
+      + (e.res ? '<span class="res">⛏ 관련 자원 — ' + e.res + '</span>' : '')
+      + '</div>';
+  }).join('');
+  window._EVS = evs;
+});
+function focusEv(i){
+  var e = window._EVS[i]; if(!e) return;
+  globe.controls().autoRotate = false;
+  globe.pointOfView({lat: e.lat, lng: e.lng, altitude: 1.3}, 900);
+  setTimeout(function(){ globe.controls().autoRotate = true; }, 6000);
+}
+</script>
+</body>
+</html>"""
+    return (PAGE.replace("__CHOKE__", json.dumps(GLOBE_CHOKES, ensure_ascii=False))
+                .replace("__ROUTES__", json.dumps(routes, ensure_ascii=False))
+                .replace("__KRSTRIP__", kr_strip or "계산 중"))
+
+@app.route("/globe")
+def globe_page():
+    return Response(render_globe(), mimetype="text/html")
 
 
 # ═══════════════════════════════════════════════════════════════
