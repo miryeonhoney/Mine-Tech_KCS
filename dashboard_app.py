@@ -44,6 +44,7 @@ _load_dotenv()
 # 비밀키는 환경변수(.env 또는 호스팅 환경변수)에서 읽습니다. 코드에 하드코딩하지 마세요.
 PUBLIC_DATA_KEY     = os.environ.get("PUBLIC_DATA_KEY", "")
 CUSTOMS_API_KEY     = os.environ.get("CUSTOMS_API_KEY", "")   # 관세청 품목별 국가별 수출입실적(nitemtrade)
+JARVIS_STT_URL      = os.environ.get("JARVIS_STT_URL", "http://127.0.0.1:8765")  # Jarvis STT 사이드카
 NAVER_CLIENT_ID     = os.environ.get("NAVER_CLIENT_ID", "")
 NAVER_CLIENT_SECRET = os.environ.get("NAVER_CLIENT_SECRET", "")
 EMAIL_ADDRESS       = os.environ.get("EMAIL_ADDRESS", "")
@@ -4353,6 +4354,20 @@ def conference_chat():
                     headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"})
 
 
+@app.route("/api/conference/stt", methods=["POST"])
+def conference_stt():
+    """회의실 음성 인식 — Jarvis STT 사이드카 프록시 (WAV in, text out)."""
+    if not _conf_authed():
+        return jsonify(ok=False, message="인증이 필요합니다."), 401
+    try:
+        r = requests.post(JARVIS_STT_URL + "/stt", data=request.get_data(),
+                          headers={"Content-Type": "audio/wav"}, timeout=90)
+        return jsonify(r.json()), r.status_code
+    except Exception:
+        return jsonify(ok=False, error="stt_unavailable",
+                       message="Jarvis STT 서버가 꺼져 있습니다 — ./jarvis_stt.sh 로 실행하세요."), 503
+
+
 @app.route("/api/conference/summary", methods=["POST"])
 def conference_summary():
     """회의 종료 시 서기 AI가 회의록을 요약 리포트로 정리한다."""
@@ -5218,6 +5233,9 @@ tailwind.config = {
   .sum-doc .viz-card{margin-top:10px;}
   @media(max-width:760px){.sum-grid3{grid-template-columns:1fr;}.sum-cover,.sum-docbody{padding-left:22px;padding-right:22px;}}
   .lobby-screen,#roomScreen{display:none;}
+  #micBtn.rec{background:#d64545!important;border-color:#d64545!important;color:#fff!important;animation:micPulse 1.1s ease-in-out infinite;}
+  #voiceModeBtn.on{background:#12325e!important;border-color:#12325e!important;color:#fff!important;}
+  @keyframes micPulse{0%,100%{box-shadow:0 0 0 0 rgba(214,69,69,.45)}50%{box-shadow:0 0 0 9px rgba(214,69,69,0)}}
   .aud-btn{padding:9px 16px;border-radius:12px;font-size:13px;font-weight:700;cursor:pointer;background:#fff;border:1px solid #cdd6e4;color:#4a5872;transition:.18s;}
   .aud-btn:hover{border-color:#c8931d;color:#16233c;}
   .aud-btn.active{background:#12325e;color:#fff;border-color:#12325e;box-shadow:0 4px 14px rgba(18,50,94,.25);}
@@ -5335,10 +5353,17 @@ tailwind.config = {
         <div id="tcExperts" class="flex flex-wrap gap-2"></div>
         <button id="summaryBtn" onclick="makeSummary()" class="ml-auto shrink-0 text-xs font-bold border border-secondary/50 text-secondary rounded-lg px-3 py-1.5 hover:bg-secondary hover:text-on-secondary-fixed transition">📝 회의록 요약</button>
       </div>
-      <div class="px-6 py-4 border-t border-outline-variant/20 bg-surface-container-low/60 flex gap-3 shrink-0">
-        <input id="chatInput" onkeydown="if(event.key==='Enter'&&!event.isComposing)sendMessage()" placeholder="진행자로서 직접 발언 (전송 후 다음 발언자 선택)..." class="flex-1 bg-surface-container-lowest border border-outline-variant/40 rounded-lg px-4 py-2.5 text-sm text-on-surface focus:ring-1 focus:ring-secondary outline-none">
-        <button onclick="sendMessage()" class="bg-secondary text-on-secondary-fixed font-bold px-5 rounded-lg flex items-center gap-1.5 hover:opacity-90 transition"><span class="material-symbols-outlined text-sm">send</span>내 발언</button>
+      <div class="px-6 py-4 border-t border-outline-variant/20 bg-surface-container-low/60 flex gap-3 shrink-0 items-center">
+        <button id="micBtn" onclick="toggleMic()" title="음성 발언 (Jarvis STT)"
+          class="shrink-0 w-11 h-11 rounded-full border border-outline-variant/50 flex items-center justify-center text-on-surface-variant hover:border-secondary hover:text-secondary transition">
+          <span class="material-symbols-outlined">mic</span>
+        </button>
+        <input id="chatInput" onkeydown="if(event.key==='Enter'&&!event.isComposing)sendMessage()" placeholder="진행자로서 직접 발언 — 🎤 버튼 또는 입력 (전송 후 다음 발언자 선택)..." class="flex-1 bg-surface-container-lowest border border-outline-variant/40 rounded-lg px-4 py-2.5 text-sm text-on-surface focus:ring-1 focus:ring-secondary outline-none">
+        <button id="voiceModeBtn" onclick="toggleVoiceMode()" title="보이스 회의 — 전문가 발언 낭독 + 자동 듣기"
+          class="shrink-0 text-xs font-bold border border-outline-variant/40 rounded-lg px-3 py-2.5 text-on-surface-variant hover:border-secondary hover:text-secondary transition">🔊 보이스</button>
+        <button onclick="sendMessage()" class="bg-secondary text-on-secondary-fixed font-bold px-5 py-2.5 rounded-lg flex items-center gap-1.5 hover:opacity-90 transition"><span class="material-symbols-outlined text-sm">send</span>내 발언</button>
       </div>
+      <div id="micStatus" class="px-8 pb-2 text-xs font-data-tabular" style="display:none;color:#c8931d"></div>
     </div>
 
   </div>
@@ -5739,6 +5764,7 @@ function speakExpert(key) {
                   recentViz.push(_vizKey); if (recentViz.length > 3) recentViz.shift();
                   document.getElementById('chatArea').scrollTop = 1e9;
                 }
+                voiceSpeak(_btxt, d.speaker_end);
               }
               currentBubble = null;
             }
@@ -5802,6 +5828,120 @@ function sendMessage() {
   input.value = '';
   appendUserMsg(msg);
   renderTurnControls();
+}
+
+/* ═══ Jarvis 음성 회의 — STT(마이크) + TTS(낭독) ═══ */
+let _mic = null;          // {ctx, proc, src, stream, chunks[], rate, hadVoice, silentMs}
+let voiceMode = false;
+const SIL_TH = 0.013, SIL_MS = 1800, MAX_MS = 30000;
+
+function _micStatus(t){ const el=document.getElementById('micStatus');
+  if(!el) return; el.style.display = t ? 'block' : 'none'; el.textContent = t || ''; }
+
+function toggleMic(){ _mic ? stopMic(true) : startMic(); }
+
+async function startMic(){
+  if (_mic || busy) return;
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true, noiseSuppression:true}});
+    const ctx = new (window.AudioContext||window.webkitAudioContext)();
+    const src = ctx.createMediaStreamSource(stream);
+    const proc = ctx.createScriptProcessor(4096, 1, 1);
+    _mic = {ctx, proc, src, stream, chunks:[], rate:ctx.sampleRate, hadVoice:false, silentMs:0, startedAt:Date.now()};
+    proc.onaudioprocess = (e) => {
+      if (!_mic) return;
+      const buf = e.inputBuffer.getChannelData(0);
+      _mic.chunks.push(new Float32Array(buf));
+      let sum = 0; for (let i=0;i<buf.length;i++) sum += buf[i]*buf[i];
+      const rms = Math.sqrt(sum/buf.length);
+      const frameMs = buf.length/_mic.rate*1000;
+      if (rms > SIL_TH) { _mic.hadVoice = true; _mic.silentMs = 0; }
+      else if (_mic.hadVoice) { _mic.silentMs += frameMs; }
+      if ((_mic.hadVoice && _mic.silentMs > SIL_MS) || (Date.now()-_mic.startedAt > MAX_MS)) stopMic(true);
+    };
+    src.connect(proc); proc.connect(ctx.destination);
+    document.getElementById('micBtn').classList.add('rec');
+    _micStatus('🎤 듣는 중… 말씀이 끝나면 자동으로 전송됩니다 (Jarvis STT)');
+  } catch(e) {
+    _micStatus(''); alert('마이크 권한이 필요합니다: ' + e.message);
+  }
+}
+
+function _teardownMic(){
+  if (!_mic) return null;
+  const m = _mic; _mic = null;
+  try { m.proc.disconnect(); m.src.disconnect(); m.stream.getTracks().forEach(t=>t.stop()); m.ctx.close(); } catch(e){}
+  document.getElementById('micBtn').classList.remove('rec');
+  return m;
+}
+
+function stopMic(send){
+  const m = _teardownMic();
+  if (!m || !send) { _micStatus(''); return; }
+  if (!m.hadVoice || !m.chunks.length) { _micStatus(''); return; }
+  _micStatus('⏳ Jarvis가 알아듣는 중…');
+  const wav = _toWav16k(m.chunks, m.rate);
+  fetch('/api/conference/stt', {method:'POST', headers:{'Content-Type':'audio/wav'}, body:wav})
+    .then(r=>r.json()).then(d=>{
+      _micStatus('');
+      if (d && d.ok && d.text) {
+        const input = document.getElementById('chatInput');
+        input.value = d.text;
+        sendMessage();
+      } else if (d && d.error === 'stt_unavailable') {
+        _micStatus('⚠️ Jarvis STT 서버가 꺼져 있어요 — 터미널에서 ./jarvis_stt.sh 실행 후 다시 시도');
+      } else { _micStatus('… 음성을 인식하지 못했어요. 다시 눌러 말씀해주세요'); }
+    }).catch(()=>{ _micStatus('⚠️ STT 연결 실패 — ./jarvis_stt.sh 확인'); });
+}
+
+function _toWav16k(chunks, rate){
+  let len = 0; chunks.forEach(c=>len+=c.length);
+  let audio = new Float32Array(len); let o=0;
+  chunks.forEach(c=>{ audio.set(c,o); o+=c.length; });
+  if (rate !== 16000) {                       // 선형 리샘플 → 16k
+    const n = Math.round(len*16000/rate), out = new Float32Array(n);
+    for (let i=0;i<n;i++){ const x=i*(len-1)/(n-1), i0=Math.floor(x), f=x-i0;
+      out[i] = audio[i0]*(1-f) + (audio[i0+1]||audio[i0])*f; }
+    audio = out;
+  }
+  const pcm = new Int16Array(audio.length);
+  for (let i=0;i<audio.length;i++){ const v=Math.max(-1,Math.min(1,audio[i])); pcm[i]=v<0?v*32768:v*32767; }
+  const buf = new ArrayBuffer(44+pcm.length*2), dv = new DataView(buf);
+  const wstr=(off,s)=>{for(let i=0;i<s.length;i++)dv.setUint8(off+i,s.charCodeAt(i));};
+  wstr(0,'RIFF'); dv.setUint32(4,36+pcm.length*2,true); wstr(8,'WAVE'); wstr(12,'fmt ');
+  dv.setUint32(16,16,true); dv.setUint16(20,1,true); dv.setUint16(22,1,true);
+  dv.setUint32(24,16000,true); dv.setUint32(28,32000,true); dv.setUint16(32,2,true); dv.setUint16(34,16,true);
+  wstr(36,'data'); dv.setUint32(40,pcm.length*2,true);
+  new Int16Array(buf,44).set(pcm);
+  return buf;
+}
+
+/* ── TTS: 전문가 발언 낭독 (보이스 모드) ── */
+let _koVoice = null;
+function _pickVoice(){
+  const vs = speechSynthesis.getVoices();
+  _koVoice = vs.find(v=>v.lang==='ko-KR' && /Yuna|유나/i.test(v.name)) || vs.find(v=>v.lang&&v.lang.indexOf('ko')===0) || null;
+}
+if (window.speechSynthesis){ _pickVoice(); speechSynthesis.onvoiceschanged = _pickVoice; }
+
+function voiceSpeak(text, exKey){
+  if (!voiceMode || !window.speechSynthesis) return;
+  const clean = text.replace(/\[\[\s*viz[^\]]*\]\]/gi,'').replace(/\[[^\[\]]{1,40}\]/g,'').replace(/\*\*/g,'').trim();
+  if (!clean) return;
+  const u = new SpeechSynthesisUtterance(clean);
+  if (_koVoice) u.voice = _koVoice;
+  u.lang = 'ko-KR'; u.rate = 1.07;
+  let h = 0; for (let i=0;i<(exKey||'').length;i++) h = (h*31 + exKey.charCodeAt(i)) & 1023;
+  u.pitch = 0.85 + (h % 8) * 0.05;            // 전문가별 목소리 톤 차이
+  u.onend = () => { if (voiceMode && !busy && !_mic) setTimeout(()=>{ if(voiceMode && !busy && !_mic) startMic(); }, 350); };
+  speechSynthesis.speak(u);
+}
+
+function toggleVoiceMode(){
+  voiceMode = !voiceMode;
+  document.getElementById('voiceModeBtn').classList.toggle('on', voiceMode);
+  if (voiceMode){ _micStatus('🔊 보이스 회의 모드 — 전문가 발언을 낭독하고, 끝나면 자동으로 마이크가 켜집니다'); }
+  else { speechSynthesis.cancel(); stopMic(false); _micStatus(''); }
 }
 
 // 실시간 시계
