@@ -245,6 +245,30 @@ MINERAL_TAXONOMY = {
 TAXO_COLOR = {"비철금속": "#1c5cab", "희소금속": "#c98500", "희토류": "#4a3aa7",
               "에너지": "#d2611e", "기타": "#5b6b7f"}
 
+# 카테고리 페이지 정의 (GNB) — id, 분류명, 아이콘, 대표 설명
+CAT_DEFS = [
+    ("nf",     "비철금속", "🔩", "니켈·동·알루미늄·주석·연·아연 — 산업의 뼈대가 되는 6대 비철"),
+    ("rare",   "희소금속", "⚗️", "리튬·코발트·텅스텐 등 20종 — 배터리·반도체·방산의 핵심 소재"),
+    ("ree",    "희토류",   "🧲", "네오디뮴·디스프로슘 등 14원소 — 영구자석·전장의 필수 원소"),
+    ("energy", "에너지",   "⚡", "우라늄·유연탄 — 발전 연료 광물"),
+    ("etc",    "기타",     "⛏️", "철·흑연·귀금속(금·은·백금·팔라듐)"),
+]
+
+def mineral_category(name):
+    """수출입/데이터 광물명 → 분류. 에너지·복합명 우선 처리."""
+    n = str(name).strip()
+    if any(k in n for k in ("유연탄", "무연탄", "우라늄", "석탄", "갈탄", "토탄")): return "에너지"
+    if "희토" in n: return "희토류"
+    NF = ("니켈", "동", "구리", "알루미늄", "보크사이트", "주석", "아연")
+    if n == "연" or n.startswith("연(") or n in ("납",) or any(n.startswith(k) or k in n for k in NF): return "비철금속"
+    RARE = ("리튬", "코발트", "망간", "니오븀", "규소", "규석", "실리콘", "마그네슘", "마그네사이트", "몰리브덴", "바나듐",
+            "티타늄", "텅스텐", "안티모니", "창연", "비스무트", "크롬", "갈륨", "인듐",
+            "탄탈", "지르코늄", "스트론튬", "셀레늄", "게르마늄")
+    if any(k in n for k in RARE): return "희소금속"
+    ETC = ("철", "흑연", "백금", "팔라듐", "금", "은")
+    if any(k in n for k in ETC): return "기타"
+    return None
+
 # ── 국가별 주요 항구/중심 좌표 (뱃길 시각화용 · 항로 보정판) ─────
 COUNTRY_COORDS = {
     "호주":           [-20.3,  118.6],  "호 주":          [-20.3,  118.6],  # Port Hedland
@@ -1107,6 +1131,84 @@ def render_dashboard(home=False):
         for cat, ms in MINERAL_TAXONOMY.items())
     taxo_total = sum(len(v) for v in MINERAL_TAXONOMY.values())
 
+    # ── 분류별 카테고리 페이지 데이터 ──
+    _fc_cat = {}   # cat_id -> forecast 광종 리스트
+    for _m in forecast.keys():
+        _c = mineral_category(_m)
+        for cid, cname, _, _ in CAT_DEFS:
+            if cname == _c:
+                _fc_cat.setdefault(cid, []).append(_m)
+    catfc_js = json.dumps(_fc_cat, ensure_ascii=False)
+
+    def _bar_rows(pairs, unit="$", fmt="{:,.0f}"):
+        if not pairs: return '<div class="empty">데이터 없음</div>'
+        mx = max(v for _, v in pairs) or 1
+        return "".join(
+            f'<div class="rk-item"><span class="rk-no">{i+1:02d}</span>'
+            f'<div class="rk-mid"><div class="rk-nm">{n}</div>'
+            f'<div class="rk-bar"><div class="rk-fill" style="width:{max(v/mx*100,2):.0f}%"></div></div></div>'
+            f'<span class="rk-vl">{unit}{fmt.format(v)}</span></div>'
+            for i, (n, v) in enumerate(pairs))
+
+    cat_pages_html = ""
+    for cid, cname, cicon, cdesc in CAT_DEFS:
+        col = TAXO_COLOR[cname]
+        _imp = [(n, v) for n, v in bm if mineral_category(n) == cname][:8]
+        _imp_total = sum(v for _, v in _imp)
+        _rsv = [x for x in reserves if x["cat"] == cname][:8]
+        _rsv_rows = _bar_rows([(x["name"], x["total"]) for x in _rsv], unit="", fmt="") if False else "".join(
+            f'<div class="rk-item"><span class="rk-no">{i+1:02d}</span>'
+            f'<div class="rk-mid"><div class="rk-nm">{x["name"]}</div>'
+            f'<div class="rk-bar"><div class="rk-fill" style="width:{max(x["total"]/(_rsv[0]["total"] or 1)*100,2):.0f}%"></div></div></div>'
+            f'<span class="rk-vl">{_tons(x["total"])}</span></div>'
+            for i, x in enumerate(_rsv)) or '<div class="empty">매장량 데이터 없음</div>'
+        _rk_cards = "".join(_risk_card(r) for r in risk if mineral_category(r["name"]) == cname)
+        _kr_cards = "".join(_krisk_card(k, v) for k, v in sorted(krisk.items(), key=lambda x: -x[1]["score"])
+                            if mineral_category(k) == cname)
+        _badges = "".join(f'<i>{m}</i>' for m in MINERAL_TAXONOMY.get(cname, []))
+        _top_imp = _imp[0][0] if _imp else "—"
+        _top_rsv = (_rsv[0]["name"].split("(")[0]) if _rsv else "—"
+        _n_fc = len(_fc_cat.get(cid, []))
+        _ppa_panel = (f'<div class="section" style="padding:14px 16px;">'
+                      f'<div class="chart-title">오늘의 LME 시세 · {ppa_date}</div>{ppa_rows}</div>') if cid == "nf" else ""
+        _fc_panel = (f'<div class="section" style="padding:14px 16px;">'
+                     f'<div class="chart-title" id="fcCatTitle_{cid}">가격 전망 — 실선=실측 · 점선=예측</div>'
+                     f'<div style="display:flex;gap:6px;flex-wrap:wrap;margin:4px 0 10px" id="fcCatBtns_{cid}"></div>'
+                     f'<div style="height:260px;position:relative;"><canvas id="fcCatChart_{cid}"></canvas></div></div>') if _n_fc else ""
+        _risk_panel = (f'<div class="page-title" style="margin-top:18px">🚦 공급 리스크 <span style="color:var(--muted2);font-weight:400;font-size:12px">· K-RISK · 수급안정화지수</span></div>'
+                       f'<div class="risk-grid">{_kr_cards}{_rk_cards}</div>') if (_kr_cards or _rk_cards) else ""
+        cat_pages_html += f"""
+<div id="cat-{cid}" class="catpage" style="display:none">
+  <div class="page-title" style="font-size:15px!important">{cicon} {cname} <span style="color:var(--muted2);font-weight:400;font-size:12px">· {cdesc}</span></div>
+  <div class="stat-row">
+    <div class="stat-card"><div class="sc-label">{cname} 수입액 합계</div><div class="sc-val">{("$" + format(_imp_total, ",.0f")) if _imp_total else "—"}</div><div class="sc-sub">{"KOMIR · 최신연도" if _imp_total else "국내 수입통계 미집계 품목"}</div></div>
+    <div class="stat-card"><div class="sc-label">커버 광종</div><div class="sc-val">{len(MINERAL_TAXONOMY.get(cname, []))}<small style="font-size:14px;font-weight:600">종</small></div><div class="sc-sub">확대 대상 기준</div></div>
+    <div class="stat-card"><div class="sc-label">최대 수입 광물</div><div class="sc-val" style="font-size:20px">{_top_imp}</div><div class="sc-sub">수입액 1위</div></div>
+    <div class="stat-card"><div class="sc-label">최대 매장 광물</div><div class="sc-val" style="font-size:20px">{_top_rsv}</div><div class="sc-sub">세계 매장량 기준</div></div>
+    <div class="stat-card"><div class="sc-label">가격 전망 제공</div><div class="sc-val">{_n_fc}<small style="font-size:14px;font-weight:600">광종</small></div><div class="sc-sub">~2028 예측</div></div>
+  </div>
+  <div class="charts-row" style="height:auto!important;align-items:stretch;">
+    <div class="section" style="flex:1;padding:14px 16px;">
+      <div class="chart-title">광종별 수입액 <span style="color:var(--muted2)">· KOMIR</span></div>
+      {_bar_rows(_imp)}
+    </div>
+    <div class="section" style="flex:1;padding:14px 16px;">
+      <div class="chart-title">글로벌 매장량 순위 <span style="color:var(--muted2)">· KOMIR 2026</span></div>
+      {_rsv_rows}
+    </div>
+  </div>
+  <div class="charts-row" style="height:auto!important;align-items:stretch;margin-top:14px;">
+    {_fc_panel}
+    {_ppa_panel}
+    <div class="section" style="flex:1;padding:14px 16px;">
+      <div class="chart-title">{cname} 광종 <span style="color:var(--muted2)">· 커버리지</span></div>
+      <div class="tx-list" style="line-height:2.3;padding-top:4px">{_badges}</div>
+      <div style="font-size:12px;color:var(--muted2);margin-top:10px;line-height:1.7">분류 색상 <span style="display:inline-block;width:10px;height:10px;border-radius:3px;background:{col};vertical-align:-1px"></span> · 수입액·매장량·전망·리스크는 보유 데이터 기준으로 자동 필터링됩니다.</div>
+    </div>
+  </div>
+  <div style="text-align:center;margin:18px 0 6px;"><a href="/conference" class="nav-conf">⚖️ AI 전문가 회의실에서 {cname} 토론하기 →</a></div>
+</div>"""
+
     # 국내 광산 통계 요약
     _mst = (mines.get("stats") or {})
     _mcomp = (_mst.get("comp") or {})
@@ -1436,7 +1538,8 @@ body.is-home #home-landing{display:block;padding:44px 6vw 64px;}
 .hl-eyebrow{font-size:11px;letter-spacing:.42em;color:var(--gold);font-weight:700;text-transform:uppercase;}
 .hl-title{font-family:'Noto Serif KR',serif;font-size:clamp(28px,4vw,46px);font-weight:700;color:var(--navy);margin-top:14px;letter-spacing:-.01em;}
 .hl-sub{color:var(--muted);margin-top:13px;font-size:15px;}
-.hl-cards{display:grid;grid-template-columns:1fr;max-width:520px;margin:0 auto 32px;gap:18px;}
+.hl-cards{display:grid;grid-template-columns:repeat(3,1fr);margin:0 0 32px;gap:16px;}
+@media(max-width:900px){.hl-cards{grid-template-columns:1fr 1fr;}}
 .hl-card{position:relative;overflow:hidden;display:block;text-decoration:none;padding:32px 28px;border-radius:20px;
   background:#fff;border:1px solid var(--border);box-shadow:var(--shadow);transition:.26s cubic-bezier(.2,.7,.3,1);}
 .hl-card::after{content:'';position:absolute;inset:0;background:radial-gradient(125% 130% at 82% 0%,var(--g),transparent 60%);opacity:.7;pointer-events:none;}
@@ -1578,6 +1681,10 @@ body.scenes #scene-rail{display:flex;}
 .tx-list i{font-style:normal;display:inline-block;font-size:12px;color:var(--muted);background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:2px 10px;margin:0 4px 4px 0}
 .tx-cnt{flex-shrink:0;font-family:var(--mono);font-size:11px;font-weight:700;color:var(--muted2);margin-top:5px}
 .rk-cat{font-style:normal;font-size:9.5px;font-weight:700;margin-left:5px}
+/* 분류별 카테고리 페이지 */
+.catpage{padding:18px 24px;}
+body.is-home .catpage{display:none!important;}
+.catpage .stat-row{margin-bottom:14px}
 /* 홈 금속 시세 스트립 */
 .hl-metal{margin:0 0 28px;background:#fff;border:1px solid var(--border);border-radius:18px;padding:18px 22px;box-shadow:var(--shadow)}
 .hm-row{display:grid;grid-template-columns:repeat(6,1fr);gap:10px}
@@ -1591,17 +1698,55 @@ body.scenes #scene-rail{display:flex;}
 @media(max-width:1100px){.dash-cols{grid-template-columns:1fr 1fr}.dash-col:last-child{grid-column:1/-1}}
 """
     CAT_JS = r"""
+var CATS=['minerals','nf','rare','ree','energy','etc'];
 function switchCategory(cat, el){
-  if(document.body.classList.contains('is-home')){ location.href='/dashboard?cat=minerals'; return; }  // 메인에선 카테고리 화면으로 이동
-  var blk=document.getElementById('cat-minerals'); if(blk) blk.style.display='flex';
-  var tk=document.getElementById('mineralTicker'); if(tk) tk.style.display='flex';
+  if(CATS.indexOf(cat)<0) cat='minerals';
+  if(document.body.classList.contains('is-home')){ location.href='/dashboard?cat='+cat; return; }  // 메인에선 카테고리 화면으로 이동
+  var mn=document.getElementById('cat-minerals'); if(mn) mn.style.display=(cat==='minerals')?'flex':'none';
+  CATS.slice(1).forEach(function(c){
+    var d=document.getElementById('cat-'+c); if(d) d.style.display=(c===cat)?'block':'none';
+  });
   document.querySelectorAll('.cat-btn').forEach(function(b){b.classList.remove('active');});
   if(el) el.classList.add('active');
-  if(typeof initMap==='function' && !window._mapInited){
+  else { var b2=document.querySelector('.cat-btn[data-cat="'+cat+'"]'); if(b2) b2.classList.add('active'); }
+  if(cat==='minerals' && typeof initMap==='function' && !window._mapInited){
     var mp=document.querySelector('#tab-map.active'); if(mp) initMap();
   }
+  if(cat!=='minerals' && typeof initCatForecast==='function') initCatForecast(cat);
   document.body.dataset.cat = 'minerals';
   if(window._applyScenes) window._applyScenes('minerals');
+}
+// ── 분류 페이지 가격전망 미니차트 ──
+var _catFc={};
+function initCatForecast(cat){
+  if(_catFc[cat] || !window.CATFC) return;
+  var keys=(CATFC[cat]||[]).filter(function(m){ return FORECAST[m]; });
+  if(!keys.length){ _catFc[cat]=true; return; }
+  var box=document.getElementById('fcCatBtns_'+cat); if(!box) return;
+  keys.forEach(function(m,i){
+    var b=document.createElement('button');
+    b.className='mineral-btn'+(i===0?' active':''); b.textContent=m; b.style.fontSize='11.5px'; b.style.padding='4px 12px';
+    b.onclick=function(){ box.querySelectorAll('.mineral-btn').forEach(function(x){x.classList.remove('active');}); b.classList.add('active'); drawCatForecast(cat,m); };
+    box.appendChild(b);
+  });
+  _catFc[cat]={chart:null};
+  drawCatForecast(cat, keys[0]);
+}
+function drawCatForecast(cat,m){
+  var d=FORECAST[m]; if(!d) return;
+  var t=document.getElementById('fcCatTitle_'+cat);
+  if(t) t.textContent=m+' 가격 전망 ('+(d.unit||'')+') — 실선=실측 · 점선=예측';
+  var actual=d.values.map(function(v,i){ return i<d.split? v: null; });
+  var fut=d.values.map(function(v,i){ return i>=d.split-1? v: null; });
+  if(_catFc[cat] && _catFc[cat].chart) _catFc[cat].chart.destroy();
+  _catFc[cat]={chart:new Chart(document.getElementById('fcCatChart_'+cat),{type:'line',
+    data:{labels:d.dates,datasets:[
+      {label:'실측',data:actual,borderColor:'#1c5cab',backgroundColor:'rgba(28,92,171,.08)',fill:true,borderWidth:2,tension:.25,pointRadius:0},
+      {label:'예측',data:fut,borderColor:'#c98500',borderDash:[7,5],backgroundColor:'transparent',borderWidth:2,tension:.25,pointRadius:0}]},
+    options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},
+      plugins:{legend:{labels:{color:'#4a5872',font:{size:10},boxWidth:10}}},
+      scales:{x:{ticks:{color:'#6f7b90',maxTicksLimit:10},grid:{color:'#e8ecf3'}},
+        y:{ticks:{color:'#6f7b90'},grid:{color:'#e8ecf3'}}}}})};
 }
 // 메가메뉴 → 해당 섹션 선택
 function goSec(cat, sec){
@@ -1640,8 +1785,9 @@ var CAT_ACTS={
     if(document.body.classList.contains('is-home')){ if(ar) ar.style.display='none'; return; }
     var qp=new URLSearchParams(location.search);
     var sec=qp.get('sec'), min=qp.get('min');
+    var cat0=qp.get('cat')||'minerals'; if(CATS.indexOf(cat0)<0) cat0='minerals';
     document.body.dataset.cat = 'minerals';
-    var b=document.querySelector('.cat-btn[data-cat="minerals"]'); if(b) switchCategory('minerals',b);
+    var b=document.querySelector('.cat-btn[data-cat="'+cat0+'"]'); switchCategory(cat0,b);
     // 메인 검색/메가메뉴에서 넘어온 딥링크 — switchTab이 뒤 스크립트에 정의되므로 load 후 실행
     var _deep=function(){ try{
       if(min){ switchTab('map', document.querySelector('.nav a[data-tab="map"]')); if(window.selectMineral) selectMineral(min, null);
@@ -2091,6 +2237,11 @@ tr:hover td{{background:var(--bg3);}}
       <a class="mp-tile" onclick="goSec('minerals','news')"><b>뉴스 피드</b><span>대상별 자원 뉴스</span></a>
     </div></div>
   </div>
+  <button class="cat-btn" data-cat="nf" onclick="switchCategory('nf',this)">비철금속</button>
+  <button class="cat-btn" data-cat="rare" onclick="switchCategory('rare',this)">희소금속</button>
+  <button class="cat-btn" data-cat="ree" onclick="switchCategory('ree',this)">희토류</button>
+  <button class="cat-btn" data-cat="energy" onclick="switchCategory('energy',this)">에너지</button>
+  <button class="cat-btn" data-cat="etc" onclick="switchCategory('etc',this)">기타</button>
   <div class="cb-right">
     <a href="/globe" class="cb-link">🌍 지정학 상황실</a>
     <a href="/conference" class="cb-link">⚖️ AI 회의실</a>
@@ -2157,7 +2308,12 @@ tr:hover td{{background:var(--bg3);}}
       <p class="hl-sub">핵심광물 대시보드로 들어가세요.</p>
     </div>
     <div class="hl-cards">
-      <a class="hl-card hl-min" href="/dashboard?cat=minerals"><div class="hl-ic">🔩</div><div class="hl-nm">핵심광물</div><div class="hl-dc">리튬·희토류 공급망과 글로벌 매장량</div><div class="hl-go">대시보드 →</div></a>
+      <a class="hl-card hl-min" href="/dashboard?cat=minerals"><div class="hl-ic">💎</div><div class="hl-nm">핵심광물 종합</div><div class="hl-dc">수급·가격지수·전망·매장량·리스크·국내광산</div><div class="hl-go">대시보드 →</div></a>
+      <a class="hl-card hl-min" href="/dashboard?cat=nf"><div class="hl-ic">🔩</div><div class="hl-nm">비철금속</div><div class="hl-dc">니켈·동·알루미늄·주석·연·아연 + LME 시세</div><div class="hl-go">대시보드 →</div></a>
+      <a class="hl-card hl-min" href="/dashboard?cat=rare"><div class="hl-ic">⚗️</div><div class="hl-nm">희소금속</div><div class="hl-dc">리튬·코발트·텅스텐 등 20종 전략 소재</div><div class="hl-go">대시보드 →</div></a>
+      <a class="hl-card hl-min" href="/dashboard?cat=ree"><div class="hl-ic">🧲</div><div class="hl-nm">희토류</div><div class="hl-dc">네오디뮴·디스프로슘 등 14원소</div><div class="hl-go">대시보드 →</div></a>
+      <a class="hl-card hl-min" href="/dashboard?cat=energy"><div class="hl-ic">⚡</div><div class="hl-nm">에너지</div><div class="hl-dc">우라늄·유연탄 — 발전 연료 광물</div><div class="hl-go">대시보드 →</div></a>
+      <a class="hl-card hl-min" href="/dashboard?cat=etc"><div class="hl-ic">⛏️</div><div class="hl-nm">기타 광물</div><div class="hl-dc">철·흑연·금·은·백금·팔라듐</div><div class="hl-go">대시보드 →</div></a>
     </div>
     {home_risk_html}
     <div class="hl-metal"><div class="hl-risk-head">💰 오늘의 금속 시세 <span>런던금속거래소(LME) 종가 · 조달청 비축물자 · {ppa_date}</span></div>
@@ -2389,7 +2545,10 @@ tr:hover td{{background:var(--bg3);}}
 
 </div><!-- /#cat-minerals -->
 
-<script>var RISK = {risk_js}; var MIDX = {midx_js}; var NEWS = {news_js}; var FORECAST = {forecast_js}; var STEEL = {steel_js}; var MINES = {mines_js}; var OUTLOOK = {outlook_js};</script>
+<!-- ===== 분류별 카테고리 페이지 ===== -->
+{cat_pages_html}
+
+<script>var RISK = {risk_js}; var MIDX = {midx_js}; var NEWS = {news_js}; var FORECAST = {forecast_js}; var CATFC = {catfc_js}; var STEEL = {steel_js}; var MINES = {mines_js}; var OUTLOOK = {outlook_js};</script>
 <script>{CAT_JS}</script>
 
 <script>
