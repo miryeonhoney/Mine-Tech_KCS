@@ -5277,6 +5277,31 @@ tailwind.config = {
   .sum-doc .viz-card{margin-top:10px;}
   @media(max-width:760px){.sum-grid3{grid-template-columns:1fr;}.sum-cover,.sum-docbody{padding-left:22px;padding-right:22px;}}
   .lobby-screen,#roomScreen{display:none;}
+  /* 회의 룸 — 전문가 좌석 스트립 */
+  .aud-tag{display:inline-flex;align-items:center;font-size:11px;font-weight:800;padding:7px 13px;border-radius:12px;
+    background:#12325e;color:#f0d68a;letter-spacing:.02em;}
+  .exp-seat{position:relative;display:inline-flex;align-items:center;gap:7px;padding:7px 13px;border-radius:12px;
+    background:#fff;border:1.5px solid #e3e8f0;transition:.25s;box-shadow:0 1px 3px rgba(20,35,60,.06);}
+  .es-avatar{font-size:17px;line-height:1;}
+  .es-name{font-size:12px;font-weight:800;color:var(--exc,#12325e);}
+  .es-eq{display:none;align-items:flex-end;gap:2px;height:13px;margin-left:2px;}
+  .es-eq i{width:3px;border-radius:2px;background:var(--exc,#c8931d);animation:eqB .7s ease-in-out infinite;}
+  .es-eq i:nth-child(1){height:5px;animation-delay:0s}
+  .es-eq i:nth-child(2){height:11px;animation-delay:.15s}
+  .es-eq i:nth-child(3){height:7px;animation-delay:.3s}
+  .es-eq i:nth-child(4){height:12px;animation-delay:.45s}
+  @keyframes eqB{0%,100%{transform:scaleY(.4)}50%{transform:scaleY(1)}}
+  .exp-seat.speaking{border-color:var(--exc,#c8931d);background:#fffdf5;
+    box-shadow:0 0 0 3px color-mix(in srgb,var(--exc,#c8931d) 22%, transparent),0 8px 22px rgba(20,35,60,.14);
+    transform:translateY(-2px);}
+  .exp-seat.speaking .es-eq{display:inline-flex;}
+  .exp-seat.speaking::after{content:'ON AIR';position:absolute;top:-8px;right:-6px;font-size:8px;font-weight:900;
+    letter-spacing:.08em;background:#d64545;color:#fff;padding:2px 6px;border-radius:6px;}
+  /* 룸 배경 — 은은한 네이비 그라데이션 */
+  #roomScreen #chatArea{background:
+    radial-gradient(700px 300px at 85% -5%, rgba(28,92,171,.05), transparent 60%),
+    radial-gradient(500px 260px at 5% 0%, rgba(200,147,29,.05), transparent 55%);}
+  .msg-bubble{font-size:14.5px!important;}
   #micBtn.rec{background:#d64545!important;border-color:#d64545!important;color:#fff!important;animation:micPulse 1.1s ease-in-out infinite;}
   #voiceModeBtn.on{background:#12325e!important;border-color:#12325e!important;color:#fff!important;}
   @keyframes micPulse{0%,100%{box-shadow:0 0 0 0 rgba(214,69,69,.45)}50%{box-shadow:0 0 0 9px rgba(214,69,69,0)}}
@@ -5681,10 +5706,14 @@ function startSession() {
   showScreen('roomScreen');
   const audLabel = {investor:'📈 일반 투자자', business:'🏢 기업·조달', consumer:'🛒 일반 소비자', policy:'🏛️ 정책·연구'}[selectedAudience] || selectedAudience;
   document.getElementById('activeExperts').innerHTML =
-    '<span class="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-full" style="background:#e9c34922;color:#e9c349;border:1px solid #e9c34955">대상 · '+audLabel+'</span>' +
+    '<span class="aud-tag">'+audLabel+'</span>' +
     selectedExperts.map(k => {
     const ex = EXPERTS[k];
-    return '<span class="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-full" style="background:'+ex.color+'22;color:'+ex.color+';border:1px solid '+ex.color+'44">'+ex.avatar+' '+ex.name+'</span>';
+    return '<div class="exp-seat" id="seat-'+k+'" style="--exc:'+ex.color+'">'
+      + '<span class="es-avatar">'+ex.avatar+'</span>'
+      + '<span class="es-name">'+ex.name.replace(' 전문가','')+'</span>'
+      + '<span class="es-eq"><i></i><i></i><i></i><i></i></span>'
+      + '</div>';
   }).join('');
   document.getElementById('chatArea').innerHTML = '';
   recentViz = [];
@@ -5772,6 +5801,7 @@ function speakExpert(key) {
             const d = JSON.parse(raw);
             const chatArea = document.getElementById('chatArea');
             if (d.speaker_start) {
+              setSpeaking(d.speaker_start, true);
               const ex = EXPERTS[d.speaker_start] || {};
               const div = document.createElement('div');
               div.className = 'flex gap-3 max-w-[85%]';
@@ -5811,6 +5841,7 @@ function speakExpert(key) {
                 voiceSpeak(_btxt, d.speaker_end);
               }
               currentBubble = null;
+              if (!voiceMode) setSpeaking(null, false);
             }
           } catch(e) {}
         });
@@ -5968,6 +5999,10 @@ function _pickVoice(){
 }
 if (window.speechSynthesis){ _pickVoice(); speechSynthesis.onvoiceschanged = _pickVoice; }
 
+function setSpeaking(key, on){
+  document.querySelectorAll('.exp-seat.speaking').forEach(el=>{ if(!on || el.id!=='seat-'+key) el.classList.remove('speaking'); });
+  if (on && key){ const el=document.getElementById('seat-'+key); if(el) el.classList.add('speaking'); }
+}
 function _afterSpeak(){
   if (voiceMode && !busy && !_mic) setTimeout(()=>{ if(voiceMode && !busy && !_mic) startMic(); }, 350);
 }
@@ -5987,9 +6022,9 @@ function voiceSpeak(text, exKey){
       if (_curAudio){ try{_curAudio.pause();}catch(e){} }
       const a = new Audio(URL.createObjectURL(b));
       _curAudio = a;
-      a.playbackRate = 1.25;                     // 토론 템포 — 빠르게
-      a.onended = () => { _micStatus(''); _afterSpeak(); };
-      a.onerror = () => { _micStatus(''); _afterSpeak(); };
+      a.playbackRate = 1.35;                     // 토론 템포 — 빠르게
+      a.onended = () => { setSpeaking(null,false); _micStatus(''); _afterSpeak(); };
+      a.onerror = () => { setSpeaking(null,false); _micStatus(''); _afterSpeak(); };
       a.play().catch(()=>{ _micStatus(''); _fallbackSpeak(clean, exKey); });
     })
     .catch(() => { _micStatus(''); _fallbackSpeak(clean, exKey); });
