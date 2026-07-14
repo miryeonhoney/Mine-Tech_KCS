@@ -5296,7 +5296,7 @@ tailwind.config = {
     color:#dfe8f7!important;backdrop-filter:blur(10px);
     box-shadow:0 10px 30px rgba(0,0,0,.45),inset 0 0 22px rgba(126,166,255,.03)!important;}
   body.cine #chatArea .text-sm.font-bold{text-shadow:0 0 14px currentColor;}
-  body.cine #turnControls, body.cine #roomScreen > div:last-child{
+  body.cine #turnControls, body.cine #consoleBar{
     background:rgba(7,12,24,.82)!important;border-color:rgba(126,166,255,.12)!important;backdrop-filter:blur(14px);}
   body.cine #chatInput{background:rgba(10,18,34,.9)!important;border-color:rgba(126,166,255,.22)!important;color:#dfe8f7!important;}
   body.cine #chatInput::placeholder{color:#5d7396;}
@@ -5369,7 +5369,42 @@ tailwind.config = {
   #stageOrb .so-meta b{display:block;font-size:13px;font-weight:900;color:var(--exc,#e9c667);
     text-shadow:0 0 14px color-mix(in srgb,var(--exc,#e9c667) 60%,transparent);letter-spacing:.04em;}
   #stageOrb .so-meta i{display:block;font-style:normal;font-size:10px;color:#7d93b8;margin-top:2px;letter-spacing:.06em;}
-  body.cine #chatArea{padding-top:200px!important;}
+  /* ── 시네마 레이아웃: 우측 카톡 컬럼 + 좌측 홀로그램 무대 ── */
+  body.cine #chatArea{position:fixed!important;right:0;top:64px;bottom:0;width:390px;z-index:30;
+    background:rgba(6,10,22,.82);backdrop-filter:blur(16px);
+    border-left:1px solid rgba(126,166,255,.14);
+    padding:44px 16px 150px 16px!important;overflow-y:auto;}
+  body.cine #chatArea::before{content:'LIVE TRANSCRIPT';position:fixed;right:16px;top:76px;width:358px;z-index:31;
+    font-size:9.5px;font-weight:900;letter-spacing:.26em;color:#7d93b8;
+    padding:0 0 8px;border-bottom:1px solid rgba(126,166,255,.12);background:transparent;}
+  body.cine #chatArea .max-w-\[85\%\]{max-width:100%!important;}
+  body.cine #chatArea .max-w-\[75\%\]{max-width:92%!important;}
+  body.cine .msg-bubble{font-size:13px!important;padding:10px 13px!important;}
+  /* 무대 중심 좌표: 우측 컬럼 제외한 중앙 */
+  body.cine #stageOrb{position:fixed;left:calc((100vw - 390px)/2);top:120px;width:0;height:0;z-index:20;}
+  body.cine #liveCaption{display:none;position:fixed;left:calc((100vw - 390px)/2);top:330px;transform:translateX(-50%);
+    width:min(52vw,680px);max-height:170px;overflow:hidden;z-index:20;text-align:center;
+    font-size:17px;line-height:1.85;font-weight:600;color:#e6eefb;
+    text-shadow:0 0 18px color-mix(in srgb,var(--exc,#7ea6ff) 35%,transparent),0 2px 10px rgba(0,0,0,.8);}
+  body.cine #liveCaption.on{display:block;}
+  body.cine #liveCaption::after{content:'▍';color:var(--exc,#7ea6ff);animation:capBlink .9s steps(2,start) infinite;}
+  @keyframes capBlink{to{opacity:.2}}
+  /* HUD 도크 → 좌측 무대 왼편 */
+  body.cine #hudDock{right:auto;left:4vw;top:52%;transform:translateY(-50%) translateX(-30px);width:min(350px,24vw);}
+  body.cine #hudDock.show{transform:translateY(-50%);}
+  /* 콘솔(입력바·턴컨트롤·상태)은 무대 하단 고정 */
+  body.cine #consoleBar{position:fixed!important;left:0;right:390px;bottom:0;z-index:35;}
+  body.cine #turnControls{position:fixed!important;left:0;right:390px;bottom:78px;z-index:35;}
+  body.cine #micStatus{position:fixed!important;left:24px;right:410px;bottom:84px;z-index:36;padding:0!important;}
+  body.cine #typingIndicator{position:fixed!important;left:24px;bottom:88px;z-index:36;padding:0!important;}
+  @media(max-width:1100px){
+    body.cine #chatArea{position:static!important;width:auto;padding:18px!important;}
+    body.cine #chatArea::before{display:none;}
+    body.cine #stageOrb{position:relative;left:auto;top:0;}
+    body.cine #liveCaption{display:none!important;}
+    body.cine #consoleBar, body.cine #turnControls{position:static!important;}
+    body.cine #micStatus, body.cine #typingIndicator{position:static!important;}
+  }
 
   /* 회의 룸 — 전문가 좌석 스트립 */
   .aud-tag{display:inline-flex;align-items:center;font-size:11px;font-weight:800;padding:7px 13px;border-radius:12px;
@@ -5514,6 +5549,7 @@ tailwind.config = {
         <span class="so-core"><span class="so-avatar"></span></span>
         <span class="so-meta"><b class="so-name"></b><i class="so-role"></i></span></div>
       <div id="hudDock"><div class="hud-title">◆ TACTICAL DATA <span id="hudSrc"></span></div><div id="hudBody"></div></div>
+      <div id="liveCaption"></div>
       <div id="chatArea" class="flex-1 overflow-y-auto p-8 space-y-6 custom-scrollbar"></div>
       <div id="typingIndicator" class="px-8 pb-1 text-xs text-secondary font-data-tabular" style="display:none">● 전문가가 답변 중...</div>
       <div id="turnControls" class="px-6 py-3 border-t border-outline-variant/20 bg-surface-container-low/40 flex items-center gap-3 flex-wrap shrink-0" style="display:none">
@@ -5521,7 +5557,7 @@ tailwind.config = {
         <div id="tcExperts" class="flex flex-wrap gap-2"></div>
         <button id="summaryBtn" onclick="makeSummary()" class="ml-auto shrink-0 text-xs font-bold border border-secondary/50 text-secondary rounded-lg px-3 py-1.5 hover:bg-secondary hover:text-on-secondary-fixed transition">📝 회의록 요약</button>
       </div>
-      <div class="px-6 py-4 border-t border-outline-variant/20 bg-surface-container-low/60 flex gap-3 shrink-0 items-center">
+      <div id="consoleBar" class="px-6 py-4 border-t border-outline-variant/20 bg-surface-container-low/60 flex gap-3 shrink-0 items-center">
         <button id="micBtn" onclick="toggleMic()" title="음성 발언 (Jarvis STT)"
           class="shrink-0 w-11 h-11 rounded-full border border-outline-variant/50 flex items-center justify-center text-on-surface-variant hover:border-secondary hover:text-secondary transition">
           <span class="material-symbols-outlined">mic</span>
@@ -5913,6 +5949,10 @@ function speakExpert(key) {
               chatArea.scrollTop = chatArea.scrollHeight;
             } else if (d.text && currentBubble) {
               currentBubble.textContent += d.text;
+              if (document.body.classList.contains('cine')) {
+                const cap = document.getElementById('liveCaption');
+                if (cap) { cap.textContent = currentBubble.textContent; cap.scrollTop = cap.scrollHeight; }
+              }
               chatArea.scrollTop = chatArea.scrollHeight;
             } else if (d.error) {
               if (currentBubble) {
@@ -6118,6 +6158,11 @@ if (window.speechSynthesis){ _pickVoice(); speechSynthesis.onvoiceschanged = _pi
 function setSpeaking(key, on){
   document.querySelectorAll('.exp-seat.speaking').forEach(el=>{ if(!on || el.id!=='seat-'+key) el.classList.remove('speaking'); });
   if (on && key){ const el=document.getElementById('seat-'+key); if(el) el.classList.add('speaking'); }
+  const cap = document.getElementById('liveCaption');
+  if (cap){
+    if (on && key){ cap.style.setProperty('--exc', (EXPERTS[key]||{}).color || '#7ea6ff'); cap.textContent=''; cap.classList.add('on'); }
+    else { cap.classList.remove('on'); }
+  }
   const st = document.getElementById('stageOrb');
   if (!st) return;
   if (on && key){
