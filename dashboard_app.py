@@ -1131,7 +1131,7 @@ def build_newsletter(to=None):
     except Exception as e:
         print("[NEWSLETTER RISK]", e)
     risk_block = (
-        '<h2 style="font-size:15px;color:#0b1a27;margin:0 0 12px;">🚦 오늘의 리스크 신호등 '
+        '<h2 style="font-size:15px;color:#0b1a27;margin:0 0 12px;">오늘의 리스크 신호등 '
         '<span style="font-size:11px;color:#999;font-weight:400;">K-RISK 자동 계산 · 0~100 높을수록 위험</span></h2>'
         f'<table style="width:100%;border-collapse:collapse;font-size:14px;margin-bottom:18px;">{risk_rows}</table>'
     ) if risk_rows else ""
@@ -1467,7 +1467,7 @@ def render_dashboard(home=False):
                        f'<div class="risk-grid">{_kr_cards}{_rk_cards}</div>') if (_kr_cards or _rk_cards) else ""
         cat_pages_html += f"""
 <div id="cat-{cid}" class="catpage" style="display:none">
-  <div class="page-title" style="font-size:15px!important">{cicon} {cname} <span style="color:var(--muted2);font-weight:400;font-size:12px">· {cdesc}</span></div>
+  <div class="page-title" style="font-size:15px!important">{cname} <span style="color:var(--muted2);font-weight:400;font-size:12px">· {cdesc}</span></div>
   <div class="stat-row">
     <div class="stat-card"><div class="sc-label">{cname} 수입액 합계</div><div class="sc-val">{("$" + format(_imp_total, ",.0f")) if _imp_total else "—"}</div><div class="sc-sub">{("관세청 · 최근 12개월" if cid == "ree" else "KOMIR · 최신연도") if _imp_total else "관세청 API 승인 대기"}</div></div>
     <div class="stat-card"><div class="sc-label">커버 광종</div><div class="sc-val">{len(MINERAL_TAXONOMY.get(cname, []))}<small style="font-size:14px;font-weight:600">종</small></div><div class="sc-sub">확대 대상 기준</div></div>
@@ -1593,7 +1593,7 @@ def render_dashboard(home=False):
         _hl_parts.append(_hl_rk("🔩", "핵심광물 K-RISK", "/dashboard?cat=minerals&sec=risk", _hk, _hv["score"], _hv["grade"]))
     _hl_parts.append('<a class="hl-rk cta" href="/conference">⚖️ 이 위험들, AI 전문가 회의실에서 토론 →</a>')
     home_risk_html = (
-        '<div class="hl-risk"><div class="hl-risk-head">🚦 오늘의 리스크 '
+        '<div class="hl-risk"><div class="hl-risk-head">오늘의 리스크 '
         '<span>산업부 공공데이터 실시간 교차 계산 — 위험을 감지하면 회의가 소집됩니다</span></div>'
         f'<div class="hl-risk-row">{"".join(_hl_parts)}</div></div>'
     ) if krisk else ""
@@ -1984,6 +1984,76 @@ body.is-home .catpage{display:none!important;}
 .pr-item:last-child{border-bottom:0}
 .pr-nm{color:var(--muted)}.pr-co{color:var(--text);font-weight:600}
 @media(max-width:1100px){.dash-cols{grid-template-columns:1fr 1fr}.dash-col:last-child{grid-column:1/-1}}
+/* ═══════════════════════════════════════════════
+   ★ MINETECH 시그니처 패스 — 공공 대시보드 톤 탈피
+   ═══════════════════════════════════════════════ */
+/* 등고선 텍스처 배경 (광산 지형 모티프) */
+#cosmos::after{content:'';position:absolute;inset:0;opacity:.5;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='560' height='560' viewBox='0 0 560 560'%3E%3Cg fill='none' stroke='%2312325e' stroke-opacity='.045' stroke-width='1.2'%3E%3Cpath d='M60 280c40-90 150-130 230-90s110 150 60 210-190 60-250-10-60-70-40-110z'/%3E%3Cpath d='M100 280c30-70 120-100 185-70s90 120 50 168-155 48-203-8-48-56-32-90z'/%3E%3Cpath d='M140 282c22-50 88-72 135-50s66 88 36 123-113 35-148-6-35-42-23-67z'/%3E%3Cpath d='M180 284c15-33 58-47 89-33s44 58 24 81-75 23-98-4-23-27-15-44z'/%3E%3Cpath d='M420 90c50 10 80 60 60 100s-90 50-120 10 10-118 60-110z'/%3E%3Cpath d='M430 118c32 7 51 39 38 65s-58 32-77 6 7-77 39-71z'/%3E%3C/g%3E%3C/svg%3E");}
+
+/* 숫자 디스플레이 폰트 */
+html body .sc-val, html body .rk-vl, html body .hm-val, html body .pp-val,
+html body .hl-stat b, html body .rk-val, html body .rk-no{
+  font-family:'Archivo','Pretendard',sans-serif!important;letter-spacing:-.01em;}
+
+/* GNB — 골드 헤어라인 + 여백 */
+.cat-bar{padding:15px 34px!important;border-bottom:none!important;
+  box-shadow:inset 0 -1px 0 rgba(18,50,94,.08),0 8px 28px rgba(18,50,94,.05);}
+.cat-bar::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;
+  background:linear-gradient(90deg,#c8931d,#e9c667 30%,#12325e 75%);}
+.brand-txt{font-size:22px;font-family:'Archivo','Pretendard',sans-serif;}
+.cat-btn{font-size:15.5px!important;margin:0 22px!important;}
+.cat-btn::after{height:3px;bottom:-7px;}
+.ticker{background:linear-gradient(90deg,#0e2647,#16386b 55%,#0e2647)!important;border-bottom:none!important;}
+.ticker-inner{color:#e9c667!important;}
+
+/* KPI — 네이비 카드 밴드 (전 카드) */
+.stat-card{background:linear-gradient(160deg,#16396a,#0e2647 90%)!important;
+  border:1px solid rgba(255,255,255,.07)!important;
+  box-shadow:0 14px 34px rgba(14,38,71,.22)!important;}
+.stat-card .sc-label{color:#8fa6c6!important;}
+.stat-card .sc-val{color:#fff!important;}
+.stat-card .sc-sub{color:#7e95b5!important;}
+.stat-card::after{background:linear-gradient(180deg,#e9c667,#c8931d);opacity:1;width:4px;}
+.stat-card:first-child{background:linear-gradient(150deg,#1c4c8a,#12325e 70%)!important;}
+.stat-card:first-child .sc-val{color:#f0c95c!important;-webkit-text-fill-color:#f0c95c!important;}
+.stat-card:hover{transform:translateY(-3px);border-color:rgba(233,198,103,.45)!important;
+  box-shadow:0 22px 46px rgba(14,38,71,.32)!important;}
+
+/* 카드 — 테두리 제거 · 레이어드 섀도 · 큰 라운드 */
+.section,.chart-box,.wpanel,.uc,.sub-box,.risk-card,.hl-card,.hl-risk,.hl-metal,.dcard{
+  border:none!important;border-radius:18px!important;
+  box-shadow:0 1px 2px rgba(20,35,60,.04),0 12px 36px rgba(20,35,60,.08)!important;}
+.wpanel .wp-head{border-bottom:1px dashed #e8ecf3;padding:15px 18px;font-size:12.5px;}
+.wp-head::before{content:'';display:inline-block;width:7px;height:7px;flex-shrink:0;
+  background:linear-gradient(135deg,#e9c667,#c8931d);border-radius:2px;transform:rotate(45deg);}
+.page-title{display:flex;align-items:center;gap:9px;font-size:14px!important;}
+.page-title::before{content:'';display:inline-block;width:8px;height:8px;flex-shrink:0;
+  background:linear-gradient(135deg,#e9c667,#c8931d);border-radius:2px;transform:rotate(45deg);}
+.chart-title{color:var(--navy);font-weight:800;}
+
+/* 순위 바 — 네이비→골드 시그니처 그라데이션 */
+.rk-bar{height:7px;border-radius:4px;}
+.rk-fill{background:linear-gradient(90deg,#1c5cab 0%,#3a72b8 55%,#c8931d 100%)!important;}
+.rk-no{color:#c8931d;font-weight:800;font-size:12px;}
+.bf{background:linear-gradient(90deg,#1c5cab,#c8931d)!important;}
+
+/* 버튼·필 */
+.mineral-btn{border-radius:10px;font-weight:600;}
+.mineral-btn.active{box-shadow:0 6px 16px rgba(18,50,94,.28)!important;}
+.megapanel{border-radius:0 0 22px 22px;overflow:hidden;}
+
+/* 테이블 line 완화 */
+.wp-table td{border-bottom:1px solid #eef1f6;}
+tr:hover td{background:#f7f9fc;}
+
+/* 홈 — 통계 밴드 */
+.hl-stats{background:linear-gradient(160deg,#16396a,#0e2647);border-radius:20px;border-top:none;
+  box-shadow:0 16px 40px rgba(14,38,71,.25);padding:28px 24px;}
+.hl-stat span{color:#8fa6c6;}
+.hl-stat b{color:#f0c95c;font-size:26px;}
+.hm-card{border:none;box-shadow:0 1px 2px rgba(20,35,60,.05),0 8px 20px rgba(20,35,60,.07);}
+
 """
     CAT_JS = r"""
 var CATS=['minerals','nf','rare','ree','energy','etc'];
@@ -2362,7 +2432,7 @@ window._applyScenes('minerals');
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>마인테크 — 핵심광물 인텔리전스</title>
 <link rel="icon" type="image/png" href="/static/logo_favicon.png">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Noto+Sans+KR:wght@400;500;700;900&family=IBM+Plex+Mono:wght@400;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Archivo:wght@700;800;900&family=Noto+Sans+KR:wght@400;500;700;900&family=IBM+Plex+Mono:wght@400;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Noto+Serif+KR:wght@300;500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
 <style>
@@ -2599,9 +2669,9 @@ tr:hover td{{background:var(--bg3);}}
   <button class="cat-btn" data-cat="energy" onclick="switchCategory('energy',this)">에너지</button>
   <button class="cat-btn" data-cat="etc" onclick="switchCategory('etc',this)">기타</button>
   <div class="cb-right">
-    <a href="/globe" class="cb-link">🌍 지정학 상황실</a>
-    <a href="/conference" class="cb-link">⚖️ AI 회의실</a>
-    <a href="/" class="to-space" title="허브 홈으로">🏠 허브 홈</a>
+    <a href="/globe" class="cb-link">지정학 상황실</a>
+    <a href="/conference" class="cb-link">AI 회의실</a>
+    <a href="/" class="to-space" title="허브 홈으로">허브 홈</a>
   </div>
 </div>
 
@@ -2618,11 +2688,11 @@ tr:hover td{{background:var(--bg3);}}
   <span class="nav-brand"><span class="sys-dot"></span>MINETECH MONITOR</span>
   <div id="subnav-minerals">
     <a href="#" class="active" data-tab="supply"    onclick="switchTab('supply',this);return false;">수급 현황</a>
-    <a href="#" data-tab="mindex"    onclick="switchTab('mindex',this);return false;">📈 가격지수</a>
-    <a href="#" data-tab="forecast"  onclick="switchTab('forecast',this);return false;">📉 가격 전망</a>
+    <a href="#" data-tab="mindex"    onclick="switchTab('mindex',this);return false;">가격지수</a>
+    <a href="#" data-tab="forecast"  onclick="switchTab('forecast',this);return false;">가격 전망</a>
     <a href="#" data-tab="map"       onclick="switchTab('map',this);return false;">글로벌 매장량</a>
-    <a href="#" data-tab="risk"      onclick="switchTab('risk',this);return false;">🚦 리스크 신호등</a>
-    <a href="#" data-tab="mines"     onclick="switchTab('mines',this);return false;">⛰ 국내 광산</a>
+    <a href="#" data-tab="risk"      onclick="switchTab('risk',this);return false;">리스크 신호등</a>
+    <a href="#" data-tab="mines"     onclick="switchTab('mines',this);return false;">국내 광산</a>
     <a href="#" data-tab="news"      onclick="switchTab('news',this);return false;">뉴스 피드</a>
   </div>
   <div class="nav-right">
@@ -2672,7 +2742,7 @@ tr:hover td{{background:var(--bg3);}}
       <a class="hl-card hl-min" href="/dashboard?cat=etc"><div class="hl-ic">⛏️</div><div class="hl-nm">기타 광물</div><div class="hl-dc">철·흑연·금·은·백금·팔라듐</div><div class="hl-go">대시보드 →</div></a>
     </div>
     {home_risk_html}
-    <div class="hl-metal"><div class="hl-risk-head">💰 오늘의 금속 시세 <span>런던금속거래소(LME) 종가 · 조달청 비축물자 · {ppa_date}</span></div>
+    <div class="hl-metal"><div class="hl-risk-head">오늘의 금속 시세 <span>런던금속거래소(LME) 종가 · 조달청 비축물자 · {ppa_date}</span></div>
       <div class="hm-row">{home_metal_html}</div></div>
     <div class="hl-stats">
       <div class="hl-stat"><span>최대 수입 광물</span><b>{top_min}</b></div>
@@ -2718,18 +2788,18 @@ tr:hover td{{background:var(--bg3);}}
     <div class="dash-cols">
       <!-- 좌: 순위·생산국 -->
       <div class="dash-col">
-        <div class="wpanel grow"><div class="wp-head">⛏ 글로벌 매장량 순위 <span class="wp-sub">USGS 2025</span></div><div class="wp-body">{usgs_rank_html}</div></div>
-        <div class="wpanel"><div class="wp-head">💰 오늘의 금속 시세 <span class="wp-sub">LME · {ppa_date}</span></div><div class="wp-body">{ppa_rows}</div></div>
-        <div class="wpanel"><div class="wp-head">🏳 매장량 1위국</div><div class="wp-body">{prod_html}</div></div>
+        <div class="wpanel grow"><div class="wp-head">글로벌 매장량 순위 <span class="wp-sub">KOMIR 2026</span></div><div class="wp-body">{usgs_rank_html}</div></div>
+        <div class="wpanel"><div class="wp-head">오늘의 금속 시세 <span class="wp-sub">LME · {ppa_date}</span></div><div class="wp-body">{ppa_rows}</div></div>
+        <div class="wpanel"><div class="wp-head">매장량 1위국</div><div class="wp-body">{prod_html}</div></div>
       </div>
       <!-- 중: 차트 -->
       <div class="dash-col">
-        <div class="wpanel grow"><div class="wp-head">📊 광물별 수입액 <span class="wp-sub">상위 7</span></div><div class="wp-chart"><canvas id="chartMin"></canvas></div></div>
-        <div class="wpanel grow"><div class="wp-head">🌍 국가별 수입액 <span class="wp-sub">상위 7</span></div><div class="wp-chart"><canvas id="chartCnt"></canvas></div></div>
+        <div class="wpanel grow"><div class="wp-head">광물별 수입액 <span class="wp-sub">상위 7</span></div><div class="wp-chart"><canvas id="chartMin"></canvas></div></div>
+        <div class="wpanel grow"><div class="wp-head">국가별 수입액 <span class="wp-sub">상위 7</span></div><div class="wp-chart"><canvas id="chartCnt"></canvas></div></div>
       </div>
       <!-- 우: 데이터 표 -->
       <div class="dash-col">
-        <div class="wpanel grow"><div class="wp-head">📋 광물별 수입 현황 <span class="wp-sub">KOMIR</span></div>
+        <div class="wpanel grow"><div class="wp-head">광물별 수입 현황 <span class="wp-sub">KOMIR</span></div>
           <div class="wp-body"><table class="wp-table"><tbody>{trade_rows}</tbody></table></div></div>
       </div>
     </div>
@@ -2737,13 +2807,13 @@ tr:hover td{{background:var(--bg3);}}
     <!-- 월간 수입 동향 + 교차 검증 -->
     <div class="charts-row" style="height:auto!important;align-items:stretch;margin-top:2px;">
       <div class="wpanel" style="flex:1.15;">
-        <div class="wp-head">📅 광물별 월간 수입 동향 <span class="wp-sub">관세청 · {core_asof}</span></div>
+        <div class="wp-head">광물별 월간 수입 동향 <span class="wp-sub">관세청 · {core_asof}</span></div>
         <div style="padding:10px 16px 2px;display:flex;gap:6px;flex-wrap:wrap" id="coreBtns"></div>
         <div class="wp-chart" style="min-height:220px;"><canvas id="coreChart"></canvas></div>
         <div style="padding:0 16px 12px;font-size:11.5px;color:var(--muted2)" id="coreNote"></div>
       </div>
       <div class="wpanel" style="flex:1;">
-        <div class="wp-head">🔍 데이터 교차 검증 <span class="wp-sub">KOMIR 연간 vs 관세청 12개월</span></div>
+        <div class="wp-head">데이터 교차 검증 <span class="wp-sub">KOMIR 연간 vs 관세청 12개월</span></div>
         <div class="wp-body">
           <table class="wp-table">
             <tr style="color:var(--muted2);font-size:10.5px"><td style="padding:4px">광물</td><td style="padding:4px;text-align:right">관세청 12M</td><td style="padding:4px;text-align:right">KOMIR 연간</td><td style="padding:4px;text-align:right">배율</td><td style="padding:4px">최대 수입국</td></tr>
@@ -2756,7 +2826,7 @@ tr:hover td{{background:var(--bg3);}}
 
     <!-- 확대 광종 커버리지 -->
     <div class="wpanel" style="margin-top:2px">
-      <div class="wp-head">🧭 마인테크 커버리지 — 확대 대상 광종 <span class="wp-sub">{taxo_total}종 · 5개 분류</span></div>
+      <div class="wp-head">마인테크 커버리지 — 확대 대상 광종 <span class="wp-sub">{taxo_total}종 · 5개 분류</span></div>
       <div class="wp-body" style="padding:12px 16px 14px">{taxo_html}</div>
     </div>
   </div>
@@ -2811,7 +2881,7 @@ tr:hover td{{background:var(--bg3);}}
       </div>
     </div>
     <div style="padding:16px 20px;background:var(--bg)">
-      <div class="page-title">🌐 광종별 세계 생산·매장 <span style="color:var(--muted2);font-weight:400;font-size:12px">· USGS MCS 2026 · 25개 광종 · 2025년 기준</span></div>
+      <div class="page-title">광종별 세계 생산·매장 <span style="color:var(--muted2);font-weight:400;font-size:12px">· USGS MCS 2026 · 25개 광종 · 2025년 기준</span></div>
       <div class="usgs-grid">{usgs2_cards}</div>
     </div>
   </div>
@@ -2821,7 +2891,7 @@ tr:hover td{{background:var(--bg3);}}
      TAB: 뉴스 피드
      ============================ -->
 <div id="tab-mindex" class="tab-panel">
-  <div class="page-title">📈 광물 가격지수 <span style="color:var(--muted2);font-weight:400;font-size:12px">· 한국광해광업공단 파생지수 · 2016년1월=1000 기준 · 2012~2025 월별</span></div>
+  <div class="page-title">광물 가격지수 <span style="color:var(--muted2);font-weight:400;font-size:12px">· 한국광해광업공단 파생지수 · 2016년1월=1000 기준 · 2012~2025 월별</span></div>
   <div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:12px 16px;margin-bottom:14px;font-size:13px;color:var(--muted);">💡 4개 지수로 광물 시장을 한눈에 — <b>희소금속</b>엔 리튬·희토류·코발트, <b>에너지광물</b>엔 연료탄·우라늄이 들어갑니다. 지수가 오르면 해당 광물군 가격 상승.</div>
   <div class="risk-grid">{midx_cards}</div>
   <div class="section" style="padding:14px 16px;margin-top:14px;">
@@ -2832,7 +2902,7 @@ tr:hover td{{background:var(--bg3);}}
 </div>
 
 <div id="tab-risk" class="tab-panel">
-  <div class="page-title">🚦 K-RISK 종합 공급망 위험 <span style="color:var(--muted2);font-weight:400;font-size:12px">· 산업부 공공데이터 교차 계산 · 0~100, 높을수록 위험</span></div>
+  <div class="page-title">K-RISK 종합 공급망 위험 <span style="color:var(--muted2);font-weight:400;font-size:12px">· 산업부 공공데이터 교차 계산 · 0~100, 높을수록 위험</span></div>
   <div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:12px 16px;margin-bottom:14px;font-size:13px;color:var(--muted);">💡 {krisk_summary} <span style="color:var(--muted2)">— 따로 발표되던 지표를 하나의 위험 점수로 융합. 자세한 영향은 AI 회의실에서.</span></div>
   <div class="risk-grid">{krisk_cards}</div>
   <div style="font-size:11.5px;color:var(--muted2);margin:10px 2px 0;line-height:1.75;">
@@ -2868,7 +2938,7 @@ tr:hover td{{background:var(--bg3);}}
      TAB: 가격 전망
      ============================ -->
 <div id="tab-forecast" class="tab-panel">
-  <div class="page-title">📉 광물 가격 전망 <span style="color:var(--muted2);font-weight:400;font-size:12px">· 한국광해광업공단 가격예측데이터 · 분기별 · 실선=실측 · 점선=예측</span></div>
+  <div class="page-title">광물 가격 전망 <span style="color:var(--muted2);font-weight:400;font-size:12px">· 한국광해광업공단 가격예측데이터 · 분기별 · 실선=실측 · 점선=예측</span></div>
   <div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:12px 16px;margin-bottom:14px;font-size:13px;color:var(--muted);">💡 광종을 선택하면 2013년부터의 실측 가격과 2028년까지의 <b>AI 예측 가격</b>이 표시됩니다. 급등 구간은 조달·비축 시점 판단에 활용하세요.</div>
   <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;" id="fcBtns"></div>
   <div class="section" style="padding:14px 16px;">
@@ -2901,7 +2971,7 @@ tr:hover td{{background:var(--bg3);}}
      TAB: 국내 광산
      ============================ -->
 <div id="tab-mines" class="tab-panel">
-  <div class="page-title">⛰ 국내 광산 현황 <span style="color:var(--muted2);font-weight:400;font-size:12px">· 한국광해광업공단 전국광산 통계 · {mine_latest_year}년</span></div>
+  <div class="page-title">국내 광산 현황 <span style="color:var(--muted2);font-weight:400;font-size:12px">· 한국광해광업공단 전국광산 통계 · {mine_latest_year}년</span></div>
   <div class="stat-row">
     <div class="stat-card"><div class="sc-label">가행 광산</div><div class="sc-val">{mine_active}<small style="font-size:14px;font-weight:600">개</small></div><div class="sc-sub">운영 중 · {mine_latest_year}년</div></div>
     <div class="stat-card"><div class="sc-label">폐광산 (누적)</div><div class="sc-val">{mine_closed_total:,}<small style="font-size:14px;font-weight:600">개</small></div><div class="sc-sub">전국 폐광산 위치 정보</div></div>
