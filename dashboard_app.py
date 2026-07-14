@@ -6329,14 +6329,40 @@ if (cv) {
   const baseGlow = new THREE.Sprite(glowMat.clone()); mats.push(baseGlow.material);
   baseGlow.scale.set(1.6,.5,1); baseGlow.position.y = -2.2; scene.add(baseGlow);
 
-  let speaking = false, glitch = 0;
+  // 유기적 꿀렁임 — 각 지오메트리의 원본 좌표 저장 후 노이즈 파동으로 방사형 변형
+  const deformables = [];
+  g.traverse(o => {
+    if ((o.isPoints || o.isLineSegments) && o.geometry && o.geometry.attributes.position) {
+      o.geometry.userData.base = o.geometry.attributes.position.array.slice();
+      deformables.push(o.geometry);
+    }
+  });
+  function organic(t, amp){
+    deformables.forEach(geo => {
+      const pos = geo.attributes.position.array, base = geo.userData.base;
+      for (let i = 0; i < pos.length; i += 3) {
+        const x = base[i], y = base[i+1], z = base[i+2];
+        const n = Math.sin(2.2*x + t*.7) * .5
+                + Math.sin(2.6*y - t*.55 + 1.7) * .3
+                + Math.sin(2.9*z + t*.62 + 3.1) * .2
+                + Math.sin(1.3*(x+y+z) + t*.9) * .25;
+        const sc = 1 + amp * n;
+        pos[i] = x*sc; pos[i+1] = y*sc; pos[i+2] = z*sc;
+      }
+      geo.attributes.position.needsUpdate = true;
+    });
+  }
+  let speaking = false, amp = .02;
   window._holoSet = (hex, on) => { try{ target.set(hex); }catch(e){} speaking = !!on; };
   const clock = new THREE.Clock();
-  window._holoFrame = (t) => {                      // 단일 프레임 (외부 강제 렌더용)
+  let _mf = 0;
+  window._holoFrame = () => {                      // 단일 프레임 (외부 강제 렌더용)
+    _mf += .13;
     C.lerp(target, .2);
     mats.forEach(m => m.color.copy(C));
     g.rotation.y += .008; inner.rotation.y -= .012; inner.rotation.x = .35;
     ring1.rotation.z += .004; ring2.rotation.z -= .005;
+    organic(_mf, speaking ? .075 : .03);
     renderer.render(scene, cam);
   };
   (function tick(){
@@ -6346,32 +6372,16 @@ if (cv) {
     C.lerp(target, .06);
     mats.forEach(m => m.color.copy(C));
     const spd = speaking ? 1 : .5;
-    g.rotation.y += (speaking ? .0038 : .0013);        // 발언 중엔 활기, 평소엔 유영
+    g.rotation.y += (speaking ? .0028 : .0013);        // 부드러운 유영
     inner.rotation.y -= .0022 * spd; inner.rotation.x = .35;
     ring1.rotation.z += .0009 * spd; ring2.rotation.z -= .0013 * spd;
-    g.rotation.z = speaking ? .05*Math.sin(t*1.6) : .015*Math.sin(t*.5);   // 워블
-    const pulse = 1 + (speaking ? .022*Math.sin(t*2.8) : .008*Math.sin(t*1.1));
-    g.scale.setScalar(pulse);
+    g.rotation.z = speaking ? .03*Math.sin(t*.9) : .015*Math.sin(t*.5);
     g.position.y = .04*Math.sin(t*.5);
-    glowMat.opacity = speaking ? .5+.1*Math.sin(t*2.8) : .34;
-    outer.material.opacity = speaking ? .2 : .12;
-    // 치지직 — 발언 중 랜덤 글리치 버스트
-    if (speaking && glitch <= 0 && Math.random() < .022) glitch = 5 + Math.random()*9;
-    if (glitch > 0) {
-      glitch--;
-      g.position.x = (Math.random()-.5)*.055;
-      g.position.z = (Math.random()-.5)*.03;
-      g.rotation.y += (Math.random()-.5)*.025;
-      cloudMat.size = .013 + Math.random()*.009;
-      cloud2Mat.opacity = .4 + Math.random()*.6;
-      glowMat.opacity = .25 + Math.random()*.55;
-      ring1.material.opacity = .25 + Math.random()*.5;
-    } else {
-      g.position.x *= .82; g.position.z *= .82;
-      cloudMat.size += (.013 - cloudMat.size)*.3;
-      cloud2Mat.opacity += (.9 - cloud2Mat.opacity)*.2;
-      ring1.material.opacity += (.6 - ring1.material.opacity)*.15;
-    }
+    // 유기적 꿀렁임 — 발언 중 진폭 상승 (부드럽게 전환)
+    amp += ((speaking ? .075 : .022) - amp) * .04;
+    organic(t, amp);
+    glowMat.opacity = speaking ? .46+.08*Math.sin(t*1.8) : .34;
+    outer.material.opacity = speaking ? .18 : .12;
     renderer.render(scene, cam);
   })();
 }
