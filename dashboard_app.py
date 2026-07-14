@@ -5388,7 +5388,7 @@ tailwind.config = {
   #holoCanvas{display:none;}
   body.cine #holoCanvas{display:block;position:fixed;z-index:15;pointer-events:none;
     left:calc((100vw - 390px)/2);top:calc(50% - 30px);transform:translate(-50%,-50%);
-    width:min(60vh,640px);height:min(60vh,640px);
+    width:min(78vh,820px);height:min(78vh,820px);
     filter:drop-shadow(0 0 40px rgba(80,200,255,.12));}
   /* HUD 도크 → 좌측 무대 왼편 */
   body.cine #hudDock{right:auto;left:4vw;top:52%;transform:translateY(-50%) translateX(-30px);width:min(350px,24vw);}
@@ -6246,19 +6246,38 @@ if (cv) {
   renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
   renderer.setSize(SZ, SZ, false);
   const scene = new THREE.Scene();
-  const cam = new THREE.PerspectiveCamera(42, 1, .1, 50); cam.position.z = 3.4;
+  const cam = new THREE.PerspectiveCamera(42, 1, .1, 50); cam.position.z = 4.4;
   const g = new THREE.Group(); scene.add(g);
   const C = new THREE.Color('#4fd8ff');           // 현재 색
   const target = new THREE.Color('#4fd8ff');      // 목표 색 (전문가)
   const mats = [];
   function M(op){ const m = new THREE.LineBasicMaterial({color:C.clone(), transparent:true, opacity:op, blending:THREE.AdditiveBlending, depthWrite:false}); mats.push(m); return m; }
-  // 와이어프레임 구체 (겉·속)
-  const outer = new THREE.LineSegments(new THREE.WireframeGeometry(new THREE.IcosahedronGeometry(1, 2)), M(.28)); g.add(outer);
-  const inner = new THREE.LineSegments(new THREE.WireframeGeometry(new THREE.IcosahedronGeometry(.62, 1)), M(.5)); g.add(inner);
-  // 표면 글로우 점
-  const ptsMat = new THREE.PointsMaterial({color:C.clone(), size:.028, transparent:true, opacity:.85, blending:THREE.AdditiveBlending, depthWrite:false});
-  mats.push(ptsMat);
-  const pts = new THREE.Points(new THREE.IcosahedronGeometry(1.001, 3), ptsMat); g.add(pts);
+  // 와이어프레임 구체 (겉·속) — 점 구름의 뼈대 역할, 은은하게
+  const outer = new THREE.LineSegments(new THREE.WireframeGeometry(new THREE.IcosahedronGeometry(1, 2)), M(.13)); g.add(outer);
+  const inner = new THREE.LineSegments(new THREE.WireframeGeometry(new THREE.IcosahedronGeometry(.62, 1)), M(.28)); g.add(inner);
+  // 자비스식 점 구름 — 무수한 입자로 이루어진 구
+  function pointSphere(n, r, jitter){
+    const a = new Float32Array(n*3);
+    for (let i=0;i<n;i++){
+      const phi = Math.acos(1 - 2*(i+.5)/n), th = Math.PI*(1+Math.sqrt(5))*i;   // 피보나치 분포
+      const rr = r*(1 + (Math.random()-.5)*jitter);
+      a[i*3]   = rr*Math.sin(phi)*Math.cos(th);
+      a[i*3+1] = rr*Math.cos(phi);
+      a[i*3+2] = rr*Math.sin(phi)*Math.sin(th);
+    }
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.BufferAttribute(a, 3));
+    return geo;
+  }
+  const cloudMat = new THREE.PointsMaterial({color:C.clone(), size:.013, transparent:true, opacity:.75, blending:THREE.AdditiveBlending, depthWrite:false});
+  mats.push(cloudMat);
+  g.add(new THREE.Points(pointSphere(2800, 1.0, .02), cloudMat));      // 촘촘한 표면 입자
+  const cloud2Mat = new THREE.PointsMaterial({color:C.clone(), size:.02, transparent:true, opacity:.9, blending:THREE.AdditiveBlending, depthWrite:false});
+  mats.push(cloud2Mat);
+  g.add(new THREE.Points(pointSphere(260, 1.005, .01), cloud2Mat));    // 밝은 포인트
+  const hazeMat = new THREE.PointsMaterial({color:C.clone(), size:.01, transparent:true, opacity:.3, blending:THREE.AdditiveBlending, depthWrite:false});
+  mats.push(hazeMat);
+  g.add(new THREE.Points(pointSphere(900, .82, .5), hazeMat));         // 내부 안개 입자
   // 궤도 링 2개 (스우시)
   const ring1 = new THREE.Mesh(new THREE.TorusGeometry(1.3, .005, 8, 160),
     new THREE.MeshBasicMaterial({color:C.clone(), transparent:true, opacity:.6, blending:THREE.AdditiveBlending, depthWrite:false}));
@@ -6287,8 +6306,8 @@ if (cv) {
   window._holoFrame = (t) => {                      // 단일 프레임 (외부 강제 렌더용)
     C.lerp(target, .2);
     mats.forEach(m => m.color.copy(C));
-    g.rotation.y += .02; inner.rotation.y -= .03; inner.rotation.x = .35;
-    ring1.rotation.z += .01; ring2.rotation.z -= .014;
+    g.rotation.y += .008; inner.rotation.y -= .012; inner.rotation.x = .35;
+    ring1.rotation.z += .004; ring2.rotation.z -= .005;
     renderer.render(scene, cam);
   };
   (function tick(){
@@ -6297,15 +6316,15 @@ if (cv) {
     const t = clock.getElapsedTime();
     C.lerp(target, .06);
     mats.forEach(m => m.color.copy(C));
-    const spd = speaking ? 1 : .35;
-    g.rotation.y += .0045 * spd * (speaking?2.2:1);
-    inner.rotation.y -= .009 * spd; inner.rotation.x = .35;
-    ring1.rotation.z += .0035 * spd; ring2.rotation.z -= .005 * spd;
-    const pulse = 1 + (speaking ? .045*Math.sin(t*5.2) : .015*Math.sin(t*1.6));
+    const spd = speaking ? 1 : .5;
+    g.rotation.y += .0013 * spd;                       // 천천히
+    inner.rotation.y -= .0022 * spd; inner.rotation.x = .35;
+    ring1.rotation.z += .0009 * spd; ring2.rotation.z -= .0013 * spd;
+    const pulse = 1 + (speaking ? .018*Math.sin(t*2.4) : .008*Math.sin(t*1.1));
     g.scale.setScalar(pulse);
-    g.position.y = .06*Math.sin(t*.9);
-    glowMat.opacity = speaking ? .6+.15*Math.sin(t*5.2) : .38;
-    outer.material.opacity = speaking ? .38 : .22;
+    g.position.y = .04*Math.sin(t*.5);
+    glowMat.opacity = speaking ? .5+.08*Math.sin(t*2.4) : .34;
+    outer.material.opacity = speaking ? .2 : .12;
     renderer.render(scene, cam);
   })();
 }
