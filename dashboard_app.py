@@ -4368,8 +4368,9 @@ EXPERT_VOICE = {
     "지정학": ("fable",   "극적인 스토리텔러 톤. 국제정치의 긴장감을 살려 빠르게."),
     "정책":   ("coral",   "실무적인 여성 정책가. 결론부터 명확하게, 빠른 속도."),
 }
-TTS_COMMON = ("실제 한국어 정책 토론회 패널의 자연스러운 구어체로 말하세요. "
-              "AI 낭독 티가 나지 않게 호흡과 강세를 살리고, 전체적으로 빠른 속도(1.2배 느낌)로. "
+TTS_COMMON = ("실제 한국어 정책 토론회에서 열띤 공방 중인 패널처럼 말하세요. "
+              "매우 빠른 속도로 — 시간에 쫓기는 생방송 토론자처럼 속사포로, 단 발음은 뭉개지 않게. "
+              "문장 사이 쉼을 최소화하고 호흡과 강세를 살려 AI 낭독 티를 없애세요. "
               "괄호나 특수기호는 읽지 마세요. ")
 
 @app.route("/api/conference/tts", methods=["POST"])
@@ -5986,7 +5987,7 @@ function voiceSpeak(text, exKey){
       if (_curAudio){ try{_curAudio.pause();}catch(e){} }
       const a = new Audio(URL.createObjectURL(b));
       _curAudio = a;
-      a.playbackRate = 1.08;                     // 사람같은 속도 + 살짝 빠르게
+      a.playbackRate = 1.25;                     // 토론 템포 — 빠르게
       a.onended = () => { _micStatus(''); _afterSpeak(); };
       a.onerror = () => { _micStatus(''); _afterSpeak(); };
       a.play().catch(()=>{ _micStatus(''); _fallbackSpeak(clean, exKey); });
