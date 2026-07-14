@@ -1,0 +1,26 @@
+# Render Blueprint — 마인테크 배포 설정
+# 사용법: render.com → New + → Blueprint → 이 저장소 선택 → 키 입력 → Apply
+services:
+  - type: web
+    name: minetech
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn dashboard_app:app -b 0.0.0.0:$PORT --workers 2 --threads 8 --timeout 300
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.8
+      - key: SECRET_KEY
+        generateValue: true        # 자동 생성
+      - key: PUBLIC_DATA_KEY       # 공공데이터포털 키
+        sync: false
+      - key: NAVER_CLIENT_ID       # 네이버 뉴스 API
+        sync: false
+      - key: NAVER_CLIENT_SECRET
+        sync: false
+      - key: OPENAI_API_KEY        # AI 회의실·뉴스 브리핑
+        sync: false
+      - key: CONFERENCE_PASSWORD   # ⚠️ 꼭 설정 — 비면 회의실 잠금 꺼짐
+        sync: false
+      - key: APP_BASE_URL          # 배포 후 생긴 주소 입력 (예: https://minetech.onrender.com)
+        sync: false
