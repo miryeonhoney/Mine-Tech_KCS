@@ -43,6 +43,7 @@ _load_dotenv()
 
 # 비밀키는 환경변수(.env 또는 호스팅 환경변수)에서 읽습니다. 코드에 하드코딩하지 마세요.
 PUBLIC_DATA_KEY     = os.environ.get("PUBLIC_DATA_KEY", "")
+CUSTOMS_API_KEY     = os.environ.get("CUSTOMS_API_KEY", "")   # 관세청 품목별 국가별 수출입실적(nitemtrade)
 NAVER_CLIENT_ID     = os.environ.get("NAVER_CLIENT_ID", "")
 NAVER_CLIENT_SECRET = os.environ.get("NAVER_CLIENT_SECRET", "")
 EMAIL_ADDRESS       = os.environ.get("EMAIL_ADDRESS", "")
@@ -516,6 +517,65 @@ def fetch_customs():
     result = all_rows if all_rows else local_customs()
     cache_set("customs", result)
     return result
+
+# ── 희토류 수출입 (관세청 nitemtrade · HS 2846 화합물 + 280530 금속) ──
+REE_HS = {"2846": "희토류 화합물", "280530": "희토류 금속"}
+REE_SNAPSHOT = os.path.join(os.path.dirname(__file__), "ree_trade_data1.json")
+
+def fetch_ree_trade():
+    """희토류 수입 통계. API(12h 캐시) → 성공 시 스냅샷 갱신 → 실패 시 스냅샷 폴백."""
+    c = cache_get("ree_trade")
+    if c is not None:
+        return c
+    out = {"by_country": {}, "monthly": {}, "by_hs": {}, "by_item": {}, "asof": "", "total_imp": 0}
+    ok = False
+    if CUSTOMS_API_KEY:
+        try:
+            now = datetime.now()
+            end = f"{now.year}{now.month:02d}"
+            _m0 = now.year * 12 + (now.month - 1) - 11   # 12개월 창 (1년 이내 제한)
+            strt = f"{_m0 // 12}{_m0 % 12 + 1:02d}"
+            for hs, hs_name in REE_HS.items():
+                r = requests.get(
+                    "https://apis.data.go.kr/1220000/nitemtrade/getNitemtradeList",
+                    params={"serviceKey": CUSTOMS_API_KEY, "strtYymm": strt,
+                            "endYymm": end, "hsSgn": hs}, timeout=20)
+                if r.status_code != 200 or "<resultCode>00" not in r.text.replace(" ", ""):
+                    continue
+                root = ET.fromstring(r.text)
+                for it in root.iter("item"):
+                    g = lambda k: (it.findtext(k) or "").strip()
+                    try: imp = float(g("impDlr") or 0)
+                    except ValueError: imp = 0
+                    cty = g("statCdCntnKor1")
+                    ym = g("year").replace(".", "-")
+                    if cty in ("총계", "합계", "", "-") or "총계" in ym: continue
+                    if imp <= 0: continue
+                    ok = True
+                    out["by_country"][cty] = out["by_country"].get(cty, 0) + imp
+                    out["monthly"][ym] = out["monthly"].get(ym, 0) + imp
+                    out["by_hs"][hs_name] = out["by_hs"].get(hs_name, 0) + imp
+                    itn = g("statKor")
+                    if itn and itn != "-":
+                        out["by_item"][itn] = out["by_item"].get(itn, 0) + imp
+                time.sleep(0.2)
+            if ok:
+                out["asof"] = f"{strt[:4]}.{strt[4:]}~{end[:4]}.{end[4:]}"
+                out["total_imp"] = round(sum(out["by_country"].values()))
+                out["by_country"] = dict(sorted(out["by_country"].items(), key=lambda x: -x[1])[:10])
+                out["monthly"] = dict(sorted(out["monthly"].items()))
+                out["by_item"] = dict(sorted(out["by_item"].items(), key=lambda x: -x[1])[:8])
+                try:
+                    json.dump(out, open(REE_SNAPSHOT, "w"), ensure_ascii=False)
+                except Exception:
+                    pass
+        except Exception as e:
+            print("[REE TRADE]", e)
+    if not ok:
+        snap = load_json(REE_SNAPSHOT)
+        out = snap if isinstance(snap, dict) and snap.get("by_country") else out
+    cache_set("ree_trade", out, ttl=43200)
+    return out
 
 def clean(t):
     s = re.sub(r"<[^>]+>", "", str(t))
@@ -1150,11 +1210,27 @@ def render_dashboard(home=False):
             f'<span class="rk-vl">{unit}{fmt.format(v)}</span></div>'
             for i, (n, v) in enumerate(pairs))
 
+    ree = fetch_ree_trade()
+    ree_js = json.dumps(ree.get("monthly") or {}, ensure_ascii=False)
+    _ree_bc = list((ree.get("by_country") or {}).items())
+    ree_country_rows = "".join(
+        f'<div class="rk-item"><span class="rk-no">{i+1:02d}</span>'
+        f'<div class="rk-mid"><div class="rk-nm">{c}</div>'
+        f'<div class="rk-bar"><div class="rk-fill" style="width:{max(v/(_ree_bc[0][1] or 1)*100,2):.0f}%"></div></div></div>'
+        f'<span class="rk-vl">${v:,.0f}</span></div>'
+        for i, (c, v) in enumerate(_ree_bc)) or         '<div class="empty">관세청 API 승인 대기 중 — 키 활성화 후 자동 표시됩니다 (HS 2846·280530)</div>'
+    _ree_hs_rows = "".join(
+        f'<div class="pp-row"><span class="pp-nm">{k}</span><span class="pp-val">${v:,.0f}</span></div>'
+        for k, v in list((ree.get("by_item") or ree.get("by_hs") or {}).items())[:8])
+
     cat_pages_html = ""
     for cid, cname, cicon, cdesc in CAT_DEFS:
         col = TAXO_COLOR[cname]
         _imp = [(n, v) for n, v in bm if mineral_category(n) == cname][:8]
         _imp_total = sum(v for _, v in _imp)
+        if cid == "ree" and ree.get("total_imp"):
+            _imp = [(k, v) for k, v in sorted((ree.get("by_hs") or {}).items(), key=lambda x: -x[1])]
+            _imp_total = ree["total_imp"]
         _rsv = [x for x in reserves if x["cat"] == cname][:8]
         _rsv_rows = _bar_rows([(x["name"], x["total"]) for x in _rsv], unit="", fmt="") if False else "".join(
             f'<div class="rk-item"><span class="rk-no">{i+1:02d}</span>'
@@ -1171,6 +1247,16 @@ def render_dashboard(home=False):
         _n_fc = len(_fc_cat.get(cid, []))
         _ppa_panel = (f'<div class="section" style="padding:14px 16px;">'
                       f'<div class="chart-title">오늘의 LME 시세 · {ppa_date}</div>{ppa_rows}</div>') if cid == "nf" else ""
+        if cid == "ree":
+            _ppa_panel = (
+                f'<div class="section" style="flex:1.3;padding:14px 16px;">'
+                f'<div class="chart-title">국가별 수입액 <span style="color:var(--muted2)">· 관세청 · {ree.get("asof") or "최근 12개월"} · HS 2846+280530</span></div>'
+                f'{ree_country_rows}'
+                + (f'<div style="margin-top:10px;border-top:1px solid var(--border);padding-top:8px">{_ree_hs_rows}</div>' if _ree_hs_rows else '')
+                + f'</div>'
+                f'<div class="section" style="flex:1;padding:14px 16px;">'
+                f'<div class="chart-title">월별 수입 추이 <span style="color:var(--muted2)">· 달러</span></div>'
+                f'<div style="height:250px;position:relative;"><canvas id="reeChart"></canvas></div></div>')
         _fc_panel = (f'<div class="section" style="padding:14px 16px;">'
                      f'<div class="chart-title" id="fcCatTitle_{cid}">가격 전망 — 실선=실측 · 점선=예측</div>'
                      f'<div style="display:flex;gap:6px;flex-wrap:wrap;margin:4px 0 10px" id="fcCatBtns_{cid}"></div>'
@@ -1181,7 +1267,7 @@ def render_dashboard(home=False):
 <div id="cat-{cid}" class="catpage" style="display:none">
   <div class="page-title" style="font-size:15px!important">{cicon} {cname} <span style="color:var(--muted2);font-weight:400;font-size:12px">· {cdesc}</span></div>
   <div class="stat-row">
-    <div class="stat-card"><div class="sc-label">{cname} 수입액 합계</div><div class="sc-val">{("$" + format(_imp_total, ",.0f")) if _imp_total else "—"}</div><div class="sc-sub">{"KOMIR · 최신연도" if _imp_total else "국내 수입통계 미집계 품목"}</div></div>
+    <div class="stat-card"><div class="sc-label">{cname} 수입액 합계</div><div class="sc-val">{("$" + format(_imp_total, ",.0f")) if _imp_total else "—"}</div><div class="sc-sub">{("관세청 · 최근 12개월" if cid == "ree" else "KOMIR · 최신연도") if _imp_total else "관세청 API 승인 대기"}</div></div>
     <div class="stat-card"><div class="sc-label">커버 광종</div><div class="sc-val">{len(MINERAL_TAXONOMY.get(cname, []))}<small style="font-size:14px;font-weight:600">종</small></div><div class="sc-sub">확대 대상 기준</div></div>
     <div class="stat-card"><div class="sc-label">최대 수입 광물</div><div class="sc-val" style="font-size:20px">{_top_imp}</div><div class="sc-sub">수입액 1위</div></div>
     <div class="stat-card"><div class="sc-label">최대 매장 광물</div><div class="sc-val" style="font-size:20px">{_top_rsv}</div><div class="sc-sub">세계 매장량 기준</div></div>
@@ -1718,7 +1804,19 @@ function switchCategory(cat, el){
 }
 // ── 분류 페이지 가격전망 미니차트 ──
 var _catFc={};
+var _reeChart=null;
+function drawReeChart(){
+  if(_reeChart || !window.REETRADE) return;
+  var keys=Object.keys(REETRADE); if(!keys.length) return;
+  _reeChart=new Chart(document.getElementById('reeChart'),{type:'bar',
+    data:{labels:keys,datasets:[{label:'수입액($)',data:keys.map(function(k){return REETRADE[k];}),backgroundColor:'#4a3aa7',borderRadius:3}]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:function(c){return ' $'+c.raw.toLocaleString();}}}},
+      scales:{x:{ticks:{color:'#6f7b90',maxTicksLimit:12},grid:{color:'#e8ecf3'}},
+        y:{ticks:{color:'#6f7b90',callback:function(v){return '$'+(v/1e6).toFixed(0)+'M';}},grid:{color:'#e8ecf3'}}}}});
+}
 function initCatForecast(cat){
+  if(cat==='ree') drawReeChart();
   if(_catFc[cat] || !window.CATFC) return;
   var keys=(CATFC[cat]||[]).filter(function(m){ return FORECAST[m]; });
   if(!keys.length){ _catFc[cat]=true; return; }
@@ -2548,7 +2646,7 @@ tr:hover td{{background:var(--bg3);}}
 <!-- ===== 분류별 카테고리 페이지 ===== -->
 {cat_pages_html}
 
-<script>var RISK = {risk_js}; var MIDX = {midx_js}; var NEWS = {news_js}; var FORECAST = {forecast_js}; var CATFC = {catfc_js}; var STEEL = {steel_js}; var MINES = {mines_js}; var OUTLOOK = {outlook_js};</script>
+<script>var RISK = {risk_js}; var MIDX = {midx_js}; var NEWS = {news_js}; var FORECAST = {forecast_js}; var CATFC = {catfc_js}; var REETRADE = {ree_js}; var STEEL = {steel_js}; var MINES = {mines_js}; var OUTLOOK = {outlook_js};</script>
 <script>{CAT_JS}</script>
 
 <script>
