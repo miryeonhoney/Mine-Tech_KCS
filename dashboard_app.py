@@ -5382,13 +5382,14 @@ tailwind.config = {
   body.cine .msg-bubble{font-size:13px!important;padding:10px 13px!important;}
   /* 무대 중심 좌표: 우측 컬럼 제외한 중앙 */
   body.cine #stageOrb{position:fixed;left:calc((100vw - 390px)/2);top:120px;width:0;height:0;z-index:20;}
-  body.cine #liveCaption{display:none;position:fixed;left:calc((100vw - 390px)/2);top:330px;transform:translateX(-50%);
-    width:min(52vw,680px);max-height:170px;overflow:hidden;z-index:20;text-align:center;
-    font-size:17px;line-height:1.85;font-weight:600;color:#e6eefb;
-    text-shadow:0 0 18px color-mix(in srgb,var(--exc,#7ea6ff) 35%,transparent),0 2px 10px rgba(0,0,0,.8);}
-  body.cine #liveCaption.on{display:block;}
-  body.cine #liveCaption::after{content:'▍';color:var(--exc,#7ea6ff);animation:capBlink .9s steps(2,start) infinite;}
-  @keyframes capBlink{to{opacity:.2}}
+  #liveCaption{display:none!important;}   /* 무대엔 글자 없음 — 대화는 우측 트랜스크립트에만 */
+  body.cine #stageOrb{display:none!important;}
+  /* 홀로그램 캔버스 — 무대 중앙 */
+  #holoCanvas{display:none;}
+  body.cine #holoCanvas{display:block;position:fixed;z-index:15;pointer-events:none;
+    left:calc((100vw - 390px)/2);top:calc(50% - 30px);transform:translate(-50%,-50%);
+    width:min(60vh,640px);height:min(60vh,640px);
+    filter:drop-shadow(0 0 40px rgba(80,200,255,.12));}
   /* HUD 도크 → 좌측 무대 왼편 */
   body.cine #hudDock{right:auto;left:4vw;top:52%;transform:translateY(-50%) translateX(-30px);width:min(350px,24vw);}
   body.cine #hudDock.show{transform:translateY(-50%);}
@@ -5550,6 +5551,7 @@ tailwind.config = {
         <span class="so-meta"><b class="so-name"></b><i class="so-role"></i></span></div>
       <div id="hudDock"><div class="hud-title">◆ TACTICAL DATA <span id="hudSrc"></span></div><div id="hudBody"></div></div>
       <div id="liveCaption"></div>
+      <canvas id="holoCanvas"></canvas>
       <div id="chatArea" class="flex-1 overflow-y-auto p-8 space-y-6 custom-scrollbar"></div>
       <div id="typingIndicator" class="px-8 pb-1 text-xs text-secondary font-data-tabular" style="display:none">● 전문가가 답변 중...</div>
       <div id="turnControls" class="px-6 py-3 border-t border-outline-variant/20 bg-surface-container-low/40 flex items-center gap-3 flex-wrap shrink-0" style="display:none">
@@ -6164,16 +6166,21 @@ function setSpeaking(key, on){
     else { cap.classList.remove('on'); }
   }
   const st = document.getElementById('stageOrb');
-  if (!st) return;
-  if (on && key){
-    const ex = EXPERTS[key] || {};
-    st.style.setProperty('--exc', ex.color || '#e9c667');
-    st.querySelector('.so-avatar').textContent = ex.avatar || '◆';
-    st.querySelector('.so-name').textContent = ex.name || key;
-    st.querySelector('.so-role').textContent = ex.title || '';
-    st.classList.add('on');
-  } else {
-    st.classList.remove('on');
+  if (st){
+    if (on && key){
+      const ex = EXPERTS[key] || {};
+      st.style.setProperty('--exc', ex.color || '#e9c667');
+      st.querySelector('.so-avatar').textContent = ex.avatar || '◆';
+      st.querySelector('.so-name').textContent = ex.name || key;
+      st.querySelector('.so-role').textContent = ex.title || '';
+      st.classList.add('on');
+    } else {
+      st.classList.remove('on');
+    }
+  }
+  if (window._holoSet){
+    if (on && key) _holoSet((EXPERTS[key]||{}).color || '#4fd8ff', true);
+    else _holoSet('#4fd8ff', false);
   }
 }
 function _afterSpeak(){
@@ -6228,6 +6235,80 @@ setInterval(() => {
   const p = n => String(n).padStart(2,'0');
   el.textContent = d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())+' '+p(d.getHours())+':'+p(d.getMinutes())+':'+p(d.getSeconds())+' KST ● LIVE';
 }, 1000);
+</script>
+<script type="importmap">{"imports":{"three":"https://unpkg.com/three@0.160.0/build/three.module.js"}}</script>
+<script type="module">
+import * as THREE from 'three';
+const cv = document.getElementById('holoCanvas');
+if (cv) {
+  const SZ = 640;
+  const renderer = new THREE.WebGLRenderer({canvas:cv, alpha:true, antialias:true});
+  renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+  renderer.setSize(SZ, SZ, false);
+  const scene = new THREE.Scene();
+  const cam = new THREE.PerspectiveCamera(42, 1, .1, 50); cam.position.z = 3.4;
+  const g = new THREE.Group(); scene.add(g);
+  const C = new THREE.Color('#4fd8ff');           // 현재 색
+  const target = new THREE.Color('#4fd8ff');      // 목표 색 (전문가)
+  const mats = [];
+  function M(op){ const m = new THREE.LineBasicMaterial({color:C.clone(), transparent:true, opacity:op, blending:THREE.AdditiveBlending, depthWrite:false}); mats.push(m); return m; }
+  // 와이어프레임 구체 (겉·속)
+  const outer = new THREE.LineSegments(new THREE.WireframeGeometry(new THREE.IcosahedronGeometry(1, 2)), M(.28)); g.add(outer);
+  const inner = new THREE.LineSegments(new THREE.WireframeGeometry(new THREE.IcosahedronGeometry(.62, 1)), M(.5)); g.add(inner);
+  // 표면 글로우 점
+  const ptsMat = new THREE.PointsMaterial({color:C.clone(), size:.028, transparent:true, opacity:.85, blending:THREE.AdditiveBlending, depthWrite:false});
+  mats.push(ptsMat);
+  const pts = new THREE.Points(new THREE.IcosahedronGeometry(1.001, 3), ptsMat); g.add(pts);
+  // 궤도 링 2개 (스우시)
+  const ring1 = new THREE.Mesh(new THREE.TorusGeometry(1.3, .005, 8, 160),
+    new THREE.MeshBasicMaterial({color:C.clone(), transparent:true, opacity:.6, blending:THREE.AdditiveBlending, depthWrite:false}));
+  mats.push(ring1.material); ring1.rotation.x = 1.25; g.add(ring1);
+  const ring2 = ring1.clone(); ring2.material = ring1.material.clone(); mats.push(ring2.material);
+  ring2.rotation.x = 1.9; ring2.rotation.y = .6; ring2.scale.setScalar(1.12); g.add(ring2);
+  // 중심 글로우 스프라이트
+  function glowTex(){ const c = document.createElement('canvas'); c.width = c.height = 128;
+    const x = c.getContext('2d'); const gr = x.createRadialGradient(64,64,0,64,64,64);
+    gr.addColorStop(0,'rgba(255,255,255,.9)'); gr.addColorStop(.25,'rgba(120,220,255,.35)'); gr.addColorStop(1,'rgba(120,220,255,0)');
+    x.fillStyle = gr; x.fillRect(0,0,128,128); return new THREE.CanvasTexture(c); }
+  const glowMat = new THREE.SpriteMaterial({map:glowTex(), color:C.clone(), transparent:true, opacity:.5, blending:THREE.AdditiveBlending, depthWrite:false});
+  mats.push(glowMat);
+  const glow = new THREE.Sprite(glowMat); glow.scale.setScalar(2.2); g.add(glow);
+  // 바닥 투사빔
+  const beamMat = new THREE.MeshBasicMaterial({color:C.clone(), transparent:true, opacity:.05, blending:THREE.AdditiveBlending, depthWrite:false, side:THREE.DoubleSide});
+  mats.push(beamMat);
+  const beam = new THREE.Mesh(new THREE.ConeGeometry(.9, 1.6, 40, 1, true), beamMat);
+  beam.position.y = -1.55; scene.add(beam);
+  const baseGlow = new THREE.Sprite(glowMat.clone()); mats.push(baseGlow.material);
+  baseGlow.scale.set(1.6,.5,1); baseGlow.position.y = -2.2; scene.add(baseGlow);
+
+  let speaking = false;
+  window._holoSet = (hex, on) => { try{ target.set(hex); }catch(e){} speaking = !!on; };
+  const clock = new THREE.Clock();
+  window._holoFrame = (t) => {                      // 단일 프레임 (외부 강제 렌더용)
+    C.lerp(target, .2);
+    mats.forEach(m => m.color.copy(C));
+    g.rotation.y += .02; inner.rotation.y -= .03; inner.rotation.x = .35;
+    ring1.rotation.z += .01; ring2.rotation.z -= .014;
+    renderer.render(scene, cam);
+  };
+  (function tick(){
+    requestAnimationFrame(tick);
+    if (!document.body.classList.contains('cine')) return;
+    const t = clock.getElapsedTime();
+    C.lerp(target, .06);
+    mats.forEach(m => m.color.copy(C));
+    const spd = speaking ? 1 : .35;
+    g.rotation.y += .0045 * spd * (speaking?2.2:1);
+    inner.rotation.y -= .009 * spd; inner.rotation.x = .35;
+    ring1.rotation.z += .0035 * spd; ring2.rotation.z -= .005 * spd;
+    const pulse = 1 + (speaking ? .045*Math.sin(t*5.2) : .015*Math.sin(t*1.6));
+    g.scale.setScalar(pulse);
+    g.position.y = .06*Math.sin(t*.9);
+    glowMat.opacity = speaking ? .6+.15*Math.sin(t*5.2) : .38;
+    outer.material.opacity = speaking ? .38 : .22;
+    renderer.render(scene, cam);
+  })();
+}
 </script>
 </body>
 </html>"""
