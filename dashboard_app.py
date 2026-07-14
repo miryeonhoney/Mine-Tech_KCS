@@ -10,7 +10,7 @@
 실행:
    pip install flask pandas requests openpyxl anthropic
    python dashboard_app.py
-   → http://127.0.0.1:8080
+   → http://127.0.0.1:8081
 =====================================================================
 """
 
@@ -4953,6 +4953,6 @@ if __name__ == "__main__":
     import sys
     sys.stdout.reconfigure(encoding='utf-8', errors='replace')
     print("핵심광물 대시보드 시작")
-    print("브라우저 접속: http://127.0.0.1:8080")
+    print("브라우저 접속: http://127.0.0.1:8081")
     print("종료: Ctrl + C")
-    app.run(host="0.0.0.0", port=8080, debug=False)
+    app.run(host="0.0.0.0", port=8081, debug=False)
