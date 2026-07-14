@@ -5277,6 +5277,64 @@ tailwind.config = {
   .sum-doc .viz-card{margin-top:10px;}
   @media(max-width:760px){.sum-grid3{grid-template-columns:1fr;}.sum-cover,.sum-docbody{padding-left:22px;padding-right:22px;}}
   .lobby-screen,#roomScreen{display:none;}
+  /* ═══ 시네마 모드 — 영화 속 AI 회의실 ═══ */
+  body.cine{background:radial-gradient(1100px 700px at 50% -10%, #0d1830 0%, #070c18 55%, #04070f 100%) fixed !important;}
+  body.cine::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:1;
+    background:repeating-linear-gradient(0deg, rgba(140,180,255,.022) 0 1px, transparent 1px 3px);}
+  body.cine::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:1;
+    box-shadow:inset 0 0 220px rgba(0,0,0,.75);}
+  body.cine main{background:transparent !important;}
+  body.cine header{background:rgba(7,12,24,.8)!important;border-bottom:1px solid rgba(126,166,255,.14)!important;backdrop-filter:blur(14px)!important;}
+  body.cine header span, body.cine header a{color:#9fb4d8!important;}
+  body.cine #roomScreen > div:first-child{background:rgba(7,12,24,.6)!important;border-bottom:1px solid rgba(126,166,255,.1)!important;}
+  body.cine .aud-tag{background:rgba(233,198,103,.14);color:#e9c667;border:1px solid rgba(233,198,103,.35);}
+  body.cine .exp-seat{background:rgba(13,22,40,.85);border-color:rgba(126,166,255,.16);box-shadow:none;}
+  body.cine .exp-seat .es-name{color:var(--exc);text-shadow:0 0 12px color-mix(in srgb,var(--exc) 55%,transparent);}
+  body.cine .exp-seat.speaking{background:rgba(16,28,52,.95);
+    box-shadow:0 0 0 2px color-mix(in srgb,var(--exc) 55%,transparent),0 0 26px color-mix(in srgb,var(--exc) 40%,transparent);}
+  body.cine .msg-bubble{background:rgba(10,18,34,.78)!important;border:1px solid rgba(126,166,255,.12)!important;
+    color:#dfe8f7!important;backdrop-filter:blur(10px);
+    box-shadow:0 10px 30px rgba(0,0,0,.45),inset 0 0 22px rgba(126,166,255,.03)!important;}
+  body.cine #chatArea .text-sm.font-bold{text-shadow:0 0 14px currentColor;}
+  body.cine #turnControls, body.cine #roomScreen > div:last-child{
+    background:rgba(7,12,24,.82)!important;border-color:rgba(126,166,255,.12)!important;backdrop-filter:blur(14px);}
+  body.cine #chatInput{background:rgba(10,18,34,.9)!important;border-color:rgba(126,166,255,.22)!important;color:#dfe8f7!important;}
+  body.cine #chatInput::placeholder{color:#5d7396;}
+  body.cine #micBtn{border-color:rgba(126,166,255,.35);color:#9fb4d8;background:rgba(10,18,34,.8);}
+  body.cine #micBtn.rec{background:#d64545!important;box-shadow:0 0 34px rgba(214,69,69,.6);}
+  body.cine #voiceModeBtn{border-color:rgba(126,166,255,.3);color:#9fb4d8;}
+  body.cine #voiceModeBtn.on{background:#e9c667!important;border-color:#e9c667!important;color:#0d1830!important;
+    box-shadow:0 0 26px rgba(233,198,103,.45);}
+  body.cine #micStatus{color:#e9c667!important;text-shadow:0 0 12px rgba(233,198,103,.4);}
+  body.cine #typingIndicator{color:#7ea6ff!important;text-shadow:0 0 10px rgba(126,166,255,.5);}
+  body.cine .src-chip{background:rgba(233,198,103,.1);border-color:rgba(233,198,103,.3);color:#e9c667;}
+  body.cine .viz-card{background:rgba(10,18,34,.85)!important;border-color:rgba(126,166,255,.15)!important;}
+  body.cine .viz-head{color:#dfe8f7!important;}
+  body.cine .vs-val{color:#e9c667!important;}
+  /* 진행자(사용자) 발언 — 커맨드 라인 느낌 */
+  body.cine .user-msg-bubble{background:rgba(233,198,103,.1)!important;border:1px solid rgba(233,198,103,.3)!important;color:#f0dfae!important;}
+
+  /* ── 스테이지 오브 (발언자 홀로그램) ── */
+  #stageOrb{display:none;position:relative;height:0;z-index:5;pointer-events:none;}
+  body.cine #stageOrb.on{display:block;}
+  #stageOrb .so-core{position:absolute;left:50%;top:26px;transform:translateX(-50%);width:74px;height:74px;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    background:radial-gradient(circle at 38% 32%, color-mix(in srgb,var(--exc,#e9c667) 32%, #0d1830), #070c18 75%);
+    border:2px solid var(--exc,#e9c667);
+    box-shadow:0 0 34px color-mix(in srgb,var(--exc,#e9c667) 55%,transparent),inset 0 0 22px color-mix(in srgb,var(--exc,#e9c667) 30%,transparent);}
+  #stageOrb .so-avatar{font-size:32px;filter:drop-shadow(0 0 8px var(--exc,#e9c667));}
+  #stageOrb .so-ring{position:absolute;left:50%;top:63px;transform:translate(-50%,-50%);border-radius:50%;
+    border:1.5px solid var(--exc,#e9c667);opacity:0;animation:soRipple 2.4s cubic-bezier(0,.4,.4,1) infinite;}
+  #stageOrb .so-ring.r1{width:90px;height:90px;animation-delay:0s;}
+  #stageOrb .so-ring.r2{width:90px;height:90px;animation-delay:.8s;}
+  #stageOrb .so-ring.r3{width:90px;height:90px;animation-delay:1.6s;}
+  @keyframes soRipple{0%{transform:translate(-50%,-50%) scale(.9);opacity:.75;}100%{transform:translate(-50%,-50%) scale(2.6);opacity:0;}}
+  #stageOrb .so-meta{position:absolute;left:50%;top:108px;transform:translateX(-50%);text-align:center;white-space:nowrap;}
+  #stageOrb .so-meta b{display:block;font-size:13px;font-weight:900;color:var(--exc,#e9c667);
+    text-shadow:0 0 14px color-mix(in srgb,var(--exc,#e9c667) 60%,transparent);letter-spacing:.04em;}
+  #stageOrb .so-meta i{display:block;font-style:normal;font-size:10px;color:#7d93b8;margin-top:2px;letter-spacing:.06em;}
+  body.cine #chatArea{padding-top:170px!important;}
+
   /* 회의 룸 — 전문가 좌석 스트립 */
   .aud-tag{display:inline-flex;align-items:center;font-size:11px;font-weight:800;padding:7px 13px;border-radius:12px;
     background:#12325e;color:#f0d68a;letter-spacing:.02em;}
@@ -5415,6 +5473,9 @@ tailwind.config = {
         <div id="activeExperts" class="flex flex-wrap gap-1.5"></div>
         <button onclick="backToLobby()" class="ml-auto text-xs text-on-surface-variant border border-outline-variant/30 rounded-lg px-3 py-1.5 hover:border-secondary hover:text-secondary transition shrink-0">← 다시 시작</button>
       </div>
+      <div id="stageOrb"><span class="so-ring r1"></span><span class="so-ring r2"></span><span class="so-ring r3"></span>
+        <span class="so-core"><span class="so-avatar"></span></span>
+        <span class="so-meta"><b class="so-name"></b><i class="so-role"></i></span></div>
       <div id="chatArea" class="flex-1 overflow-y-auto p-8 space-y-6 custom-scrollbar"></div>
       <div id="typingIndicator" class="px-8 pb-1 text-xs text-secondary font-data-tabular" style="display:none">● 전문가가 답변 중...</div>
       <div id="turnControls" class="px-6 py-3 border-t border-outline-variant/20 bg-surface-container-low/40 flex items-center gap-3 flex-wrap shrink-0" style="display:none">
@@ -5683,6 +5744,7 @@ function applyAgenda(a, btn){
 function showScreen(id) {
   ['step1Screen','step2Screen','roomScreen'].forEach(s => document.getElementById(s).style.display = 'none');
   document.getElementById(id).style.display = 'flex';
+  document.body.classList.toggle('cine', id === 'roomScreen');   // 영화 모드
 }
 
 function goToStep2() {
@@ -5734,7 +5796,7 @@ function appendUserMsg(text) {
   const chatArea = document.getElementById('chatArea');
   const div = document.createElement('div');
   div.className = 'flex justify-end';
-  div.innerHTML = '<div class="max-w-[75%]"><div class="flex items-center justify-end gap-2 mb-1"><span class="text-[11px] font-bold text-secondary">🎙️ 진행자 (나)</span></div><div class="msg-bubble bg-secondary/10 border border-secondary/30 rounded-xl rounded-tr-none px-4 py-3 text-sm text-on-surface leading-relaxed"></div></div>';
+  div.innerHTML = '<div class="max-w-[75%]"><div class="flex items-center justify-end gap-2 mb-1"><span class="text-[11px] font-bold text-secondary">🎙️ 진행자 (나)</span></div><div class="msg-bubble user-msg-bubble bg-secondary/10 border border-secondary/30 rounded-xl rounded-tr-none px-4 py-3 text-sm text-on-surface leading-relaxed"></div></div>';
   div.querySelector('.msg-bubble').textContent = text;
   chatArea.appendChild(div);
   chatArea.scrollTop = chatArea.scrollHeight;
@@ -6002,6 +6064,18 @@ if (window.speechSynthesis){ _pickVoice(); speechSynthesis.onvoiceschanged = _pi
 function setSpeaking(key, on){
   document.querySelectorAll('.exp-seat.speaking').forEach(el=>{ if(!on || el.id!=='seat-'+key) el.classList.remove('speaking'); });
   if (on && key){ const el=document.getElementById('seat-'+key); if(el) el.classList.add('speaking'); }
+  const st = document.getElementById('stageOrb');
+  if (!st) return;
+  if (on && key){
+    const ex = EXPERTS[key] || {};
+    st.style.setProperty('--exc', ex.color || '#e9c667');
+    st.querySelector('.so-avatar').textContent = ex.avatar || '◆';
+    st.querySelector('.so-name').textContent = ex.name || key;
+    st.querySelector('.so-role').textContent = ex.title || '';
+    st.classList.add('on');
+  } else {
+    st.classList.remove('on');
+  }
 }
 function _afterSpeak(){
   if (voiceMode && !busy && !_mic) setTimeout(()=>{ if(voiceMode && !busy && !_mic) startMic(); }, 350);
