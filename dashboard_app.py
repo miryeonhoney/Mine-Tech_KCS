@@ -5039,11 +5039,15 @@ def build_viz_catalog():
             nm, ms, vs = r.get("name"), r.get("months", []), r.get("vals", [])
             if not (nm and ms and vs):
                 continue
+            _lt = r.get("latest"); _pv = r.get("prev")
             cat[f"risk_{nm}"] = {
                 "title": f"{nm} 수급안정화지수", "type": "line",
                 "labels": tail(ms, 24),
                 "series": [{"name": "수급안정화지수", "data": tail(vs, 24), "color": "#1e8e5a"}],
-                "note": f"최신 {r.get('latest','?')} · ≥55 안정·30~54 주의·<30 위험",
+                "headline": {"label": "최신 지수", "value": f"{_lt:.1f}" if _lt is not None else "—",
+                             "sub": (f"전월 {'▲' if _lt >= _pv else '▼'} {abs(_lt - _pv):.1f}" if (_lt is not None and _pv is not None) else "")},
+                "hlines": [{"v": 55, "label": "안정", "color": "#3fae7e"}, {"v": 30, "label": "위험", "color": "#e06060"}],
+                "note": "≥55 안정 · 30~54 주의 · <30 위험",
                 "source": "KOMIS 수급안정화지수",
             }
     except Exception as e:
@@ -5060,7 +5064,11 @@ def build_viz_catalog():
                 "labels": [k for k, _ in items],
                 "series": [{"name": "K-RISK(0~100)", "data": [v["score"] for _, v in items],
                             "color": "#d64545"}],
-                "note": f"최고위험 {worst[0]} {worst[1]['score']} ({worst[1]['grade']}) · 🟢0~39 🟡40~69 🔴70~100",
+                "headline": {"label": "최고 위험", "value": f"{worst[1]['score']:.1f}",
+                             "sub": f"{worst[0]} · {worst[1]['grade']}"},
+                "bands": {"edges": [40, 70], "colors": ["#3fae7e", "#e0a92e", "#e05555"]},
+                "hlines": [{"v": 70, "label": "위험", "color": "#e06060"}],
+                "note": "🟢 0~39 안정 · 🟡 40~69 주의 · 🔴 70~100 위험",
                 "source": "산업부 공공데이터 교차 계산(K-RISK)",
             }
     except Exception as e:
@@ -5076,10 +5084,13 @@ def build_viz_catalog():
             ser = [{"name": k, "data": tail(S[k]["values"], 36), "color": pal.get(k, "#aaa")}
                    for k in pal if S.get(k)]
             sm = midx.get("summary", {}).get("종합", {})
+            _mom = sm.get("mom")
             cat["mineral_index"] = {
                 "title": "광물 가격지수", "type": "line",
                 "labels": tail(base["months"], 36), "series": ser,
-                "note": f"종합 {sm.get('latest','?')} ({sm.get('asof','')}) · 전월 {sm.get('mom','?')}%",
+                "headline": {"label": "종합지수", "value": f"{sm.get('latest', 0):,.0f}",
+                             "sub": (f"전월 {'▲' if _mom >= 0 else '▼'} {abs(_mom):.1f}%" if _mom is not None else sm.get("asof", ""))},
+                "note": f"기준 {sm.get('asof','')} · 2016.1=1000",
                 "source": "광해광업공단 파생지수",
             }
     except Exception as e:
@@ -5090,6 +5101,8 @@ def build_viz_catalog():
         items = sorted(USGS_DATA.items(), key=lambda kv: kv[1].get("매장량_만톤", 0), reverse=True)
         cat["reserves"] = {
             "title": "주요 광물 세계 매장량", "type": "bar",
+            "headline": {"label": "매장량 1위", "value": items[0][0],
+                         "sub": f"{items[0][1].get('1위국','')} 최다 보유"},
             "labels": [k for k, _ in items],
             "series": [{"name": "매장량(만톤)", "data": [v.get("매장량_만톤", 0) for _, v in items], "color": "#4a3aa7"}],
             "note": "1위국: " + ", ".join(f"{k}={v.get('1위국','')}" for k, v in items[:3]),
@@ -5122,8 +5135,11 @@ def build_viz_catalog():
                 agg[nm] = agg.get(nm, 0) + (r.get("수입금액(달러)", 0) or 0)
         top = [(k, v) for k, v in sorted(agg.items(), key=lambda kv: kv[1], reverse=True)[:7] if v > 0]
         if top:
+            _tt = sum(v for _, v in top)
             cat["komir_trade"] = {
                 "title": "광종별 수입액 상위", "type": "bar",
+                "headline": {"label": "상위 광종 수입액", "value": f"${_tt/1e9:,.1f}B",
+                             "sub": f"1위 {top[0][0]} ${top[0][1]/1e9:,.1f}B"},
                 "labels": [k for k, _ in top],
                 "series": [{"name": "수입액(억$)", "data": [round(v / 1e8, 1) for _, v in top], "color": "#c98500"}],
                 "note": "최신연도 수입금액", "source": "광해광업공단 수출입",
@@ -5351,7 +5367,7 @@ tailwind.config = {
 
   /* HUD 도크 — 보조 설명 홀로그램 패널 */
   #hudDock{display:none;position:fixed;right:26px;top:50%;transform:translateY(-50%) translateX(30px);
-    width:min(380px,30vw);z-index:40;opacity:0;pointer-events:auto;transition:.45s cubic-bezier(.2,.8,.3,1);}
+    width:min(420px,31vw);z-index:40;opacity:0;pointer-events:auto;transition:.45s cubic-bezier(.2,.8,.3,1);}
   body.cine #hudDock.show{display:block;opacity:1;transform:translateY(-50%);}
   #hudDock .hud-title{display:flex;align-items:center;gap:8px;font-size:10px;font-weight:900;letter-spacing:.22em;
     color:var(--exc,#5fd0ff);text-shadow:0 0 12px color-mix(in srgb,var(--exc,#5fd0ff) 60%,transparent);
@@ -5367,7 +5383,10 @@ tailwind.config = {
   #hudDock #hudBody::after{bottom:-2px;right:-2px;border-left:0;border-top:0;}
   #hudDock .viz-card{background:transparent!important;border:none!important;max-width:none!important;margin:0!important;box-shadow:none!important;}
   #hudDock .viz-head{color:#dfe8f7!important;}
-  #hudDock .viz-canvas{height:190px!important;}
+  #hudDock .viz-canvas{height:230px!important;}
+  #hudDock .viz-kpi b{font-size:32px;text-shadow:0 0 18px currentColor;}
+  #hudDock .viz-kpi i{color:#7d93b8;}
+  #hudDock .viz-kpi em{color:#9fb4d8;}
   #hudDock .viz-foot{color:#7d93b8!important;}
   @media(max-width:1200px){#hudDock{display:none!important;}}
   #stageOrb .so-meta{position:absolute;left:50%;top:148px;transform:translateX(-50%);text-align:center;white-space:nowrap;}
@@ -5471,6 +5490,11 @@ tailwind.config = {
   .viz-head{display:flex;align-items:center;gap:7px;font-size:12.5px;font-weight:700;color:#16233c;margin-bottom:7px;}
   .viz-dot{width:7px;height:7px;border-radius:50%;display:inline-block;flex-shrink:0;}
   .viz-canvas{position:relative;height:158px;}
+  .viz-kpi{display:flex;align-items:baseline;gap:10px;margin:2px 0 8px;}
+  .viz-kpi b{font-size:26px;font-weight:900;font-family:'Archivo','JetBrains Mono',monospace;letter-spacing:-.01em;line-height:1;}
+  .viz-kpi span{display:flex;flex-direction:column;gap:1px;}
+  .viz-kpi i{font-style:normal;font-size:9.5px;font-weight:700;letter-spacing:.08em;color:#8a94a6;text-transform:uppercase;}
+  .viz-kpi em{font-style:normal;font-size:11px;font-weight:600;color:#5d6b80;}
   .viz-foot{margin-top:7px;font-size:9.5px;color:#8a94a6;letter-spacing:.02em;}
   .viz-stats{display:flex;gap:26px;padding:4px 2px 2px;}
   .vs-label{font-size:10.5px;color:#8a94a6;margin-bottom:2px;}
@@ -6040,10 +6064,43 @@ function showHudViz(spec, color){
   if (!voiceMode) _hudTimer = setTimeout(hideHud, 14000);   // 음성 없을 땐 14초 후 자동 정리
 }
 
+// 기준선(hlines) 플러그인 — 위험/안정 가이드
+var _hlinePlugin = {
+  id: 'hlines',
+  afterDraw: function(chart, args, opts){
+    var lines = (opts && opts.lines) || [];
+    if (!lines.length) return;
+    var c = chart.ctx, area = chart.chartArea, yS = chart.scales.y;
+    lines.forEach(function(h){
+      if (h.v < yS.min || h.v > yS.max) return;
+      var y = yS.getPixelForValue(h.v);
+      c.save();
+      c.strokeStyle = h.color || '#e06060'; c.globalAlpha = .55;
+      c.setLineDash([5, 5]); c.lineWidth = 1;
+      c.beginPath(); c.moveTo(area.left, y); c.lineTo(area.right, y); c.stroke();
+      c.setLineDash([]); c.globalAlpha = .9;
+      c.font = '9px Pretendard, sans-serif'; c.fillStyle = h.color || '#e06060';
+      c.fillText(h.label || '', area.right - c.measureText(h.label || '').width - 3, y - 4);
+      c.restore();
+    });
+  }
+};
+
+function _hexA(hex, a){       // #rrggbb → rgba
+  var n = parseInt(hex.slice(1), 16);
+  return 'rgba('+(n>>16&255)+','+(n>>8&255)+','+(n&255)+','+a+')';
+}
+
 function renderVizCard(spec, container, color){
   if(!spec || !container) return;
   color = color || '#e9c349';
+  var cine = document.body.classList.contains('cine');
+  var grid = cine ? 'rgba(126,166,255,.09)' : '#e8ecf3';
+  var tickc = cine ? '#8fa6c6' : '#6f7b90';
   var head = '<div class="viz-head"><span class="viz-dot" style="background:'+color+'"></span>'+(spec.title||'')+'</div>';
+  // 헤드라인 KPI (큰 숫자 + 서브)
+  var kpi = spec.headline ? ('<div class="viz-kpi"><b style="color:'+color+'">'+spec.headline.value+'</b>'
+    + '<span><i>'+(spec.headline.label||'')+'</i>'+(spec.headline.sub ? '<em>'+spec.headline.sub+'</em>' : '')+'</span></div>') : '';
   var foot = '<div class="viz-foot">'+[spec.note, spec.source].filter(Boolean).join(' · ')+'</div>';
   var card = document.createElement('div');
   card.className = 'viz-card';
@@ -6054,32 +6111,55 @@ function renderVizCard(spec, container, color){
         +'<div class="vs-val">'+s.value+'<span>'+(s.unit||'')+'</span></div>'
         +(s.delta ? ('<div class="vs-delta" style="color:'+col+'">'+s.delta+'</div>') : '')+'</div>';
     }).join('')+'</div>';
-    card.innerHTML = head + body + foot;
+    card.innerHTML = head + kpi + body + foot;
     container.appendChild(card);
     return;
   }
   var cid = 'vz'+(vizSeq++);
-  card.innerHTML = head + '<div class="viz-canvas"><canvas id="'+cid+'"></canvas></div>' + foot;
+  card.innerHTML = head + kpi + '<div class="viz-canvas"><canvas id="'+cid+'"></canvas></div>' + foot;
   container.appendChild(card);
   if(typeof Chart === 'undefined') return;
-  var ctx = document.getElementById(cid), type = spec.type || 'line', grid = '#26262f', tickc = '#8a8a95';
+  var ctx = document.getElementById(cid), type = spec.type || 'line';
   if(type === 'doughnut'){
     var pal = ['#e9c349','#5fd0ff','#5ad1b0','#f472b6','#f59e0b','#9b8cff'];
     new Chart(ctx, {type:'doughnut',
-      data:{labels:spec.labels, datasets:[{data:(spec.series[0]||{}).data||[], backgroundColor:pal, borderColor:'#101018', borderWidth:2}]},
-      options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'right', labels:{color:'#bbb', font:{size:10}, boxWidth:10}}}}});
+      data:{labels:spec.labels, datasets:[{data:(spec.series[0]||{}).data||[], backgroundColor:pal,
+        borderColor:(cine?'#0a1222':'#ffffff'), borderWidth:2, hoverOffset:6}]},
+      options:{responsive:true, maintainAspectRatio:false, cutout:'62%',
+        plugins:{legend:{position:'right', labels:{color:tickc, font:{size:10}, boxWidth:10}}}}});
     return;
   }
-  var ds = (spec.series||[]).map(function(s){
-    return {label:s.name, data:s.data, borderColor:s.color||color,
-      backgroundColor:(type==='bar' ? (s.color||color) : 'transparent'),
-      borderWidth:2, tension:.25, pointRadius:0, maxBarThickness:30};
+  var bands = spec.bands;
+  var ds = (spec.series||[]).map(function(s, si){
+    var col = s.color || color;
+    var bg;
+    if (type === 'bar') {
+      bg = bands ? (s.data||[]).map(function(v){
+        var bi = 0; (bands.edges||[]).forEach(function(e){ if (v >= e) bi++; });
+        return bands.colors[bi] || col;
+      }) : (s.data||[]).map(function(){ return _hexA(col, .85); });
+    } else {
+      bg = function(c2){                       // 라인 아래 글로우 그라데이션
+        var area = c2.chart.chartArea; if(!area) return _hexA(col, .06);
+        var g2 = c2.chart.ctx.createLinearGradient(0, area.top, 0, area.bottom);
+        g2.addColorStop(0, _hexA(col, cine ? .32 : .2)); g2.addColorStop(1, _hexA(col, 0));
+        return g2;
+      };
+    }
+    var n = (s.data||[]).length;
+    return {label:s.name, data:s.data, borderColor:col, backgroundColor:bg,
+      fill:(type!=='bar' && si===0), borderWidth:2, tension:.3,
+      pointRadius:(type==='bar'?0:(s.data||[]).map(function(_,i){ return i===n-1?4:0; })),
+      pointBackgroundColor:col, pointBorderColor:(cine?'#0a1222':'#fff'), pointBorderWidth:2,
+      borderRadius:6, maxBarThickness:26};
   });
   new Chart(ctx, {type:type, data:{labels:spec.labels, datasets:ds},
+    plugins:[_hlinePlugin],
     options:{responsive:true, maintainAspectRatio:false, interaction:{mode:'index', intersect:false},
-      plugins:{legend:{display:(ds.length>1), labels:{color:'#bbb', font:{size:9}, boxWidth:9}}},
-      scales:{x:{ticks:{color:tickc, font:{size:9}, maxTicksLimit:8}, grid:{color:grid}},
-              y:{ticks:{color:tickc, font:{size:9}}, grid:{color:grid}}}}});
+      plugins:{legend:{display:(ds.length>1), labels:{color:tickc, font:{size:9}, boxWidth:9}},
+               hlines:{lines:spec.hlines||[]}},
+      scales:{x:{ticks:{color:tickc, font:{size:9}, maxTicksLimit:8}, grid:{color:grid, drawTicks:false}},
+              y:{ticks:{color:tickc, font:{size:9}}, grid:{color:grid, drawTicks:false}, border:{display:false}}}}});
 }
 
 function sendMessage() {
