@@ -1,8 +1,9 @@
-# ── 비밀키 (절대 커밋 금지) ──
+# ── 비밀키·개인정보 (절대 커밋 금지) ──
 .env
 .env.*
 !.env.example
 secrets*.py
+subscribers.json
 
 # ── 파이썬 ──
 __pycache__/
@@ -36,4 +37,5 @@ minerals_agent/
 # ── 별도 대용량 데이터셋 (원본 — 커밋 금지, 가공본 *_data.json / *_data2.json 만 배포) ──
 데이터/
 석유데이터/
+데이터1/
 데이터2/

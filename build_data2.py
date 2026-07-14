@@ -97,37 +97,7 @@ def build_mineral_index():
     return out
 
 
-# ── 2) 석유제품 국가별 수입 ───────────────────────────────────────
-def build_energy_import():
-    p = f"{BASE}/015_한국석유공사_석유제품수입_국가별.json"
-    if not os.path.exists(p):
-        return None
-    f = _open(p); rd = csv.reader(f); header = next(rd)
-    # '국가_물량' 컬럼만 추출
-    vol_cols = [(i, h.split("_")[0]) for i, h in enumerate(header)
-                if h.endswith("_물량")]
-    rows = []
-    for r in rd:
-        if not r or not r[0].strip().isdigit():
-            continue
-        yr = int(r[0])
-        vols = {name: _f(r[i]) for i, name in vol_cols if i < len(r) and _f(r[i])}
-        rows.append((yr, vols))
-    f.close()
-    rows.sort()
-    years = [str(y) for y, _ in rows]
-    # 최신연도 국가별 상위
-    latest_year, latest = rows[-1]
-    top = sorted(latest.items(), key=lambda kv: kv[1], reverse=True)[:8]
-    return {
-        "years": years,
-        "latest_year": str(latest_year),
-        "top_countries": [{"name": n, "vol": round(v)} for n, v in top],
-        "total_latest": round(sum(latest.values())),
-    }
-
-
-# ── 3) 자원개발률 (자주개발률) ────────────────────────────────────
+# ── 2) 자원개발률 (자주개발률) ────────────────────────────────────
 def build_resource_dev():
     p = f"{BASE}/[석유]산업통상부_자원개발률.csv"
     if not os.path.exists(p):
@@ -152,14 +122,7 @@ if __name__ == "__main__":
     print("    series:", {k: len(v["months"]) for k, v in mi["series"].items()},
           "| summary:", mi.get("summary"))
 
-    print("[2] 석유제품 국가별 수입…")
-    ei = build_energy_import()
-    if ei:
-        json.dump(ei, open(f"{OUT}/energy_import_data2.json", "w"), ensure_ascii=False)
-        print("    years:", ei["years"][0], "~", ei["years"][-1],
-              "| top:", [c["name"] for c in ei["top_countries"]])
-
-    print("[3] 자원개발률…")
+    print("[2] 자원개발률…")
     rd_ = build_resource_dev()
     if rd_:
         json.dump(rd_, open(f"{OUT}/resource_dev_data2.json", "w"), ensure_ascii=False)
