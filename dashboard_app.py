@@ -5277,6 +5277,11 @@ tailwind.config = {
   .sum-doc .viz-card{margin-top:10px;}
   @media(max-width:760px){.sum-grid3{grid-template-columns:1fr;}.sum-cover,.sum-docbody{padding-left:22px;padding-right:22px;}}
   .lobby-screen,#roomScreen{display:none;}
+  .viz-btn{margin-left:6px;font-size:10px;font-weight:800;padding:2px 9px;border-radius:9px;cursor:pointer;
+    background:rgba(200,147,29,.1);border:1px solid rgba(181,130,16,.45);color:#8a6a10;transition:.15s;}
+  .viz-btn:hover{background:#c8931d;color:#fff;}
+  body.cine .viz-btn{background:rgba(126,166,255,.08);border-color:rgba(126,166,255,.35);color:#9fc0ff;}
+  body.cine .viz-btn:hover{background:rgba(126,166,255,.25);color:#fff;box-shadow:0 0 12px rgba(126,166,255,.35);}
   /* ═══ 시네마 모드 — 영화 속 AI 회의실 ═══ */
   body.cine{background:radial-gradient(1100px 700px at 50% -10%, #0d1830 0%, #070c18 55%, #04070f 100%) fixed !important;}
   body.cine::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:1;
@@ -5939,6 +5944,7 @@ function speakExpert(key) {
             const d = JSON.parse(raw);
             const chatArea = document.getElementById('chatArea');
             if (d.speaker_start) {
+              hideHud();
               setSpeaking(d.speaker_start, true);
               const ex = EXPERTS[d.speaker_start] || {};
               const div = document.createElement('div');
@@ -5982,6 +5988,18 @@ function speakExpert(key) {
                   } else {
                     renderVizCard(VIZ[_vizKey], currentBubble.parentNode, _exc);
                   }
+                  // 채팅 헤더에 '시각자료' 버튼 — 언제든 다시 보기
+                  var _hd = currentBubble.parentNode.querySelector('.flex.items-baseline');
+                  if (_hd) {
+                    var _vb = document.createElement('button');
+                    _vb.className = 'viz-btn';
+                    _vb.textContent = '📊 시각자료';
+                    (function(spec, col){ _vb.onclick = function(){
+                      if (document.body.classList.contains('cine')) showHudViz(spec, col);
+                      else { renderVizCard(spec, currentBubble ? currentBubble.parentNode : _hd.parentNode, col); }
+                    }; })(VIZ[_vizKey], _exc);
+                    _hd.appendChild(_vb);
+                  }
                   recentViz.push(_vizKey); if (recentViz.length > 3) recentViz.shift();
                   document.getElementById('chatArea').scrollTop = 1e9;
                 }
@@ -6000,6 +6018,12 @@ function speakExpert(key) {
 }
 
 // 발언 근거 시각자료 카드 렌더 (말풍선 아래)
+let _hudTimer = null;
+function hideHud(){
+  var dock = document.getElementById('hudDock');
+  if (dock) dock.classList.remove('show');
+  if (_hudTimer){ clearTimeout(_hudTimer); _hudTimer = null; }
+}
 function showHudViz(spec, color){
   var dock = document.getElementById('hudDock'); if(!dock) return;
   var body = document.getElementById('hudBody');
@@ -6009,6 +6033,8 @@ function showHudViz(spec, color){
   renderVizCard(spec, body, color);
   dock.classList.remove('show'); void dock.offsetWidth;   // 애니메이션 리셋
   dock.classList.add('show');
+  if (_hudTimer) clearTimeout(_hudTimer);
+  if (!voiceMode) _hudTimer = setTimeout(hideHud, 14000);   // 음성 없을 땐 14초 후 자동 정리
 }
 
 function renderVizCard(spec, container, color){
@@ -6203,7 +6229,7 @@ function voiceSpeak(text, exKey){
       const a = new Audio(URL.createObjectURL(b));
       _curAudio = a;
       a.playbackRate = 1.35;                     // 토론 템포 — 빠르게
-      a.onended = () => { setSpeaking(null,false); _micStatus(''); _afterSpeak(); };
+      a.onended = () => { setSpeaking(null,false); hideHud(); _micStatus(''); _afterSpeak(); };
       a.onerror = () => { setSpeaking(null,false); _micStatus(''); _afterSpeak(); };
       a.play().catch(()=>{ _micStatus(''); _fallbackSpeak(clean, exKey); });
     })
@@ -6300,7 +6326,7 @@ if (cv) {
   const baseGlow = new THREE.Sprite(glowMat.clone()); mats.push(baseGlow.material);
   baseGlow.scale.set(1.6,.5,1); baseGlow.position.y = -2.2; scene.add(baseGlow);
 
-  let speaking = false;
+  let speaking = false, glitch = 0;
   window._holoSet = (hex, on) => { try{ target.set(hex); }catch(e){} speaking = !!on; };
   const clock = new THREE.Clock();
   window._holoFrame = (t) => {                      // 단일 프레임 (외부 강제 렌더용)
@@ -6317,14 +6343,32 @@ if (cv) {
     C.lerp(target, .06);
     mats.forEach(m => m.color.copy(C));
     const spd = speaking ? 1 : .5;
-    g.rotation.y += .0013 * spd;                       // 천천히
+    g.rotation.y += (speaking ? .0038 : .0013);        // 발언 중엔 활기, 평소엔 유영
     inner.rotation.y -= .0022 * spd; inner.rotation.x = .35;
     ring1.rotation.z += .0009 * spd; ring2.rotation.z -= .0013 * spd;
-    const pulse = 1 + (speaking ? .018*Math.sin(t*2.4) : .008*Math.sin(t*1.1));
+    g.rotation.z = speaking ? .05*Math.sin(t*1.6) : .015*Math.sin(t*.5);   // 워블
+    const pulse = 1 + (speaking ? .022*Math.sin(t*2.8) : .008*Math.sin(t*1.1));
     g.scale.setScalar(pulse);
     g.position.y = .04*Math.sin(t*.5);
-    glowMat.opacity = speaking ? .5+.08*Math.sin(t*2.4) : .34;
+    glowMat.opacity = speaking ? .5+.1*Math.sin(t*2.8) : .34;
     outer.material.opacity = speaking ? .2 : .12;
+    // 치지직 — 발언 중 랜덤 글리치 버스트
+    if (speaking && glitch <= 0 && Math.random() < .022) glitch = 5 + Math.random()*9;
+    if (glitch > 0) {
+      glitch--;
+      g.position.x = (Math.random()-.5)*.055;
+      g.position.z = (Math.random()-.5)*.03;
+      g.rotation.y += (Math.random()-.5)*.025;
+      cloudMat.size = .013 + Math.random()*.009;
+      cloud2Mat.opacity = .4 + Math.random()*.6;
+      glowMat.opacity = .25 + Math.random()*.55;
+      ring1.material.opacity = .25 + Math.random()*.5;
+    } else {
+      g.position.x *= .82; g.position.z *= .82;
+      cloudMat.size += (.013 - cloudMat.size)*.3;
+      cloud2Mat.opacity += (.9 - cloud2Mat.opacity)*.2;
+      ring1.material.opacity += (.6 - ring1.material.opacity)*.15;
+    }
     renderer.render(scene, cam);
   })();
 }
