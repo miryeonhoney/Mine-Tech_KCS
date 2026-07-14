@@ -4354,6 +4354,49 @@ def conference_chat():
                     headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"})
 
 
+# 전문가별 OpenAI TTS 목소리 + 말투 (gpt-4o-mini-tts instructions)
+EXPERT_VOICE = {
+    "리튬":   ("nova",    "명료하고 자신감 있는 여성 연구원. 데이터를 짚어가며 또박또박, 속도는 빠르게."),
+    "코발트": ("onyx",    "저음의 남성 분석가. 긴박하게 경고하는 톤, 말이 빠르고 힘있게."),
+    "니켈":   ("echo",    "밝고 실용적인 남성. 낙관적이고 외교적인 톤, 경쾌하게 빠른 속도."),
+    "희토류": ("sage",    "차분한 중년 교수 톤. 무게감 있지만 지루하지 않게, 보통보다 약간 빠르게."),
+    "텅스텐": ("ash",     "단호한 남성. 안보 브리핑처럼 절도 있고 빠르게."),
+    "망간":   ("verse",   "에너지 넘치는 기술 낙관주의자 남성. 활기차고 빠르게."),
+    "흑연":   ("alloy",   "차분하고 꼼꼼한 톤. 기술 디테일을 명확하게, 약간 빠르게."),
+    "경제":   ("shimmer", "명쾌한 여성 이코노미스트. 숫자를 강조하며 시원시원하게 빠른 속도."),
+    "통상":   ("ballad",  "부드럽지만 논리적인 남성 협상가 톤, 리듬감 있게 빠르게."),
+    "지정학": ("fable",   "극적인 스토리텔러 톤. 국제정치의 긴장감을 살려 빠르게."),
+    "정책":   ("coral",   "실무적인 여성 정책가. 결론부터 명확하게, 빠른 속도."),
+}
+TTS_COMMON = ("실제 한국어 정책 토론회 패널의 자연스러운 구어체로 말하세요. "
+              "AI 낭독 티가 나지 않게 호흡과 강세를 살리고, 전체적으로 빠른 속도(1.2배 느낌)로. "
+              "괄호나 특수기호는 읽지 마세요. ")
+
+@app.route("/api/conference/tts", methods=["POST"])
+def conference_tts():
+    """전문가 발언 → 사람 같은 음성 (OpenAI gpt-4o-mini-tts, 전문가별 목소리·말투)."""
+    if not _conf_authed():
+        return jsonify(ok=False, message="인증이 필요합니다."), 401
+    if not OPENAI_API_KEY:
+        return jsonify(ok=False, error="no_api_key"), 503
+    data = request.get_json(silent=True) or {}
+    text = _strip_surrogates(str(data.get("text", "")))[:800].strip()
+    speaker = str(data.get("speaker", ""))
+    if not text:
+        return jsonify(ok=False, error="empty"), 400
+    voice, style = EXPERT_VOICE.get(speaker, ("alloy", "자연스러운 한국어 구어체, 빠른 속도."))
+    try:
+        r = OpenAI(api_key=OPENAI_API_KEY).audio.speech.create(
+            model="gpt-4o-mini-tts", voice=voice, input=text,
+            instructions=TTS_COMMON + style, response_format="mp3")
+        audio = getattr(r, "content", None) or r.read()
+        return Response(audio, mimetype="audio/mpeg",
+                        headers={"Cache-Control": "no-store"})
+    except Exception as e:
+        print("[TTS]", e)
+        return jsonify(ok=False, error=str(e)), 502
+
+
 @app.route("/api/conference/stt", methods=["POST"])
 def conference_stt():
     """회의실 음성 인식 — Jarvis STT 사이드카 프록시 (WAV in, text out)."""
@@ -5916,24 +5959,48 @@ function _toWav16k(chunks, rate){
   return buf;
 }
 
-/* ── TTS: 전문가 발언 낭독 (보이스 모드) ── */
-let _koVoice = null;
+/* ── TTS: 전문가 발언 낭독 — OpenAI 목소리 11종 (전문가별) + 브라우저 폴백 ── */
+let _koVoice = null, _curAudio = null;
 function _pickVoice(){
   const vs = speechSynthesis.getVoices();
   _koVoice = vs.find(v=>v.lang==='ko-KR' && /Yuna|유나/i.test(v.name)) || vs.find(v=>v.lang&&v.lang.indexOf('ko')===0) || null;
 }
 if (window.speechSynthesis){ _pickVoice(); speechSynthesis.onvoiceschanged = _pickVoice; }
 
+function _afterSpeak(){
+  if (voiceMode && !busy && !_mic) setTimeout(()=>{ if(voiceMode && !busy && !_mic) startMic(); }, 350);
+}
+function _cleanForSpeech(text){
+  return text.replace(/\[\[\s*viz[^\]]*\]\]/gi,'').replace(/\[[^\[\]]{1,40}\]/g,'').replace(/\*\*/g,'').trim();
+}
 function voiceSpeak(text, exKey){
-  if (!voiceMode || !window.speechSynthesis) return;
-  const clean = text.replace(/\[\[\s*viz[^\]]*\]\]/gi,'').replace(/\[[^\[\]]{1,40}\]/g,'').replace(/\*\*/g,'').trim();
+  if (!voiceMode) return;
+  const clean = _cleanForSpeech(text);
   if (!clean) return;
+  _micStatus('🔊 ' + ((EXPERTS[exKey]||{}).name || '전문가') + ' 발언 중…');
+  fetch('/api/conference/tts', {method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({text: clean, speaker: exKey})})
+    .then(r => { if(!r.ok) throw new Error('tts'); return r.blob(); })
+    .then(b => {
+      if (!voiceMode) return;
+      if (_curAudio){ try{_curAudio.pause();}catch(e){} }
+      const a = new Audio(URL.createObjectURL(b));
+      _curAudio = a;
+      a.playbackRate = 1.08;                     // 사람같은 속도 + 살짝 빠르게
+      a.onended = () => { _micStatus(''); _afterSpeak(); };
+      a.onerror = () => { _micStatus(''); _afterSpeak(); };
+      a.play().catch(()=>{ _micStatus(''); _fallbackSpeak(clean, exKey); });
+    })
+    .catch(() => { _micStatus(''); _fallbackSpeak(clean, exKey); });
+}
+function _fallbackSpeak(clean, exKey){          // OpenAI TTS 실패 시 브라우저 TTS
+  if (!voiceMode || !window.speechSynthesis) return;
   const u = new SpeechSynthesisUtterance(clean);
   if (_koVoice) u.voice = _koVoice;
-  u.lang = 'ko-KR'; u.rate = 1.07;
+  u.lang = 'ko-KR'; u.rate = 1.15;
   let h = 0; for (let i=0;i<(exKey||'').length;i++) h = (h*31 + exKey.charCodeAt(i)) & 1023;
-  u.pitch = 0.85 + (h % 8) * 0.05;            // 전문가별 목소리 톤 차이
-  u.onend = () => { if (voiceMode && !busy && !_mic) setTimeout(()=>{ if(voiceMode && !busy && !_mic) startMic(); }, 350); };
+  u.pitch = 0.85 + (h % 8) * 0.05;
+  u.onend = _afterSpeak;
   speechSynthesis.speak(u);
 }
 
@@ -5941,7 +6008,7 @@ function toggleVoiceMode(){
   voiceMode = !voiceMode;
   document.getElementById('voiceModeBtn').classList.toggle('on', voiceMode);
   if (voiceMode){ _micStatus('🔊 보이스 회의 모드 — 전문가 발언을 낭독하고, 끝나면 자동으로 마이크가 켜집니다'); }
-  else { speechSynthesis.cancel(); stopMic(false); _micStatus(''); }
+  else { speechSynthesis.cancel(); if(_curAudio){try{_curAudio.pause();}catch(e){}} stopMic(false); _micStatus(''); }
 }
 
 // 실시간 시계
