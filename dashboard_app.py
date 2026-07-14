@@ -608,6 +608,99 @@ def _fetch_trade_now(setkey):
 def fetch_ree_trade():
     return fetch_trade_set("ree")
 
+# KOMIR 법정광물 교차검증용 — 광물별 HS코드(광석+금속 형태)
+CORE_TRADE_HS = {
+    "리튬":   ["282520", "283691"],   # 산화·수산화리튬 + 탄산리튬
+    "니켈":   ["2604", "7502"],       # 니켈광 + 니켈괴
+    "코발트": ["2605", "8105"],
+    "텅스텐": ["2611", "8101"],
+    "몰리브덴": ["2613", "8102"],
+    "망간":   ["2602", "8111"],
+    "동":     ["2603", "7403"],       # 동광 + 정제동
+    "알루미늄": ["2606", "7601"],     # 보크사이트 + 알루미늄괴
+    "아연":   ["2608", "7901"],
+    "연":     ["2607", "7801"],
+    "주석":   ["2609", "8001"],
+    "철":     ["2601"],               # 철광석
+    "흑연":   ["2504"],
+    "크롬":   ["2610"],
+    "규소":   ["280461", "280469"],
+    "석탄":   ["2701"],
+}
+CORE_SNAPSHOT = os.path.join(os.path.dirname(__file__), "trade_core_data1.json")
+_core_refreshing = [False]
+
+def fetch_core_trade():
+    """KOMIR 주요 광물의 관세청 월별 수입 — 스냅샷 즉시 응답 + 백그라운드 갱신."""
+    c = cache_get("trade_core")
+    if c is not None:
+        return c
+    snap = load_json(CORE_SNAPSHOT)
+    if isinstance(snap, dict) and snap.get("minerals"):
+        cache_set("trade_core", snap, ttl=43200)
+        if CUSTOMS_API_KEY and not _core_refreshing[0]:
+            _core_refreshing[0] = True
+            threading.Thread(target=_refresh_core, daemon=True).start()
+        return snap
+    return _fetch_core_now()
+
+def _refresh_core():
+    try:
+        _fetch_core_now()
+    finally:
+        _core_refreshing[0] = False
+
+def _fetch_core_now():
+    out = {"minerals": {}, "asof": ""}
+    if not CUSTOMS_API_KEY:
+        return out
+    try:
+        now = datetime.now()
+        end = f"{now.year}{now.month:02d}"
+        _m0 = now.year * 12 + (now.month - 1) - 11
+        strt = f"{_m0 // 12}{_m0 % 12 + 1:02d}"
+        out["asof"] = f"{strt[:4]}.{strt[4:]}~{end[:4]}.{end[4:]}"
+        for mineral, hs_list in CORE_TRADE_HS.items():
+            m = {"monthly": {}, "by_country": {}, "total": 0}
+            for hs in hs_list:
+                try:
+                    r = requests.get(
+                        "https://apis.data.go.kr/1220000/nitemtrade/getNitemtradeList",
+                        params={"serviceKey": CUSTOMS_API_KEY, "strtYymm": strt,
+                                "endYymm": end, "hsSgn": hs}, timeout=20)
+                    if r.status_code != 200 or "<resultCode>00" not in r.text.replace(" ", ""):
+                        continue
+                    root = ET.fromstring(r.text)
+                    for it in root.iter("item"):
+                        g = lambda k: (it.findtext(k) or "").strip()
+                        try: imp = float(g("impDlr") or 0)
+                        except ValueError: imp = 0
+                        cty = g("statCdCntnKor1")
+                        ym = g("year").replace(".", "-")
+                        if cty in ("총계", "합계", "", "-") or "총계" in ym or imp <= 0:
+                            continue
+                        m["monthly"][ym] = m["monthly"].get(ym, 0) + imp
+                        m["by_country"][cty] = m["by_country"].get(cty, 0) + imp
+                except Exception:
+                    continue
+                time.sleep(0.12)
+            if m["monthly"]:
+                m["total"] = round(sum(m["monthly"].values()))
+                m["monthly"] = {k: round(v) for k, v in sorted(m["monthly"].items())}
+                _bc = sorted(m["by_country"].items(), key=lambda x: -x[1])
+                m["top"] = [_bc[0][0], round(_bc[0][1] / (m["total"] or 1) * 100)] if _bc else ["—", 0]
+                m["by_country"] = dict(_bc[:6])
+                out["minerals"][mineral] = m
+        if out["minerals"]:
+            try:
+                json.dump(out, open(CORE_SNAPSHOT, "w"), ensure_ascii=False)
+            except Exception:
+                pass
+    except Exception as e:
+        print("[TRADE core]", e)
+    cache_set("trade_core", out, ttl=43200)
+    return out
+
 def clean(t):
     s = re.sub(r"<[^>]+>", "", str(t))
     s = html.unescape(html.unescape(s))   # 이중 인코딩(&amp;lt;)까지 해제
@@ -1266,6 +1359,34 @@ def render_dashboard(home=False):
                 f'<div class="chart-title">{TRADE_LABEL[setkey]} 품목 구성 <span style="color:var(--muted2)">· HS 기준</span></div>'
                 f'{i_rows}</div>')
 
+    # KOMIR 주요 광물 — 관세청 월별 수입 + 교차 검증
+    core = fetch_core_trade()
+    _cm = core.get("minerals") or {}
+    core_js = json.dumps(_cm, ensure_ascii=False)
+    core_asof = core.get("asof", "")
+    _bm_map = dict(bm)
+    def _komir_of(m):
+        if m == "석탄":
+            return sum(_bm_map.get(k, 0) for k in ("유연탄", "무연탄", "갈탄", "토탄"))
+        if m == "흑연":
+            return _bm_map.get("인상흑연", 0) + _bm_map.get("토상흑연", 0)
+        return _bm_map.get(m, 0)
+    cross_rows = ""
+    for m, v in sorted(_cm.items(), key=lambda x: -x[1]["total"]):
+        kv = _komir_of(m)
+        if kv:
+            ratio = v["total"] / kv
+            rtxt = f"×{ratio:,.2f}"
+            rcol = "#1e8e5a" if 0.5 <= ratio <= 2 else "#b58a12"
+        else:
+            rtxt, rcol = "미집계", "#8a94a6"
+        cross_rows += (
+            f'<tr><td class="t-nm" style="padding:7px 4px;font-weight:600">{m}</td>'
+            f'<td class="t-num" style="padding:7px 4px">${v["total"]/1e6:,.0f}M</td>'
+            f'<td class="t-num" style="padding:7px 4px;color:var(--muted)">{("$" + format(kv/1e6, ",.0f") + "M") if kv else "—"}</td>'
+            f'<td class="t-num" style="padding:7px 4px;color:{rcol};font-weight:700">{rtxt}</td>'
+            f'<td class="t-nm" style="padding:7px 4px;font-size:11.5px;color:var(--muted)">{v["top"][0]} {v["top"][1]}%</td></tr>')
+
     ree = fetch_ree_trade()
     ree_js = json.dumps(ree.get("monthly") or {}, ensure_ascii=False)
     _ree_bc = list((ree.get("by_country") or {}).items())
@@ -1862,6 +1983,36 @@ function switchCategory(cat, el){
 }
 // ── 분류 페이지 가격전망 미니차트 ──
 var _catFc={};
+// ── 광물별 월간 수입 동향 (수급 현황) ──
+var _coreChart=null;
+function buildCoreTrade(){
+  var box=document.getElementById('coreBtns'); if(!box || !window.CORETRADE) return;
+  var keys=Object.keys(CORETRADE); if(!keys.length) return;
+  keys.forEach(function(m,i){
+    var b=document.createElement('button');
+    b.className='mineral-btn core-btn'+(i===0?' active':''); b.textContent=m;
+    b.style.fontSize='11px'; b.style.padding='3px 11px';
+    b.onclick=function(){ _setActive('.core-btn', b); drawCoreTrade(m); };
+    box.appendChild(b);
+  });
+  drawCoreTrade(keys[0]);
+}
+function drawCoreTrade(m){
+  var d=CORETRADE[m]; if(!d) return;
+  var months=Object.keys(d.monthly);
+  var note=document.getElementById('coreNote');
+  if(note) note.innerHTML='최대 수입국 <b style="color:var(--navy)">'+d.top[0]+' '+d.top[1]+'%</b> · 12개월 수입 <b style="color:var(--navy)">$'+(d.total/1e6).toFixed(0)+'M</b>';
+  if(_coreChart) _coreChart.destroy();
+  _coreChart=new Chart(document.getElementById('coreChart'),{type:'line',
+    data:{labels:months,datasets:[{label:m+' 월별 수입($)',data:months.map(function(k){return d.monthly[k];}),
+      borderColor:'#1c5cab',backgroundColor:'rgba(28,92,171,.08)',fill:true,borderWidth:2,tension:.25,pointRadius:2}]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:function(c){return ' $'+c.raw.toLocaleString();}}}},
+      scales:{x:{ticks:{color:'#6f7b90',maxTicksLimit:12},grid:{color:'#e8ecf3'}},
+        y:{ticks:{color:'#6f7b90',callback:function(v){return '$'+(v/1e6).toFixed(0)+'M';}},grid:{color:'#e8ecf3'}}}}});
+}
+buildCoreTrade();
+
 var _reeChart=null;
 function drawReeChart(){
   if(_reeChart || !window.REETRADE) return;
@@ -2534,6 +2685,26 @@ tr:hover td{{background:var(--bg3);}}
       </div>
     </div>
 
+    <!-- 월간 수입 동향 + 교차 검증 -->
+    <div class="charts-row" style="height:auto!important;align-items:stretch;margin-top:2px;">
+      <div class="wpanel" style="flex:1.15;">
+        <div class="wp-head">📅 광물별 월간 수입 동향 <span class="wp-sub">관세청 · {core_asof}</span></div>
+        <div style="padding:10px 16px 2px;display:flex;gap:6px;flex-wrap:wrap" id="coreBtns"></div>
+        <div class="wp-chart" style="min-height:220px;"><canvas id="coreChart"></canvas></div>
+        <div style="padding:0 16px 12px;font-size:11.5px;color:var(--muted2)" id="coreNote"></div>
+      </div>
+      <div class="wpanel" style="flex:1;">
+        <div class="wp-head">🔍 데이터 교차 검증 <span class="wp-sub">KOMIR 연간 vs 관세청 12개월</span></div>
+        <div class="wp-body">
+          <table class="wp-table">
+            <tr style="color:var(--muted2);font-size:10.5px"><td style="padding:4px">광물</td><td style="padding:4px;text-align:right">관세청 12M</td><td style="padding:4px;text-align:right">KOMIR 연간</td><td style="padding:4px;text-align:right">배율</td><td style="padding:4px">최대 수입국</td></tr>
+            {cross_rows}
+          </table>
+          <div style="font-size:10.5px;color:var(--muted2);margin-top:8px;line-height:1.6">💡 KOMIR는 광종(원광 중심)·연간, 관세청은 HS코드(광석+금속 형태)·최근 12개월 기준이라 차이가 납니다. 배율 <b style="color:#1e8e5a">×0.5~2</b>는 정합, 그 외는 집계 범위 차이.</div>
+        </div>
+      </div>
+    </div>
+
     <!-- 확대 광종 커버리지 -->
     <div class="wpanel" style="margin-top:2px">
       <div class="wp-head">🧭 마인테크 커버리지 — 확대 대상 광종 <span class="wp-sub">{taxo_total}종 · 5개 분류</span></div>
@@ -2704,7 +2875,7 @@ tr:hover td{{background:var(--bg3);}}
 <!-- ===== 분류별 카테고리 페이지 ===== -->
 {cat_pages_html}
 
-<script>var RISK = {risk_js}; var MIDX = {midx_js}; var NEWS = {news_js}; var FORECAST = {forecast_js}; var CATFC = {catfc_js}; var REETRADE = {ree_js}; var STEEL = {steel_js}; var MINES = {mines_js}; var OUTLOOK = {outlook_js};</script>
+<script>var RISK = {risk_js}; var MIDX = {midx_js}; var NEWS = {news_js}; var FORECAST = {forecast_js}; var CATFC = {catfc_js}; var REETRADE = {ree_js}; var CORETRADE = {core_js}; var STEEL = {steel_js}; var MINES = {mines_js}; var OUTLOOK = {outlook_js};</script>
 <script>{CAT_JS}</script>
 
 <script>
