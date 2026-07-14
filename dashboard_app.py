@@ -1359,6 +1359,29 @@ def render_dashboard(home=False):
                 f'<div class="chart-title">{TRADE_LABEL[setkey]} 품목 구성 <span style="color:var(--muted2)">· HS 기준</span></div>'
                 f'{i_rows}</div>')
 
+    # USGS MCS 2026 — 생산·매장 카드
+    usgs2 = load_json(_pj0("usgs_data1.json")) or {}
+    def _ut(v, unit):
+        """단위별 톤 환산 표기"""
+        if not v: return "—"
+        if unit == "kilograms":
+            return f"{v/1000:,.0f}t" if v >= 1000 else f"{v:,.0f}kg"
+        t = v * 1000 if unit == "thousand metric tons" else v
+        if t >= 1e8: return f"{t/1e8:,.1f}억t"
+        if t >= 1e4: return f"{t/1e4:,.0f}만t"
+        return f"{t:,.0f}t"
+    usgs2_cards = "".join(
+        f'<div class="uc"><div class="uc-nm">{k}</div>'
+        f'<div class="uc-row"><span class="uc-lb">연 생산</span><span class="uc-vl">{_ut(v["prod_total"], v["unit"])}</span></div>'
+        f'<div class="uc-row"><span class="uc-lb">생산 1위</span><span class="uc-vl hi">{v["prod_top"][0]} {v["prod_top"][1]}%</span></div>'
+        + (f'<div class="uc-row"><span class="uc-lb">매장량</span><span class="uc-vl">{_ut(v["rsv_total"], v["unit"])}</span></div>' if v["rsv_total"] else '')
+        + f'<div class="uc-row"><span class="uc-lb">매장 1위</span><span class="uc-vl">{v["rsv_top"][0]} {v["rsv_top"][1]}%</span></div>'
+        f'<div class="uc-src">USGS MCS 2026 · 2025년 기준</div></div>'
+        for k, v in sorted(usgs2.items(), key=lambda x: x[0]))
+    # World Bank 국제 시세
+    wbp = load_json(_pj0("wb_prices_data1.json")) or {}
+    wbp_js = json.dumps(wbp, ensure_ascii=False)
+
     # KOMIR 주요 광물 — 관세청 월별 수입 + 교차 검증
     core = fetch_core_trade()
     _cm = core.get("minerals") or {}
@@ -2182,8 +2205,34 @@ function drawRiskChart(){
 var _mindexChart=null;
 // ── 가격 전망 (실측 실선 + 예측 점선) ──
 var _fcChart=null, _fcCur=null, _fcInit=false;
+var _wbChart=null;
+function buildWb(){
+  var box=document.getElementById('wbBtns'); if(!box || !window.WBP || !WBP.series) return;
+  var keys=Object.keys(WBP.series);
+  keys.forEach(function(m,i){
+    var b=document.createElement('button');
+    b.className='mineral-btn wb-btn'+(i===0?' active':''); b.textContent=m;
+    b.style.fontSize='11px'; b.style.padding='3px 11px';
+    b.onclick=function(){ _setActive('.wb-btn', b); drawWb(m); };
+    box.appendChild(b);
+  });
+  drawWb(keys[0]);
+}
+function drawWb(m){
+  var vals=WBP.series[m]; if(!vals) return;
+  var t=document.getElementById('wbTitle');
+  if(t) t.innerHTML='국제 원자재 시세 — '+m+' ('+(WBP.units[m]||'')+') <span style="color:var(--muted2)">· World Bank Pink Sheet · 월별</span>';
+  if(_wbChart) _wbChart.destroy();
+  _wbChart=new Chart(document.getElementById('wbChart'),{type:'line',
+    data:{labels:WBP.months,datasets:[{label:m,data:vals,borderColor:'#1c5cab',backgroundColor:'rgba(28,92,171,.07)',fill:true,borderWidth:2,tension:.25,pointRadius:0}]},
+    options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:function(c){return ' '+(c.raw||0).toLocaleString()+' '+(WBP.units[m]||'');}}}},
+      scales:{x:{ticks:{color:'#6f7b90',maxTicksLimit:14},grid:{color:'#e8ecf3'}},
+        y:{ticks:{color:'#6f7b90'},grid:{color:'#e8ecf3'}}}}});
+}
 function initForecast(){
   if(_fcInit){ return; } _fcInit=true;
+  buildWb();
   var box=document.getElementById('fcBtns'); if(!box) return;
   var keys=Object.keys(FORECAST||{});
   keys.forEach(function(m,i){
@@ -2761,6 +2810,10 @@ tr:hover td{{background:var(--bg3);}}
         <div id="kp-rows"></div>
       </div>
     </div>
+    <div style="padding:16px 20px;background:var(--bg)">
+      <div class="page-title">🌐 광종별 세계 생산·매장 <span style="color:var(--muted2);font-weight:400;font-size:12px">· USGS MCS 2026 · 25개 광종 · 2025년 기준</span></div>
+      <div class="usgs-grid">{usgs2_cards}</div>
+    </div>
   </div>
 </div>
 
@@ -2836,6 +2889,11 @@ tr:hover td{{background:var(--bg3);}}
     <div class="chart-title">국내 철강 제품가 <span style="color:var(--muted2)">· 철근·열연·후판·냉연 · 천원/톤</span></div>
     <div style="height:240px;position:relative;"><canvas id="stChart2"></canvas></div>
   </div>
+  <div class="section" style="padding:14px 16px;margin-top:14px;">
+    <div class="chart-title" id="wbTitle">국제 원자재 시세 <span style="color:var(--muted2)">· World Bank Pink Sheet · 월별 · 최근 15년</span></div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin:6px 0 10px" id="wbBtns"></div>
+    <div style="height:280px;position:relative;"><canvas id="wbChart"></canvas></div>
+  </div>
   <div style="text-align:center;margin-top:16px;"><a href="/conference" class="nav-conf">⚖️ AI 전문가 회의실에서 가격 전망 토론하기 →</a></div>
 </div>
 
@@ -2875,7 +2933,7 @@ tr:hover td{{background:var(--bg3);}}
 <!-- ===== 분류별 카테고리 페이지 ===== -->
 {cat_pages_html}
 
-<script>var RISK = {risk_js}; var MIDX = {midx_js}; var NEWS = {news_js}; var FORECAST = {forecast_js}; var CATFC = {catfc_js}; var REETRADE = {ree_js}; var CORETRADE = {core_js}; var STEEL = {steel_js}; var MINES = {mines_js}; var OUTLOOK = {outlook_js};</script>
+<script>var RISK = {risk_js}; var MIDX = {midx_js}; var NEWS = {news_js}; var FORECAST = {forecast_js}; var CATFC = {catfc_js}; var REETRADE = {ree_js}; var CORETRADE = {core_js}; var WBP = {wbp_js}; var STEEL = {steel_js}; var MINES = {mines_js}; var OUTLOOK = {outlook_js};</script>
 <script>{CAT_JS}</script>
 
 <script>
