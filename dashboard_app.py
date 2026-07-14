@@ -5327,13 +5327,49 @@ tailwind.config = {
     border:1.5px solid var(--exc,#e9c667);opacity:0;animation:soRipple 2.4s cubic-bezier(0,.4,.4,1) infinite;}
   #stageOrb .so-ring.r1{width:90px;height:90px;animation-delay:0s;}
   #stageOrb .so-ring.r2{width:90px;height:90px;animation-delay:.8s;}
-  #stageOrb .so-ring.r3{width:90px;height:90px;animation-delay:1.6s;}
   @keyframes soRipple{0%{transform:translate(-50%,-50%) scale(.9);opacity:.75;}100%{transform:translate(-50%,-50%) scale(2.6);opacity:0;}}
-  #stageOrb .so-meta{position:absolute;left:50%;top:108px;transform:translateX(-50%);text-align:center;white-space:nowrap;}
+  /* JARVIS 코어 — 회전 세그먼트 링 */
+  #stageOrb .so-spin1{position:absolute;left:50%;top:63px;width:104px;height:104px;transform:translate(-50%,-50%);
+    border:1.5px dashed var(--exc,#5fd0ff);border-radius:50%;opacity:.75;animation:soSpin 7s linear infinite;}
+  #stageOrb .so-spin2{position:absolute;left:50%;top:63px;width:128px;height:128px;transform:translate(-50%,-50%);border-radius:50%;
+    background:conic-gradient(var(--exc,#5fd0ff) 0 60deg,transparent 60deg 100deg,var(--exc,#5fd0ff) 100deg 170deg,transparent 170deg 230deg,var(--exc,#5fd0ff) 230deg 320deg,transparent 320deg);
+    -webkit-mask:radial-gradient(closest-side,transparent 88%,#000 89%);mask:radial-gradient(closest-side,transparent 88%,#000 89%);
+    opacity:.85;animation:soSpinR 10s linear infinite;}
+  #stageOrb .so-ticks{position:absolute;left:50%;top:63px;width:152px;height:152px;transform:translate(-50%,-50%);border-radius:50%;
+    background:repeating-conic-gradient(var(--exc,#5fd0ff) 0 1.4deg,transparent 1.4deg 7.2deg);
+    -webkit-mask:radial-gradient(closest-side,transparent 92%,#000 93%);mask:radial-gradient(closest-side,transparent 92%,#000 93%);
+    opacity:.4;animation:soSpin 24s linear infinite;}
+  @keyframes soSpin{to{transform:translate(-50%,-50%) rotate(360deg);}}
+  @keyframes soSpinR{to{transform:translate(-50%,-50%) rotate(-360deg);}}
+  #stageOrb .so-core{animation:soCore 2.2s ease-in-out infinite;}
+  @keyframes soCore{0%,100%{filter:brightness(1);}50%{filter:brightness(1.35);}}
+
+  /* HUD 도크 — 보조 설명 홀로그램 패널 */
+  #hudDock{display:none;position:fixed;right:26px;top:50%;transform:translateY(-50%) translateX(30px);
+    width:min(380px,30vw);z-index:40;opacity:0;pointer-events:auto;transition:.45s cubic-bezier(.2,.8,.3,1);}
+  body.cine #hudDock.show{display:block;opacity:1;transform:translateY(-50%);}
+  #hudDock .hud-title{display:flex;align-items:center;gap:8px;font-size:10px;font-weight:900;letter-spacing:.22em;
+    color:var(--exc,#5fd0ff);text-shadow:0 0 12px color-mix(in srgb,var(--exc,#5fd0ff) 60%,transparent);
+    padding:0 4px 8px;text-transform:uppercase;}
+  #hudDock .hud-title span{margin-left:auto;letter-spacing:.04em;font-weight:600;color:#7d93b8;}
+  #hudDock #hudBody{position:relative;background:rgba(8,14,28,.88);backdrop-filter:blur(12px);
+    border:1px solid color-mix(in srgb,var(--exc,#5fd0ff) 35%,transparent);border-radius:6px;
+    box-shadow:0 0 40px color-mix(in srgb,var(--exc,#5fd0ff) 18%,transparent),inset 0 0 30px rgba(126,166,255,.04);
+    padding:6px;}
+  #hudDock #hudBody::before,#hudDock #hudBody::after{content:'';position:absolute;width:16px;height:16px;
+    border:2px solid var(--exc,#5fd0ff);}
+  #hudDock #hudBody::before{top:-2px;left:-2px;border-right:0;border-bottom:0;}
+  #hudDock #hudBody::after{bottom:-2px;right:-2px;border-left:0;border-top:0;}
+  #hudDock .viz-card{background:transparent!important;border:none!important;max-width:none!important;margin:0!important;box-shadow:none!important;}
+  #hudDock .viz-head{color:#dfe8f7!important;}
+  #hudDock .viz-canvas{height:190px!important;}
+  #hudDock .viz-foot{color:#7d93b8!important;}
+  @media(max-width:1200px){#hudDock{display:none!important;}}
+  #stageOrb .so-meta{position:absolute;left:50%;top:148px;transform:translateX(-50%);text-align:center;white-space:nowrap;}
   #stageOrb .so-meta b{display:block;font-size:13px;font-weight:900;color:var(--exc,#e9c667);
     text-shadow:0 0 14px color-mix(in srgb,var(--exc,#e9c667) 60%,transparent);letter-spacing:.04em;}
   #stageOrb .so-meta i{display:block;font-style:normal;font-size:10px;color:#7d93b8;margin-top:2px;letter-spacing:.06em;}
-  body.cine #chatArea{padding-top:170px!important;}
+  body.cine #chatArea{padding-top:200px!important;}
 
   /* 회의 룸 — 전문가 좌석 스트립 */
   .aud-tag{display:inline-flex;align-items:center;font-size:11px;font-weight:800;padding:7px 13px;border-radius:12px;
@@ -5473,9 +5509,11 @@ tailwind.config = {
         <div id="activeExperts" class="flex flex-wrap gap-1.5"></div>
         <button onclick="backToLobby()" class="ml-auto text-xs text-on-surface-variant border border-outline-variant/30 rounded-lg px-3 py-1.5 hover:border-secondary hover:text-secondary transition shrink-0">← 다시 시작</button>
       </div>
-      <div id="stageOrb"><span class="so-ring r1"></span><span class="so-ring r2"></span><span class="so-ring r3"></span>
+      <div id="stageOrb"><span class="so-ring r1"></span><span class="so-ring r2"></span>
+        <span class="so-ticks"></span><span class="so-spin1"></span><span class="so-spin2"></span>
         <span class="so-core"><span class="so-avatar"></span></span>
         <span class="so-meta"><b class="so-name"></b><i class="so-role"></i></span></div>
+      <div id="hudDock"><div class="hud-title">◆ TACTICAL DATA <span id="hudSrc"></span></div><div id="hudBody"></div></div>
       <div id="chatArea" class="flex-1 overflow-y-auto p-8 space-y-6 custom-scrollbar"></div>
       <div id="typingIndicator" class="px-8 pb-1 text-xs text-secondary font-data-tabular" style="display:none">● 전문가가 답변 중...</div>
       <div id="turnControls" class="px-6 py-3 border-t border-outline-variant/20 bg-surface-container-low/40 flex items-center gap-3 flex-wrap shrink-0" style="display:none">
@@ -5896,7 +5934,12 @@ function speakExpert(key) {
                 _esc = _esc.replace(/\[([^\[\]]{1,40})\]/g, '<span class="src-chip">$1</span>');
                 currentBubble.innerHTML = _esc;
                 if (_vizKey && VIZ[_vizKey]) {
-                  renderVizCard(VIZ[_vizKey], currentBubble.parentNode, (EXPERTS[d.speaker_end]||{}).color);
+                  var _exc = (EXPERTS[d.speaker_end]||{}).color;
+                  if (document.body.classList.contains('cine')) {
+                    showHudViz(VIZ[_vizKey], _exc);
+                  } else {
+                    renderVizCard(VIZ[_vizKey], currentBubble.parentNode, _exc);
+                  }
                   recentViz.push(_vizKey); if (recentViz.length > 3) recentViz.shift();
                   document.getElementById('chatArea').scrollTop = 1e9;
                 }
@@ -5915,6 +5958,17 @@ function speakExpert(key) {
 }
 
 // 발언 근거 시각자료 카드 렌더 (말풍선 아래)
+function showHudViz(spec, color){
+  var dock = document.getElementById('hudDock'); if(!dock) return;
+  var body = document.getElementById('hudBody');
+  body.innerHTML = '';
+  dock.style.setProperty('--exc', color || '#5fd0ff');
+  document.getElementById('hudSrc').textContent = spec.source || '';
+  renderVizCard(spec, body, color);
+  dock.classList.remove('show'); void dock.offsetWidth;   // 애니메이션 리셋
+  dock.classList.add('show');
+}
+
 function renderVizCard(spec, container, color){
   if(!spec || !container) return;
   color = color || '#e9c349';
