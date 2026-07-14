@@ -5861,7 +5861,8 @@ function startSession() {
   document.getElementById('chatArea').innerHTML = '';
   recentViz = [];
   appendUserMsg(q);
-  speakExpert(turnOrder[0]);
+  busy = false;
+  renderTurnControls(true);   // 첫 발언자 직접 선택
 }
 
 function backToLobby() {
@@ -5884,9 +5885,11 @@ function appendUserMsg(text) {
   chatHistory.push({role:'user', content:text});
 }
 
-function renderTurnControls() {
+function renderTurnControls(first) {
   const tc = document.getElementById('turnControls');
   const box = document.getElementById('tcExperts');
+  const lbl = tc.querySelector('span');
+  if (lbl) lbl.textContent = first ? '첫 발언자 ▶' : '다음 발언자 ▶';
   const suggested = turnOrder[turnIdx % turnOrder.length];
   box.innerHTML = turnOrder.map(k => {
     const ex = EXPERTS[k];
