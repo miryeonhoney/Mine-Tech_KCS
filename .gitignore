@@ -39,3 +39,6 @@ minerals_agent/
 석유데이터/
 데이터1/
 데이터2/
+
+# ── Claude Code 로컬 설정 ──
+.claude/
