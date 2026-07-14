@@ -14,7 +14,7 @@
 =====================================================================
 """
 
-import os, re, json, glob, time, smtplib, hmac, hashlib, html, xml.etree.ElementTree as ET
+import os, re, json, glob, time, smtplib, hmac, hashlib, html, threading, xml.etree.ElementTree as ET
 import pandas as pd
 from datetime import datetime
 from email.mime.text import MIMEText
@@ -518,15 +518,43 @@ def fetch_customs():
     cache_set("customs", result)
     return result
 
-# ── 희토류 수출입 (관세청 nitemtrade · HS 2846 화합물 + 280530 금속) ──
-REE_HS = {"2846": "희토류 화합물", "280530": "희토류 금속"}
-REE_SNAPSHOT = os.path.join(os.path.dirname(__file__), "ree_trade_data1.json")
+# ── 관세청 수출입 (nitemtrade) — HS코드 세트별 수집 ──
+# KOMIR 통계(법정광물 28종)에 없는 전략 광물을 무역 통계로 보완
+TRADE_SETS = {
+    "ree":       {"2846": "희토류 화합물", "280530": "희토류 금속"},
+    "strategic": {"8112": "갈륨·게르마늄·인듐 등", "8110": "안티모니", "8106": "창연(비스무트)",
+                  "8104": "마그네슘", "8109": "지르코늄", "8108": "티타늄"},
+    "precious":  {"7108": "금", "7106": "은", "7110": "백금족(백금·팔라듐)"},
+    "uranium":   {"2844": "우라늄·방사성원소"},
+}
+TRADE_LABEL = {"ree": "희토류", "strategic": "전략 희소금속", "precious": "귀금속", "uranium": "우라늄"}
 
-def fetch_ree_trade():
-    """희토류 수입 통계. API(12h 캐시) → 성공 시 스냅샷 갱신 → 실패 시 스냅샷 폴백."""
-    c = cache_get("ree_trade")
+def _trade_snapshot(key):
+    return os.path.join(os.path.dirname(__file__), f"trade_{key}_data1.json")
+
+_trade_refreshing = set()
+
+def fetch_trade_set(setkey):
+    """HS 세트 수입 통계. 캐시 → 스냅샷 즉시 응답 + 백그라운드 갱신 → 최초엔 동기 수집."""
+    c = cache_get(f"trade_{setkey}")
     if c is not None:
         return c
+    snap = load_json(_trade_snapshot(setkey))
+    if isinstance(snap, dict) and snap.get("by_country"):
+        cache_set(f"trade_{setkey}", snap, ttl=43200)
+        if CUSTOMS_API_KEY and setkey not in _trade_refreshing:
+            _trade_refreshing.add(setkey)
+            threading.Thread(target=_refresh_trade_set, args=(setkey,), daemon=True).start()
+        return snap
+    return _fetch_trade_now(setkey)
+
+def _refresh_trade_set(setkey):
+    try:
+        _fetch_trade_now(setkey)
+    finally:
+        _trade_refreshing.discard(setkey)
+
+def _fetch_trade_now(setkey):
     out = {"by_country": {}, "monthly": {}, "by_hs": {}, "by_item": {}, "asof": "", "total_imp": 0}
     ok = False
     if CUSTOMS_API_KEY:
@@ -535,7 +563,7 @@ def fetch_ree_trade():
             end = f"{now.year}{now.month:02d}"
             _m0 = now.year * 12 + (now.month - 1) - 11   # 12개월 창 (1년 이내 제한)
             strt = f"{_m0 // 12}{_m0 % 12 + 1:02d}"
-            for hs, hs_name in REE_HS.items():
+            for hs, hs_name in TRADE_SETS[setkey].items():
                 r = requests.get(
                     "https://apis.data.go.kr/1220000/nitemtrade/getNitemtradeList",
                     params={"serviceKey": CUSTOMS_API_KEY, "strtYymm": strt,
@@ -558,7 +586,7 @@ def fetch_ree_trade():
                     itn = g("statKor")
                     if itn and itn != "-":
                         out["by_item"][itn] = out["by_item"].get(itn, 0) + imp
-                time.sleep(0.2)
+                time.sleep(0.15)
             if ok:
                 out["asof"] = f"{strt[:4]}.{strt[4:]}~{end[:4]}.{end[4:]}"
                 out["total_imp"] = round(sum(out["by_country"].values()))
@@ -566,16 +594,19 @@ def fetch_ree_trade():
                 out["monthly"] = dict(sorted(out["monthly"].items()))
                 out["by_item"] = dict(sorted(out["by_item"].items(), key=lambda x: -x[1])[:8])
                 try:
-                    json.dump(out, open(REE_SNAPSHOT, "w"), ensure_ascii=False)
+                    json.dump(out, open(_trade_snapshot(setkey), "w"), ensure_ascii=False)
                 except Exception:
                     pass
         except Exception as e:
-            print("[REE TRADE]", e)
+            print(f"[TRADE {setkey}]", e)
     if not ok:
-        snap = load_json(REE_SNAPSHOT)
+        snap = load_json(_trade_snapshot(setkey))
         out = snap if isinstance(snap, dict) and snap.get("by_country") else out
-    cache_set("ree_trade", out, ttl=43200)
+    cache_set(f"trade_{setkey}", out, ttl=43200)
     return out
+
+def fetch_ree_trade():
+    return fetch_trade_set("ree")
 
 def clean(t):
     s = re.sub(r"<[^>]+>", "", str(t))
@@ -1210,6 +1241,31 @@ def render_dashboard(home=False):
             f'<span class="rk-vl">{unit}{fmt.format(v)}</span></div>'
             for i, (n, v) in enumerate(pairs))
 
+    # 분류별 관세청 무역 세트 (KOMIR 미포함 광물 보완)
+    CAT_TRADE = {"rare": "strategic", "etc": "precious", "energy": "uranium"}
+    def _trade_panel(setkey):
+        td = fetch_trade_set(setkey)
+        bc = list((td.get("by_country") or {}).items())[:8]
+        if not bc:
+            return (f'<div class="section" style="flex:1;padding:14px 16px;">'
+                    f'<div class="chart-title">{TRADE_LABEL[setkey]} 수입 · 관세청</div>'
+                    f'<div class="empty">관세청 API 연동 대기 중</div></div>')
+        c_rows = "".join(
+            f'<div class="rk-item"><span class="rk-no">{i+1:02d}</span>'
+            f'<div class="rk-mid"><div class="rk-nm">{c}</div>'
+            f'<div class="rk-bar"><div class="rk-fill" style="width:{max(v/(bc[0][1] or 1)*100,2):.0f}%"></div></div></div>'
+            f'<span class="rk-vl">${v:,.0f}</span></div>'
+            for i, (c, v) in enumerate(bc))
+        i_rows = "".join(
+            f'<div class="pp-row"><span class="pp-nm" title="{k}">{(k[:26] + "…") if len(k) > 27 else k}</span><span class="pp-val">${v:,.0f}</span></div>'
+            for k, v in list((td.get("by_item") or td.get("by_hs") or {}).items())[:8])
+        return (f'<div class="section" style="flex:1.2;padding:14px 16px;">'
+                f'<div class="chart-title">{TRADE_LABEL[setkey]} 국가별 수입 <span style="color:var(--muted2)">· 관세청 · {td.get("asof","")} · 연 ${td.get("total_imp",0):,.0f}</span></div>'
+                f'{c_rows}</div>'
+                f'<div class="section" style="flex:1;padding:14px 16px;">'
+                f'<div class="chart-title">{TRADE_LABEL[setkey]} 품목 구성 <span style="color:var(--muted2)">· HS 기준</span></div>'
+                f'{i_rows}</div>')
+
     ree = fetch_ree_trade()
     ree_js = json.dumps(ree.get("monthly") or {}, ensure_ascii=False)
     _ree_bc = list((ree.get("by_country") or {}).items())
@@ -1247,6 +1303,8 @@ def render_dashboard(home=False):
         _n_fc = len(_fc_cat.get(cid, []))
         _ppa_panel = (f'<div class="section" style="padding:14px 16px;">'
                       f'<div class="chart-title">오늘의 LME 시세 · {ppa_date}</div>{ppa_rows}</div>') if cid == "nf" else ""
+        if cid in CAT_TRADE:
+            _ppa_panel = _trade_panel(CAT_TRADE[cid])
         if cid == "ree":
             _ppa_panel = (
                 f'<div class="section" style="flex:1.3;padding:14px 16px;">'
