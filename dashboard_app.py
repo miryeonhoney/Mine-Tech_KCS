@@ -4673,8 +4673,7 @@ const globe = Globe()(document.getElementById('globeViz'))
   })
   .pointOfView({lat: 25, lng: 100, altitude: 2.1});
 
-globe.controls().autoRotate = true;
-globe.controls().autoRotateSpeed = 0.45;
+globe.controls().autoRotate = false;   // 자동 회전 끔 — 마우스 조작 편의
 
 // ── 핵심광물지도: 광물별 수입 루트 + 매장량 오버레이 ──
 const RSV = __RSV__;
@@ -4811,9 +4810,7 @@ fetch('/api/geo-events').then(function(r){ return r.json(); }).then(function(d){
 });
 function focusEv(i){
   var e = window._EVS[i]; if(!e) return;
-  globe.controls().autoRotate = false;
   globe.pointOfView({lat: e.lat, lng: e.lng, altitude: 1.3}, 900);
-  setTimeout(function(){ globe.controls().autoRotate = true; }, 6000);
 }
 </script>
 </body>
