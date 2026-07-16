@@ -4553,6 +4553,15 @@ body{background:#eef2f8;color:#16233c;font-family:Pretendard,'Apple SD Gothic Ne
 </style>
 </head>
 <body>
+<div style="position:fixed;top:0;left:0;right:0;z-index:80;display:flex;align-items:center;gap:18px;height:54px;padding:0 20px;background:rgba(9,14,11,.74);backdrop-filter:blur(10px);border-bottom:1px solid rgba(255,255,255,.08);font-family:'Pretendard Variable',Pretendard,-apple-system,sans-serif">
+  <a href="/" style="color:#fff;font-weight:800;font-size:16px;text-decoration:none;display:flex;align-items:center;gap:7px"><span style="width:9px;height:9px;border-radius:50%;background:#2fb37f;box-shadow:0 0 0 4px rgba(47,179,127,.18)"></span>마인테크</a>
+  <nav style="display:flex;gap:4px">
+    <a href="/" style="padding:6px 13px;border-radius:999px;color:#cfd8d2;font-size:13.5px;font-weight:650;text-decoration:none">홈</a>
+    <a href="/globe" style="padding:6px 13px;border-radius:999px;background:rgba(47,179,127,.18);color:#7ee2b8;font-size:13.5px;font-weight:650;text-decoration:none">지도</a>
+    <a href="/briefing" style="padding:6px 13px;border-radius:999px;color:#cfd8d2;font-size:13.5px;font-weight:650;text-decoration:none">브리핑</a>
+    <a href="/conference" style="padding:6px 13px;border-radius:999px;color:#cfd8d2;font-size:13.5px;font-weight:650;text-decoration:none">AI 회의</a>
+  </nav>
+</div>
 <div id="globeViz"></div>
 
 <div class="hd">
@@ -4989,7 +4998,7 @@ def render_login(err=""):
 html body, html body *:not([class*="material-symbols"]){font-family:'Pretendard','Noto Sans KR',-apple-system,BlinkMacSystemFont,sans-serif !important;}
 body{font-variant-numeric:tabular-nums;}
 </style>
-<style>body{background:#f4f6fa;color:#16233c;font-family:'Inter','Noto Sans KR',sans-serif;}</style>
+<style>body{background:#f5f7f6;color:#1b211e;font-family:'Pretendard Variable',Pretendard,'Noto Sans KR',sans-serif;}</style>
 </head>
 <body class="min-h-screen flex items-center justify-center p-6">
   <form method="POST" action="/conference/login" class="w-full max-w-sm bg-white border border-[#e3e8f0] rounded-2xl p-8" style="box-shadow:0 14px 40px rgba(20,35,60,.1)">
@@ -5508,6 +5517,7 @@ tailwind.config = {
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 </head>
 <body class="flex min-h-screen bg-background">
+<a href="/" style="position:fixed;top:14px;left:16px;z-index:95;display:flex;align-items:center;gap:6px;padding:7px 14px;border-radius:999px;background:rgba(9,14,11,.55);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.12);color:#cfd8d2;font-size:12.5px;font-weight:700;text-decoration:none;font-family:'Pretendard Variable',Pretendard,sans-serif"><span style="width:7px;height:7px;border-radius:50%;background:#2fb37f"></span>마인테크 홈</a>
 
 <!-- Main (사이드바 없음 — 회의에 집중) -->
 <main class="flex-1 h-screen flex flex-col bg-background overflow-hidden">
@@ -6544,6 +6554,97 @@ def _v2_lookup(d, name):
     return None
 
 
+
+_V2_REE_SET   = set(MINERAL_TAXONOMY["희토류"])
+_V2_STRAT_SET = {"갈륨", "게르마늄", "인듐", "안티모니", "창연/비스무트", "마그네슘", "지르코늄", "티타늄"}
+_V2_PREC_SET  = {"금", "은", "백금", "팔라듐"}
+
+_V2_USGS1_CACHE = None
+def _v2_usgs1():
+    global _V2_USGS1_CACHE
+    if _V2_USGS1_CACHE is None:
+        _V2_USGS1_CACHE = load_json(os.path.join(os.path.dirname(__file__), "usgs_data1.json")) or {}
+    return _V2_USGS1_CACHE
+
+
+def _v2_trade_groups():
+    """관세청 그룹 스냅샷 일괄 로드(스냅샷 우선이라 즉시 응답)."""
+    return {
+        "core":      (fetch_core_trade() or {}).get("minerals") or {},
+        "ree":       fetch_trade_set("ree") or {},
+        "strategic": fetch_trade_set("strategic") or {},
+        "precious":  fetch_trade_set("precious") or {},
+        "uranium":   fetch_trade_set("uranium") or {},
+    }
+
+
+def _v2_imports(name, imp_map, groups):
+    """광종별 수입국 분포 — (dict, 출처라벨, 그룹주석). 없으면 (None, '', '')."""
+    byc = _v2_lookup(imp_map, name)
+    if byc:
+        return byc, "관세청 수출입 통계", ""
+    core = _v2_lookup(groups["core"], name)
+    if isinstance(core, dict) and core.get("by_country"):
+        return core["by_country"], "관세청 12개월 수입액", ""
+    if name == "유연탄":
+        core = (groups["core"] or {}).get("석탄") or {}
+        if core.get("by_country"):
+            return core["by_country"], "관세청 12개월 수입액", "석탄 기준"
+    if name in _V2_REE_SET and (groups["ree"] or {}).get("by_country"):
+        return groups["ree"]["by_country"], "관세청 12개월 수입액", "희토류 전체 기준"
+    if name in _V2_STRAT_SET and (groups["strategic"] or {}).get("by_country"):
+        return groups["strategic"]["by_country"], "관세청 12개월 수입액", "전략 희소금속 그룹 기준"
+    if name in _V2_PREC_SET and (groups["precious"] or {}).get("by_country"):
+        return groups["precious"]["by_country"], "관세청 12개월 수입액", "귀금속 그룹 기준"
+    if name == "우라늄" and (groups["uranium"] or {}).get("by_country"):
+        return groups["uranium"]["by_country"], "관세청 12개월 수입액", ""
+    return None, "", ""
+
+
+_V2_NEWS_Q = {"금": "금값 시세", "은": "은 시세 귀금속", "동(구리)": "구리 가격", "연(납)": "납 금속 가격",
+              "철/철광석": "철광석", "주석": "주석 금속", "규소": "규소 웨이퍼", "유연탄": "유연탄 석탄",
+              "백금": "백금 시세", "팔라듐": "팔라듐 가격", "아연": "아연 가격", "크롬": "크롬 금속"}
+
+
+def _v2_news(name, limit=4):
+    """광종별 실시간 뉴스 — 네이버 검색(30분 캐시), 실패 시 전체 광물 뉴스에서 매칭."""
+    ck = "v2news_" + _v2_norm(name)
+    c = cache_get(ck)
+    if c is None:
+        c = []
+        base = re.sub(r"[\(\)/].*$", "", name)
+        q = _V2_NEWS_Q.get(name) or (base + (" 광물" if len(base) <= 2 else ""))
+        if NAVER_CLIENT_ID and not NAVER_CLIENT_ID.startswith("여기에"):
+            try:
+                r = requests.get("https://openapi.naver.com/v1/search/news.json",
+                                 headers={"X-Naver-Client-Id": NAVER_CLIENT_ID,
+                                          "X-Naver-Client-Secret": NAVER_CLIENT_SECRET},
+                                 params={"query": q, "display": 12, "sort": "date"}, timeout=8)
+                seen = set()
+                from email.utils import parsedate_to_datetime as _pdt
+                for it in (r.json().get("items") or []):
+                    t = clean(it.get("title", ""))
+                    d = clean(it.get("description", ""))[:90]
+                    if name not in _V2_NEWS_Q and base not in (t + d):
+                        continue
+                    key = re.sub(r"[^0-9A-Za-z가-힣]", "", t)[:18]
+                    if key in seen:
+                        continue
+                    seen.add(key)
+                    try: dt = _pdt(it.get("pubDate", "")).strftime("%Y-%m-%d %H:%M")
+                    except Exception: dt = ""
+                    c.append({"제목": t, "요약": d,
+                              "링크": it.get("originallink") or it.get("link", ""), "발행일": dt})
+            except Exception as e:
+                print("[v2news]", name, e)
+        cache_set(ck, c, ttl=1800)
+    if not c:
+        base = re.sub(r"[\(\)/].*$", "", name)
+        c = [n for n in (fetch_news() or [])
+             if base and base in ((n.get("제목") or "") + (n.get("요약") or ""))]
+    return c[:limit]
+
+
 def _v2_grade_pill(grade, score=None):
     cls = {"위험": "p-dg", "주의": "p-wr", "안정": "p-ok"}.get(grade, "p-mu")
     txt = f"{grade} {score:.0f}" if isinstance(score, (int, float)) else (grade or "관찰")
@@ -6554,21 +6655,29 @@ def _v2_rows():
     """홈 리스트용 광종 행 데이터(48종)."""
     krisk = compute_k_risk() or {}
     imp_map, _unit = by_mineral_country(fetch_customs() or [])
+    groups = _v2_trade_groups()
     rows = []
     for cat, names in MINERAL_TAXONOMY.items():
         for nm in names:
             k = _v2_lookup(krisk, nm)
-            byc = _v2_lookup(imp_map, nm) or {}
+            byc, _src, _note = _v2_imports(nm, imp_map, groups)
+            byc = byc or {}
             tot = sum(byc.values())
             top = max(byc.items(), key=lambda x: x[1]) if byc else None
             share = round(top[1] / tot * 100) if (top and tot) else None
-            if top and share is not None and share >= 50:
+            if _note:
+                share = None  # 그룹 합산이라 광종별 %로 말하지 않음
+            if top and _note:
+                sub = f"{_note.replace(' 기준', '')} 수입 1위 {top[0]}"
+            elif top and share is not None and share >= 50:
                 sub = f"수입 {share}%가 {top[0]}에서 와요"
             elif top:
                 sub = f"주요 수입국 {top[0]}"
             else:
                 ug = _v2_lookup(USGS_DATA, nm) or {}
-                sub = f"세계 1위 생산 {ug['1위국']}" if ug.get("1위국") else cat
+                pt = (_v2_lookup(_v2_usgs1(), nm) or {}).get("prod_top") or []
+                t1 = ug.get("1위국") or (pt[0] if pt else "")
+                sub = f"세계 1위 생산 {t1}" if t1 else cat
             life = [key for key, _label, mins in LIFE_CATS if nm in mins]
             rows.append({
                 "name": nm, "cat": cat, "use": MIN_USES.get(nm, cat),
@@ -6868,8 +6977,9 @@ def render_mineral_v2(name):
                                           f'<h1>{name}</h1><p style="margin-top:10px">아직 준비되지 않은 광물이에요.</p></div>')
     name = r["name"]
     krisk = _v2_lookup(compute_k_risk() or {}, name) or {}
-    imp_map, unit = by_mineral_country(fetch_customs() or [])
-    byc = _v2_lookup(imp_map, name) or {}
+    imp_map, _unit0 = by_mineral_country(fetch_customs() or [])
+    byc, imp_src, imp_note = _v2_imports(name, imp_map, _v2_trade_groups())
+    byc = byc or {}
     ug = _v2_lookup(USGS_DATA, name) or {}
 
     # 쉬운 말 요약
@@ -6900,6 +7010,18 @@ def render_mineral_v2(name):
     pairs = sorted(byc.items(), key=lambda x: x[1], reverse=True)[:6]
     imp_labels = json.dumps([p[0] for p in pairs], ensure_ascii=False)
     imp_vals = json.dumps([round(p[1]) for p in pairs])
+    if pairs:
+        _lab = imp_src + (f" · {imp_note}" if imp_note else "")
+        imp_card = (f'<div class="card"><h3>어디서 수입하나요? '
+                    f'<span style="font-weight:600;color:var(--mut);font-size:12px">({_lab})</span></h3>'
+                    f'<div style="height:230px"><canvas id="cImp"></canvas></div></div>')
+    else:
+        pt = (_v2_lookup(_v2_usgs1(), name) or {}).get("prod_top") or []
+        _info = (f"세계 생산 1위는 <b>{pt[0]}</b>이에요 (점유 {pt[1]}%)."
+                 if len(pt) == 2 and pt[0] else "수입·생산 통계가 아직 연결되지 않은 광물이에요.")
+        imp_card = ('<div class="card"><h3>공급은 어디서 오나요?</h3>'
+                    f'<div style="padding:64px 12px;text-align:center;color:var(--mut);font-size:14px">{_info}'
+                    '<div style="font-size:11.5px;margin-top:6px">출처: USGS MCS 2026</div></div></div>')
 
     # 가격지수(그룹) 라인
     grp = K_MIDX_GROUP.get(name.replace("(구리)", "").replace("/철광석", ""), None) or \
@@ -6911,10 +7033,8 @@ def render_mineral_v2(name):
     px_labels = json.dumps(months, ensure_ascii=False)
     px_vals = json.dumps(vals)
 
-    # 관련 뉴스
-    base = re.sub(r"[\(\)/].*$", "", name)
-    news = [n for n in (fetch_news() or [])
-            if base and base in ((n.get("제목") or "") + (n.get("요약") or ""))][:4]
+    # 관련 뉴스 — 광종별 실시간 검색
+    news = _v2_news(name)
     news_html = "".join(
         f'<a href="{n.get("링크", "#")}" target="_blank" rel="noopener">{n.get("제목", "")}'
         f'<div class="nd">{n.get("발행일", "")}</div></a>' for n in news
@@ -6943,8 +7063,7 @@ def render_mineral_v2(name):
   <div class="deasy">{easy}</div>
   <div class="facts">{''.join(facts)}</div>
   <div class="dgrid">
-    <div class="card"><h3>어디서 수입하나요? <span style="font-weight:600;color:var(--mut);font-size:12px">({unit} 기준)</span></h3>
-      <div style="height:230px"><canvas id="cImp"></canvas></div></div>
+    {imp_card}
     <div class="card"><h3>가격 흐름 <span style="font-weight:600;color:var(--mut);font-size:12px">({grp} 지수 · 최근 3년)</span></h3>
       <div style="height:230px"><canvas id="cPx"></canvas></div></div>
   </div>
@@ -6958,14 +7077,12 @@ def render_mineral_v2(name):
   if(!window.Chart) return;
   Chart.defaults.font.family="'Pretendard Variable',Pretendard,sans-serif";
   Chart.defaults.color='#68726c';
-  var IL={imp_labels}, IV={imp_vals};
-  if(IL.length){{
-    new Chart(document.getElementById('cImp'),{{type:'bar',
+  var IL={imp_labels}, IV={imp_vals}, elImp=document.getElementById('cImp');
+  if(elImp&&IL.length){{
+    new Chart(elImp,{{type:'bar',
       data:{{labels:IL,datasets:[{{data:IV,backgroundColor:'#0e7a4f',borderRadius:8,barThickness:18}}]}},
       options:{{indexAxis:'y',maintainAspectRatio:false,plugins:{{legend:{{display:false}}}},
         scales:{{x:{{grid:{{color:'#eef1ef'}},ticks:{{font:{{size:11}}}}}},y:{{grid:{{display:false}},ticks:{{font:{{size:12}}}}}}}}}}}});
-  }} else {{
-    document.getElementById('cImp').parentElement.innerHTML='<div style="color:#68726c;font-size:13.5px;padding-top:90px;text-align:center">최근 12개월 수입 실적이 없어요.</div>';
   }}
   var PL={px_labels}, PV={px_vals};
   if(PL.length){{
