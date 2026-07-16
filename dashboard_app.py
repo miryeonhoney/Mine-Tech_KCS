@@ -3896,7 +3896,10 @@ function selectMineral(mineral, btn) {{
 #  ③ 라우트
 # ═══════════════════════════════════════════════════════════════
 @app.route("/")
-def index(): return Response(render_dashboard(home=True), mimetype="text/html")   # 메인 = 슬라이드+검색
+def index(): return Response(render_home_v2(), mimetype="text/html")   # V2 소비자 홈
+
+@app.route("/pro")
+def pro(): return Response(render_dashboard(home=True), mimetype="text/html")   # 이전 화면(전문가용)
 
 @app.route("/dashboard")
 def dashboard(): return Response(render_dashboard(home=False), mimetype="text/html")  # 카테고리 화면 (검색 없음)
@@ -6476,10 +6479,591 @@ if (cv) {
                 .replace("__NOW__", now))
 
 
+
+# ═══════════════════════════════════════════════════════════════════════
+#  V2 소비자 UI — "광물 날씨" 리디자인 (2026-07)
+#  홈(/) · 광종 상세(/m/이름) · 브리핑(/briefing) — 일반 사용자용
+#  이전 대시보드는 /pro, 카테고리 화면은 /dashboard 에 유지(전문가용)
+# ═══════════════════════════════════════════════════════════════════════
+from urllib.parse import quote as _v2q
+
+# 생활 카테고리 — 일반 사용자 언어로 광종을 묶는다 (한 광종이 여러 곳에 속할 수 있음)
+LIFE_CATS = [
+    ("bat",  "배터리·전기차", ["리튬", "코발트", "니켈", "망간", "흑연", "알루미늄", "동(구리)",
+                          "네오디뮴", "프라세오디뮴", "디스프로슘", "터븀"]),
+    ("chip", "반도체·전자",  ["규소", "갈륨", "게르마늄", "인듐", "탄탈륨", "주석", "은", "팔라듐",
+                          "안티모니", "지르코늄", "셀레늄", "이트륨", "세륨", "란탄", "유로퓸",
+                          "가돌리늄", "에르븀", "홀뮴", "루테튬", "스칸듐"]),
+    ("ind",  "자동차·중공업", ["철/철광석", "크롬", "몰리브덴", "텅스텐", "바나듐", "니오븀", "티타늄",
+                          "마그네슘", "아연", "연(납)", "사마륨", "스트론튬", "창연/비스무트"]),
+    ("ene",  "에너지",      ["우라늄", "유연탄"]),
+    ("gold", "귀금속·자산",  ["금", "은", "백금", "팔라듐"]),
+]
+
+# 광종별 쉬운 용도 한 줄 (소비자 언어)
+MIN_USES = {
+    "니켈": "배터리·스테인리스", "동(구리)": "전선·전자제품", "알루미늄": "차체·캔·창호",
+    "주석": "납땜·통조림", "연(납)": "자동차 배터리", "아연": "철 도금(부식 방지)",
+    "리튬": "전기차 배터리", "코발트": "배터리 양극재", "망간": "철강·배터리",
+    "니오븀": "고강도 철강", "규소": "반도체 웨이퍼", "마그네슘": "경량 차체·노트북",
+    "몰리브덴": "특수강", "바나듐": "고강도 강철·ESS", "티타늄": "항공기·임플란트",
+    "텅스텐": "절삭공구·방산", "안티모니": "난연제", "창연/비스무트": "의약품·합금",
+    "크롬": "스테인리스", "갈륨": "반도체·LED", "인듐": "터치스크린",
+    "탄탈륨": "스마트폰 콘덴서", "지르코늄": "원자로·세라믹", "스트론튬": "불꽃·자석",
+    "셀레늄": "유리·태양전지", "게르마늄": "광섬유·적외선",
+    "네오디뮴": "전기차 모터 자석", "세륨": "유리 연마·촉매", "란탄": "카메라 렌즈·촉매",
+    "디스프로슘": "고온 자석 첨가", "터븀": "자석·형광체", "스칸듐": "경량 합금",
+    "이트륨": "LED·세라믹", "루테튬": "의료 PET", "프라세오디뮴": "자석·합금",
+    "사마륨": "자석·원자로", "유로퓸": "형광체(빨강)", "가돌리늄": "MRI 조영제",
+    "에르븀": "광통신 증폭", "홀뮴": "레이저·자석",
+    "우라늄": "원자력 연료", "유연탄": "발전·제철",
+    "철/철광석": "철강 원료", "흑연": "배터리 음극재", "백금": "촉매·수소차",
+    "팔라듐": "자동차 촉매", "금": "반도체·자산", "은": "전자·태양광",
+}
+
+
+def _v2_norm(s):
+    return re.sub(r"[\s\(\)/·]", "", str(s or ""))
+
+
+def _v2_lookup(d, name):
+    """이름 이형(동/동(구리), 철/철광석 등)을 흡수하는 사전 조회."""
+    if not isinstance(d, dict) or not d:
+        return None
+    if name in d:
+        return d[name]
+    n = _v2_norm(name)
+    for k, v in d.items():
+        k2 = _v2_norm(k)
+        if not k2:
+            continue
+        if k2 == n:
+            return v
+        if len(k2) >= 2 and len(n) >= 2 and (k2 in n or n in k2):
+            return v
+    return None
+
+
+def _v2_grade_pill(grade, score=None):
+    cls = {"위험": "p-dg", "주의": "p-wr", "안정": "p-ok"}.get(grade, "p-mu")
+    txt = f"{grade} {score:.0f}" if isinstance(score, (int, float)) else (grade or "관찰")
+    return f'<span class="pill {cls}">{txt}</span>'
+
+
+def _v2_rows():
+    """홈 리스트용 광종 행 데이터(48종)."""
+    krisk = compute_k_risk() or {}
+    imp_map, _unit = by_mineral_country(fetch_customs() or [])
+    rows = []
+    for cat, names in MINERAL_TAXONOMY.items():
+        for nm in names:
+            k = _v2_lookup(krisk, nm)
+            byc = _v2_lookup(imp_map, nm) or {}
+            tot = sum(byc.values())
+            top = max(byc.items(), key=lambda x: x[1]) if byc else None
+            share = round(top[1] / tot * 100) if (top and tot) else None
+            if top and share is not None and share >= 50:
+                sub = f"수입 {share}%가 {top[0]}에서 와요"
+            elif top:
+                sub = f"주요 수입국 {top[0]}"
+            else:
+                ug = _v2_lookup(USGS_DATA, nm) or {}
+                sub = f"세계 1위 생산 {ug['1위국']}" if ug.get("1위국") else cat
+            life = [key for key, _label, mins in LIFE_CATS if nm in mins]
+            rows.append({
+                "name": nm, "cat": cat, "use": MIN_USES.get(nm, cat),
+                "life": life, "sub": sub,
+                "grade": (k or {}).get("grade"), "score": (k or {}).get("score"),
+                "top": top[0] if top else "", "share": share, "imp": tot,
+            })
+    grade_rank = {"위험": 0, "주의": 1, "안정": 2}
+    rows.sort(key=lambda r: (grade_rank.get(r["grade"], 3),
+                             -(r["score"] or 0), -(r["imp"] or 0), r["name"]))
+    return rows
+
+
+V2_SHELL = r"""<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>__TITLE__</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<style>
+:root{--g:#0e7a4f;--gd:#0a5c3c;--gl:#e5f3ec;--bg:#f5f7f6;--card:#ffffff;--ink:#1b211e;--mut:#68726c;
+--line:#e3e8e5;--dgr:#d8453c;--dgl:#fdecea;--wrn:#c97a00;--wrl:#fdf3e2;--okl:#e5f3ec;}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{font-family:'Pretendard Variable',Pretendard,-apple-system,'Malgun Gothic',sans-serif;background:var(--bg);
+color:var(--ink);font-size:15px;line-height:1.55;-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}
+.wrap{max-width:1060px;margin:0 auto;padding:0 20px}
+.tbar{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.93);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+.tbar .wrap{display:flex;align-items:center;gap:22px;height:62px}
+.logo{font-size:19px;font-weight:800;letter-spacing:-.02em;color:var(--gd);display:flex;align-items:center;gap:8px}
+.logo .dot{width:11px;height:11px;border-radius:50%;background:var(--g);box-shadow:0 0 0 4px var(--gl)}
+.gnav{display:flex;gap:4px;flex:1}
+.gnav a{padding:8px 15px;border-radius:999px;font-weight:650;color:var(--mut);font-size:14.5px}
+.gnav a.on{background:var(--gl);color:var(--gd)}
+.gnav a:hover{color:var(--gd)}
+.sbox{display:flex;align-items:center;gap:8px;background:var(--bg);border:1px solid var(--line);border-radius:999px;padding:9px 15px;width:240px}
+.sbox svg{width:15px;height:15px;stroke:var(--mut);flex:none}
+.sbox input{border:0;outline:0;background:none;font:inherit;font-size:13.5px;width:100%;color:var(--ink)}
+.mtab{display:none}
+@media(max-width:860px){
+ .gnav{display:none}
+ .sbox{margin-left:auto;width:160px}
+ .mtab{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:60;background:#fff;border-top:1px solid var(--line);
+  justify-content:space-around;padding:8px 0 calc(8px + env(safe-area-inset-bottom))}
+ .mtab a{display:flex;flex-direction:column;align-items:center;gap:3px;font-size:11px;color:var(--mut);font-weight:650}
+ .mtab a.on{color:var(--gd)}
+ .mtab svg{width:22px;height:22px;stroke:currentColor}
+ body{padding-bottom:74px}
+}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px 20px}
+.pill{display:inline-flex;align-items:center;border-radius:999px;padding:3px 11px;font-size:12.5px;font-weight:750;white-space:nowrap}
+.p-dg{background:var(--dgl);color:var(--dgr)}.p-wr{background:var(--wrl);color:var(--wrn)}
+.p-ok{background:var(--okl);color:var(--gd)}.p-mu{background:#eef1ef;color:var(--mut)}
+h1{font-size:24px;font-weight:800;letter-spacing:-.02em}
+.sec-t{font-size:16px;font-weight:800;margin:0 0 10px}
+footer{margin:56px 0 28px;text-align:center;color:var(--mut);font-size:12.5px}
+__EXTRA_CSS__
+</style>
+</head>
+<body>
+<div class="tbar"><div class="wrap">
+  <a class="logo" href="/"><span class="dot"></span>마인테크</a>
+  <nav class="gnav">
+    <a href="/" class="__A_HOME__">홈</a>
+    <a href="/globe" class="__A_MAP__">지도</a>
+    <a href="/briefing" class="__A_BRF__">브리핑</a>
+    <a href="/conference" class="__A_AI__">AI 회의</a>
+  </nav>
+  <div class="sbox"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input id="gq" placeholder="광물·용도 검색 (리튬, 배터리…)" value="__Q__"></div>
+</div></div>
+__CONTENT__
+<footer>마인테크 · 데이터 출처: KOMIR · 관세청 · 조달청 · 산업통상자원부 · USGS · World Bank</footer>
+<nav class="mtab">
+ <a href="/" class="__A_HOME__"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M3 11 12 3l9 8v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/></svg>홈</a>
+ <a href="/globe" class="__A_MAP__"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3.5 3 14 0 18M12 3c-3 3.5-3 14 0 18"/></svg>지도</a>
+ <a href="/briefing" class="__A_BRF__"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M5 4h14a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1z"/><path d="M8 9h8M8 13h8M8 17h5"/></svg>브리핑</a>
+ <a href="/conference" class="__A_AI__"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M21 12a8 8 0 0 1-8 8H4l2-3a8 8 0 1 1 15-5z"/></svg>AI 회의</a>
+</nav>
+<script>
+(function(){
+  var q=document.getElementById('gq');
+  if(q){q.addEventListener('keydown',function(e){
+    if(e.key==='Enter'&&!document.getElementById('mlist')){location='/?q='+encodeURIComponent(q.value);}
+  });}
+})();
+__JS__
+</script>
+</body></html>"""
+
+
+def _v2_shell(active, title, content, extra_css="", js="", q=""):
+    html = (V2_SHELL
+            .replace("__TITLE__", title)
+            .replace("__EXTRA_CSS__", extra_css)
+            .replace("__CONTENT__", content)
+            .replace("__JS__", js)
+            .replace("__Q__", q.replace('"', "&quot;")))
+    for key, mark in (("home", "__A_HOME__"), ("map", "__A_MAP__"),
+                      ("brf", "__A_BRF__"), ("ai", "__A_AI__")):
+        html = html.replace(mark, "on" if active == key else "")
+    return html
+
+
+V2_HOME_CSS = r"""
+.hero-date{font-size:13px;color:var(--mut);margin-top:26px}
+.hero-h{font-size:26px;font-weight:800;letter-spacing:-.02em;margin:2px 0 16px}
+.hgrid{display:grid;grid-template-columns:2fr 1fr 1fr;gap:12px;margin-bottom:20px}
+.alert{border-radius:18px;padding:18px 20px}
+.alert.a-dg{background:var(--dgl)} .alert.a-wr{background:var(--wrl)} .alert.a-ok{background:var(--okl)}
+.alert .a-t{font-size:17px;font-weight:800;display:flex;align-items:center;gap:8px}
+.alert.a-dg .a-t,.alert.a-dg .a-b,.alert.a-dg a{color:var(--dgr)}
+.alert.a-wr .a-t,.alert.a-wr .a-b,.alert.a-wr a{color:var(--wrn)}
+.alert.a-ok .a-t,.alert.a-ok .a-b,.alert.a-ok a{color:var(--gd)}
+.alert .a-b{font-size:13.5px;margin-top:5px;line-height:1.55}
+.alert a{font-size:13px;font-weight:750;display:inline-block;margin-top:9px}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px 18px}
+.stat .s-l{font-size:12.5px;color:var(--mut)}
+.stat .s-v{font-size:26px;font-weight:800;margin-top:2px}
+.chips{display:flex;gap:7px;flex-wrap:wrap;margin:2px 0 16px}
+.chip{padding:7px 15px;border-radius:999px;border:1px solid var(--line);background:var(--card);
+font-size:13.5px;font-weight:650;color:var(--mut);cursor:pointer;transition:.15s}
+.chip.on{background:var(--gd);border-color:var(--gd);color:#fff}
+.hgrid2{display:grid;grid-template-columns:1.65fr 1fr;gap:16px;align-items:start}
+.mlist{background:var(--card);border:1px solid var(--line);border-radius:18px;overflow:hidden}
+.mrow{display:flex;align-items:center;gap:13px;padding:13px 18px;border-bottom:1px solid var(--line);transition:.12s}
+.mrow:last-child{border-bottom:0}
+.mrow:hover{background:var(--bg)}
+.sig{width:10px;height:10px;border-radius:50%;flex:none}
+.sig.dg{background:var(--dgr)}.sig.wr{background:#e8a13c}.sig.ok{background:var(--g)}.sig.mu{background:#c6cdc9}
+.m-main{flex:1;min-width:0}
+.m-main b{font-size:15px;font-weight:750}
+.m-main i{font-style:normal;font-size:12.5px;color:var(--mut);margin-left:7px}
+.m-main em{display:block;font-style:normal;font-size:12.5px;color:var(--mut);margin-top:1px}
+.more-btn{display:block;width:100%;padding:13px;background:var(--card);border:0;border-top:1px solid var(--line);
+font:inherit;font-size:13.5px;font-weight:700;color:var(--gd);cursor:pointer}
+.rail{display:flex;flex-direction:column;gap:12px;position:sticky;top:78px}
+.rail .r-l{font-size:12.5px;color:var(--mut);font-weight:700;margin-bottom:7px;display:flex;align-items:center;gap:6px}
+.rail .r-b{font-size:13.5px;line-height:1.6}
+.rail .ai-card{background:var(--gd);border:0;color:#fff}
+.rail .ai-card .r-t{font-size:14.5px;font-weight:750}
+.rail .ai-card .r-q{font-size:12.5px;opacity:.85;margin-top:4px}
+.rail .ai-card a{display:inline-block;margin-top:10px;background:rgba(255,255,255,.16);border-radius:999px;
+padding:6px 14px;font-size:12.5px;font-weight:700;color:#fff}
+@media(max-width:860px){.hgrid{grid-template-columns:1fr 1fr}.hgrid .alert{grid-column:1/3}
+.hgrid2{grid-template-columns:1fr}.rail{position:static}}
+"""
+
+
+def render_home_v2():
+    rows = _v2_rows()
+    q0 = (request.args.get("q") or "").strip()
+    now = datetime.now()
+    wd = "월화수목금토일"[now.weekday()]
+    n_dg = sum(1 for r in rows if r["grade"] == "위험")
+    n_wr = sum(1 for r in rows if r["grade"] == "주의")
+
+    top = next((r for r in rows if r["grade"]), None)
+    if top and top["grade"] == "위험":
+        acls, icon = "a-dg", "⚠️"
+        at = f"{top['name']}이 위험 단계예요"
+    elif top and top["grade"] == "주의":
+        acls, icon = "a-wr", "👀"
+        at = f"{top['name']}을 지켜봐야 해요"
+    else:
+        acls, icon = "a-ok", "☀️"
+        at = "오늘 광물 시장은 대체로 맑아요"
+    ab = ""
+    if top:
+        if top["share"] and top["share"] >= 50:
+            ab = f"수입의 {top['share']}%를 {top['top']} 한 나라에 의존하고 있어요. "
+        ab += f"{top['use']} 가격에 영향을 줄 수 있어요."
+        alink = f'<a href="/m/{_v2q(top["name"], safe="")}">왜 그런가요 →</a>'
+    else:
+        ab = "48개 광물의 수급·가격·수입선을 매일 살펴보고 있어요."
+        alink = ""
+
+    chips = ['<button class="chip on" data-c="all">전체</button>'] + [
+        f'<button class="chip" data-c="{key}">{label}</button>'
+        for key, label, _m in LIFE_CATS
+    ]
+
+    row_html = []
+    for r in rows:
+        sig = {"위험": "dg", "주의": "wr", "안정": "ok"}.get(r["grade"], "mu")
+        side = _v2_grade_pill(r["grade"], r["score"]) if r["grade"] else '<span class="pill p-mu">관찰</span>'
+        dataq = f'{r["name"]} {r["use"]} {r["cat"]} {r["sub"]}'
+        row_html.append(
+            f'<a class="mrow" href="/m/{_v2q(r["name"], safe="")}" data-cats="{" ".join(r["life"])}" '
+            f'data-q="{dataq}">'
+            f'<span class="sig {sig}"></span>'
+            f'<span class="m-main"><b>{r["name"]}</b><i>{r["use"]}</i><em>{r["sub"]}</em></span>'
+            f'{side}</a>'
+        )
+
+    content = f"""
+<div class="wrap">
+  <div class="hero-date">{now.month}월 {now.day}일 {wd}요일</div>
+  <div class="hero-h">오늘의 광물 날씨</div>
+  <div class="hgrid">
+    <div class="alert {acls}">
+      <div class="a-t">{icon} {at}</div>
+      <div class="a-b">{ab}</div>
+      {alink}
+    </div>
+    <div class="stat"><div class="s-l">위험 광물</div>
+      <div class="s-v" style="color:var(--dgr)">{n_dg}<span style="font-size:13px;color:var(--mut);font-weight:600"> / 48</span></div></div>
+    <div class="stat"><div class="s-l">주의 광물</div>
+      <div class="s-v" style="color:var(--wrn)">{n_wr}<span style="font-size:13px;color:var(--mut);font-weight:600"> / 48</span></div></div>
+  </div>
+
+  <div class="chips">{''.join(chips)}</div>
+
+  <div class="hgrid2">
+    <div>
+      <div class="mlist" id="mlist">{''.join(row_html)}</div>
+      <button class="more-btn" id="moreBtn" style="border-radius:0 0 18px 18px;margin-top:-1px">광물 더 보기</button>
+    </div>
+    <div class="rail">
+      <div class="card"><div class="r-l">📰 오늘의 브리핑</div><div class="r-b" id="railBrief">불러오는 중…</div></div>
+      <div class="card"><div class="r-l">🌍 지금 세계에선</div><div class="r-b" id="railGeo">불러오는 중…</div></div>
+      <div class="card ai-card"><div class="r-t">AI 전문가에게 물어보기</div>
+        <div class="r-q">"흑연이 위험하면 나한테 뭐가 문제야?"</div>
+        <a href="/conference">회의실 입장 →</a></div>
+    </div>
+  </div>
+</div>"""
+
+    js = r"""
+(function(){
+  var LIMIT=12, rows=[].slice.call(document.querySelectorAll('.mrow')),
+      chips=[].slice.call(document.querySelectorAll('.chip')),
+      more=document.getElementById('moreBtn'), cat='all', expanded=false,
+      q=document.getElementById('gq');
+  function apply(){
+    var kw=((q&&q.value)||'').trim().toLowerCase(), shown=0;
+    var limitOn=(cat==='all'&&!kw&&!expanded);
+    rows.forEach(function(r){
+      var okC=(cat==='all')||((r.dataset.cats||'').split(' ').indexOf(cat)>=0);
+      var okQ=!kw||(r.dataset.q||'').toLowerCase().indexOf(kw)>=0;
+      var ok=okC&&okQ;
+      if(ok) shown++;
+      r.style.display=(ok&&(!limitOn||shown<=LIMIT))?'':'none';
+    });
+    more.style.display=limitOn?'':'none';
+  }
+  chips.forEach(function(c){c.addEventListener('click',function(){
+    chips.forEach(function(x){x.classList.remove('on')}); c.classList.add('on');
+    cat=c.dataset.c; apply();
+  });});
+  more.addEventListener('click',function(){expanded=true;apply();});
+  if(q){q.addEventListener('input',apply); if(q.value) apply(); else apply();}
+  fetch('/api/news-brief?cat=minerals').then(function(r){return r.json()}).then(function(d){
+    document.getElementById('railBrief').textContent=(d&&d.brief)?d.brief:'오늘은 새 브리핑이 없어요.';
+  }).catch(function(){document.getElementById('railBrief').textContent='브리핑을 불러오지 못했어요.';});
+  fetch('/api/geo-events').then(function(r){return r.json()}).then(function(d){
+    var ev=(d&&d.events&&d.events[0])||null;
+    document.getElementById('railGeo').textContent=ev?((ev.loc?ev.loc+' — ':'')+(ev.why||ev['제목']||'')):'특별한 이슈가 없어요.';
+  }).catch(function(){document.getElementById('railGeo').textContent='이슈를 불러오지 못했어요.';});
+})();
+"""
+    return _v2_shell("home", "마인테크 — 오늘의 광물 날씨",
+                     content, V2_HOME_CSS, js, q=q0)
+
+
+V2_DETAIL_CSS = r"""
+.bk{display:inline-flex;align-items:center;gap:6px;margin:22px 0 14px;font-size:13.5px;font-weight:700;color:var(--mut)}
+.dhead{display:flex;align-items:flex-start;gap:14px;flex-wrap:wrap}
+.dhead h1{font-size:28px}
+.dhead .u{font-size:14px;color:var(--mut);margin-top:3px}
+.deasy{font-size:15px;line-height:1.65;margin:14px 0 20px;background:var(--card);border:1px solid var(--line);
+border-radius:18px;padding:16px 20px}
+.dgrid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+.dgrid .card h3{font-size:14.5px;font-weight:800;margin-bottom:12px}
+.facts{display:flex;gap:10px;flex-wrap:wrap;margin:0 0 18px}
+.fact{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:10px 16px;font-size:13px}
+.fact b{display:block;font-size:14.5px;margin-top:1px}
+.newsl a{display:block;padding:10px 0;border-bottom:1px solid var(--line);font-size:13.5px;line-height:1.5}
+.newsl a:last-child{border-bottom:0}
+.newsl .nd{font-size:11.5px;color:var(--mut);margin-top:2px}
+details.card{margin-top:14px}
+details.card summary{cursor:pointer;font-weight:800;font-size:14.5px;color:var(--mut)}
+.kbar{margin:12px 0 4px}
+.kbar .kl{display:flex;justify-content:space-between;font-size:12.5px;color:var(--mut);margin-bottom:3px}
+.kbar .kt{height:8px;border-radius:999px;background:var(--bg);overflow:hidden}
+.kbar .kf{height:100%;border-radius:999px;background:var(--gd)}
+@media(max-width:860px){.dgrid{grid-template-columns:1fr}}
+"""
+
+
+def render_mineral_v2(name):
+    rows = {r["name"]: r for r in _v2_rows()}
+    r = rows.get(name) or _v2_lookup(rows, name)
+    if not r:
+        return _v2_shell("home", "마인테크", f'<div class="wrap"><div class="bk">← <a href="/">홈으로</a></div>'
+                                          f'<h1>{name}</h1><p style="margin-top:10px">아직 준비되지 않은 광물이에요.</p></div>')
+    name = r["name"]
+    krisk = _v2_lookup(compute_k_risk() or {}, name) or {}
+    imp_map, unit = by_mineral_country(fetch_customs() or [])
+    byc = _v2_lookup(imp_map, name) or {}
+    ug = _v2_lookup(USGS_DATA, name) or {}
+
+    # 쉬운 말 요약
+    easy = f"<b>{name}</b>은(는) {r['use']}에 쓰이는 광물이에요. "
+    if r["share"] and r["share"] >= 50:
+        easy += f"우리나라는 수입의 <b>{r['share']}%</b>를 <b>{r['top']}</b>에서 들여오고 있어서, " \
+                f"그 나라 상황에 따라 값이 출렁일 수 있어요. "
+    elif r["top"]:
+        easy += f"주로 <b>{r['top']}</b>에서 수입해요. "
+    if krisk:
+        g = krisk.get("grade")
+        if g == "위험":
+            easy += "지금은 공급이 불안해질 수 있는 <b>위험 단계</b>예요."
+        elif g == "주의":
+            easy += "지금은 흐름을 지켜봐야 하는 <b>주의 단계</b>예요."
+        else:
+            easy += "지금은 수급이 안정적인 편이에요."
+
+    facts = []
+    if r["top"]:
+        top_txt = r["top"] + (f' ({r["share"]}%)' if r["share"] else "")
+        facts.append(f'<div class="fact">주요 수입국<b>{top_txt}</b></div>')
+    if ug.get("1위국"):
+        facts.append(f'<div class="fact">세계 1위 생산<b>{ug["1위국"]}</b></div>')
+    facts.append(f'<div class="fact">전문 분류<b>{r["cat"]}</b></div>')
+
+    # 수입국 차트 데이터
+    pairs = sorted(byc.items(), key=lambda x: x[1], reverse=True)[:6]
+    imp_labels = json.dumps([p[0] for p in pairs], ensure_ascii=False)
+    imp_vals = json.dumps([round(p[1]) for p in pairs])
+
+    # 가격지수(그룹) 라인
+    grp = K_MIDX_GROUP.get(name.replace("(구리)", "").replace("/철광석", ""), None) or \
+          ("메이저금속" if r["cat"] == "비철금속" else ("에너지광물" if r["cat"] == "에너지" else "희소금속" if r["cat"] == "희소금속" else "종합"))
+    midx = load_json(os.path.join(os.path.dirname(__file__), "mineral_index_data2.json")) or {}
+    s = ((midx.get("series") or {}).get(grp)) or ((midx.get("series") or {}).get("종합")) or {}
+    months = (s.get("months") or [])[-36:]
+    vals = (s.get("values") or [])[-36:]
+    px_labels = json.dumps(months, ensure_ascii=False)
+    px_vals = json.dumps(vals)
+
+    # 관련 뉴스
+    base = re.sub(r"[\(\)/].*$", "", name)
+    news = [n for n in (fetch_news() or [])
+            if base and base in ((n.get("제목") or "") + (n.get("요약") or ""))][:4]
+    news_html = "".join(
+        f'<a href="{n.get("링크", "#")}" target="_blank" rel="noopener">{n.get("제목", "")}'
+        f'<div class="nd">{n.get("발행일", "")}</div></a>' for n in news
+    ) or '<div style="color:var(--mut);font-size:13.5px">최근 관련 뉴스가 없어요.</div>'
+
+    # 전문가용 K-RISK 4요소
+    kbars = ""
+    if krisk.get("요소"):
+        for kk, vv in krisk["요소"].items():
+            kbars += (f'<div class="kbar"><div class="kl"><span>{kk}</span><span>{vv:.0f}</span></div>'
+                      f'<div class="kt"><div class="kf" style="width:{min(100, vv):.0f}%"></div></div></div>')
+    expert = f"""
+<details class="card"><summary>전문가용 데이터 보기</summary>
+  <div style="margin-top:12px;font-size:13px;color:var(--mut)">K-RISK 구성요소 (0~100, 높을수록 위험)</div>
+  {kbars or '<div style="margin-top:8px;font-size:13.5px;color:var(--mut)">이 광물은 아직 K-RISK 산출 대상(6광종)이 아니에요.</div>'}
+  <div style="margin-top:14px;font-size:13.5px">
+    <a href="/dashboard" style="color:var(--gd);font-weight:700">카테고리 대시보드 →</a> ·
+    <a href="/pro" style="color:var(--gd);font-weight:700">전문가 화면 →</a></div>
+</details>"""
+
+    side = _v2_grade_pill(r["grade"], r["score"]) if r["grade"] else '<span class="pill p-mu">관찰 대상</span>'
+    content = f"""
+<div class="wrap">
+  <div class="bk"><a href="/">← 홈으로</a></div>
+  <div class="dhead"><div><h1>{name}</h1><div class="u">{r['use']} · {r['cat']}</div></div>{side}</div>
+  <div class="deasy">{easy}</div>
+  <div class="facts">{''.join(facts)}</div>
+  <div class="dgrid">
+    <div class="card"><h3>어디서 수입하나요? <span style="font-weight:600;color:var(--mut);font-size:12px">({unit} 기준)</span></h3>
+      <div style="height:230px"><canvas id="cImp"></canvas></div></div>
+    <div class="card"><h3>가격 흐름 <span style="font-weight:600;color:var(--mut);font-size:12px">({grp} 지수 · 최근 3년)</span></h3>
+      <div style="height:230px"><canvas id="cPx"></canvas></div></div>
+  </div>
+  <div class="card newsl"><h3 style="font-size:14.5px;font-weight:800;margin-bottom:6px">관련 소식</h3>{news_html}</div>
+  {expert}
+</div>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>"""
+
+    js = f"""
+(function(){{
+  if(!window.Chart) return;
+  Chart.defaults.font.family="'Pretendard Variable',Pretendard,sans-serif";
+  Chart.defaults.color='#68726c';
+  var IL={imp_labels}, IV={imp_vals};
+  if(IL.length){{
+    new Chart(document.getElementById('cImp'),{{type:'bar',
+      data:{{labels:IL,datasets:[{{data:IV,backgroundColor:'#0e7a4f',borderRadius:8,barThickness:18}}]}},
+      options:{{indexAxis:'y',maintainAspectRatio:false,plugins:{{legend:{{display:false}}}},
+        scales:{{x:{{grid:{{color:'#eef1ef'}},ticks:{{font:{{size:11}}}}}},y:{{grid:{{display:false}},ticks:{{font:{{size:12}}}}}}}}}}}});
+  }} else {{
+    document.getElementById('cImp').parentElement.innerHTML='<div style="color:#68726c;font-size:13.5px;padding-top:90px;text-align:center">최근 12개월 수입 실적이 없어요.</div>';
+  }}
+  var PL={px_labels}, PV={px_vals};
+  if(PL.length){{
+    new Chart(document.getElementById('cPx'),{{type:'line',
+      data:{{labels:PL,datasets:[{{data:PV,borderColor:'#0e7a4f',borderWidth:2.5,pointRadius:0,tension:.3,fill:true,
+        backgroundColor:'rgba(14,122,79,.07)'}}]}},
+      options:{{maintainAspectRatio:false,plugins:{{legend:{{display:false}}}},
+        scales:{{x:{{grid:{{display:false}},ticks:{{maxTicksLimit:6,font:{{size:11}}}}}},
+                y:{{grid:{{color:'#eef1ef'}},ticks:{{font:{{size:11}}}}}}}}}}}});
+  }}
+}})();"""
+    return _v2_shell("home", f"{name} — 마인테크", content, V2_DETAIL_CSS, js)
+
+
+V2_BRF_CSS = r"""
+.bh{margin-top:26px}
+.brf-ai{background:var(--gl);border-radius:18px;padding:18px 20px;margin:14px 0 18px;font-size:14.5px;line-height:1.65;color:var(--gd)}
+.brf-ai .bl{font-size:12.5px;font-weight:800;margin-bottom:6px}
+.bgrid{display:grid;grid-template-columns:1.65fr 1fr;gap:16px;align-items:start}
+.ncard a{display:block;padding:13px 18px;border-bottom:1px solid var(--line)}
+.ncard a:last-child{border-bottom:0}
+.ncard .nt{font-size:14.5px;font-weight:700;line-height:1.45}
+.ncard .ns{font-size:13px;color:var(--mut);margin-top:3px;line-height:1.5}
+.ncard .nd{font-size:11.5px;color:var(--mut);margin-top:4px}
+.sub-card input{width:100%;border:1px solid var(--line);border-radius:12px;padding:11px 14px;font:inherit;font-size:14px;margin:10px 0 8px;outline-color:var(--g)}
+.sub-card button{width:100%;border:0;border-radius:12px;padding:12px;background:var(--gd);color:#fff;font:inherit;font-size:14px;font-weight:750;cursor:pointer}
+.sub-card .msg{font-size:12.5px;margin-top:8px;color:var(--gd)}
+@media(max-width:860px){.bgrid{grid-template-columns:1fr}}
+"""
+
+
+def render_briefing_v2():
+    news = [n for n in dedup_news(fetch_news() or []) if mineral_relevant(n)][:14]
+    items = "".join(
+        f'<a href="{n.get("링크", "#")}" target="_blank" rel="noopener">'
+        f'<div class="nt">{n.get("제목", "")}</div>'
+        f'<div class="ns">{n.get("요약", "")}</div>'
+        f'<div class="nd">{n.get("발행일", "")}</div></a>' for n in news
+    ) or '<div style="padding:18px;color:var(--mut)">불러올 뉴스가 없어요.</div>'
+
+    content = f"""
+<div class="wrap">
+  <div class="bh"><h1>오늘의 브리핑</h1></div>
+  <div class="brf-ai"><div class="bl">AI 애널리스트 3문장 요약</div><div id="aiBrief">불러오는 중…</div></div>
+  <div class="bgrid">
+    <div class="card ncard" style="padding:4px 0">{items}</div>
+    <div class="rail" style="position:sticky;top:78px">
+      <div class="card sub-card">
+        <div class="sec-t" style="margin-bottom:2px">매일 아침 메일로 받기</div>
+        <div style="font-size:13px;color:var(--mut)">광물 날씨와 주요 소식을 보내드려요.</div>
+        <input id="subEmail" type="email" placeholder="이메일 주소">
+        <button id="subBtn">구독하기</button>
+        <div class="msg" id="subMsg"></div>
+      </div>
+      <div class="card"><div class="r-l" style="font-size:12.5px;color:var(--mut);font-weight:700;margin-bottom:7px">🌍 지금 세계에선</div>
+        <div style="font-size:13.5px;line-height:1.6" id="railGeo">불러오는 중…</div></div>
+    </div>
+  </div>
+</div>"""
+
+    js = r"""
+(function(){
+  fetch('/api/news-brief?cat=minerals').then(function(r){return r.json()}).then(function(d){
+    document.getElementById('aiBrief').textContent=(d&&d.brief)?d.brief:'오늘은 새 브리핑이 없어요.';
+  }).catch(function(){document.getElementById('aiBrief').textContent='브리핑을 불러오지 못했어요.';});
+  fetch('/api/geo-events').then(function(r){return r.json()}).then(function(d){
+    var ev=(d&&d.events&&d.events[0])||null;
+    document.getElementById('railGeo').textContent=ev?((ev.loc?ev.loc+' — ':'')+(ev.why||ev['제목']||'')):'특별한 이슈가 없어요.';
+  }).catch(function(){});
+  var btn=document.getElementById('subBtn');
+  btn.addEventListener('click',function(){
+    var em=document.getElementById('subEmail').value.trim();
+    fetch('/subscribe',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:em})})
+      .then(function(r){return r.json()}).then(function(d){
+        document.getElementById('subMsg').textContent=d.message||'';
+      }).catch(function(){document.getElementById('subMsg').textContent='잠시 후 다시 시도해 주세요.';});
+  });
+})();
+"""
+    return _v2_shell("brf", "브리핑 — 마인테크", content, V2_BRF_CSS, js)
+
+
+@app.route("/m/<path:name>")
+def mineral_v2(name):
+    return Response(render_mineral_v2(name), mimetype="text/html")
+
+
+@app.route("/briefing")
+def briefing_v2():
+    return Response(render_briefing_v2(), mimetype="text/html")
+
+
+
 if __name__ == "__main__":
     import sys
     sys.stdout.reconfigure(encoding='utf-8', errors='replace')
     print("핵심광물 대시보드 시작")
-    print("브라우저 접속: http://127.0.0.1:8081")
+    _port = int(os.environ.get("PORT", "8081"))
+    print(f"브라우저 접속: http://127.0.0.1:{_port}")
     print("종료: Ctrl + C")
-    app.run(host="0.0.0.0", port=8081, debug=False)
+    app.run(host="0.0.0.0", port=_port, debug=False)
