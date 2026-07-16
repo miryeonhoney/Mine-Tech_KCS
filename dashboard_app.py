@@ -4603,8 +4603,18 @@ body{background:#eef2f8;color:#16233c;font-family:Pretendard,'Apple SD Gothic Ne
   padding:6px 13px;font:650 12.5px Pretendard,sans-serif;cursor:pointer}
 .mchip.on{background:#0a5c3c;border-color:#0a5c3c;color:#fff}
 #mchips .mkey{font-size:11px;color:#5f6b64;background:rgba(255,255,255,.88);border-radius:999px;padding:4px 10px}
-@media(max-width:760px){#mchips{display:none}}
+#chokeInfo{position:fixed;left:16px;top:196px;z-index:9;display:none;background:rgba(255,255,255,.94);
+  border:1px solid #e0e6e2;border-radius:14px;padding:12px 16px;width:250px;font-family:Pretendard,sans-serif;
+  box-shadow:0 8px 24px rgba(20,40,30,.08)}
+#chokeInfo .ct{font-size:12px;font-weight:800;color:#0a5c3c;margin-bottom:8px}
+#chokeInfo .cr{margin:7px 0}
+#chokeInfo .cl{display:flex;justify-content:space-between;font-size:12px;color:#3a443e;font-weight:650;margin-bottom:3px}
+#chokeInfo .cb{height:6px;border-radius:999px;background:#eef1ef;overflow:hidden}
+#chokeInfo .cf{height:100%;border-radius:999px;background:#c8931d}
+#chokeInfo .cnone{font-size:12px;color:#68726c;line-height:1.5}
+@media(max-width:760px){#mchips{display:none}#chokeInfo{display:none!important}}
 </style>
+<div id="chokeInfo"></div>
 
 <div class="panel">
   <div class="ph">
@@ -4628,6 +4638,7 @@ body{background:#eef2f8;color:#16233c;font-family:Pretendard,'Apple SD Gothic Ne
 
 <script>
 const CHOKES = __CHOKE__;
+const BUSAN = {name:'부산항 HUB', lat:35.1, lng:129.04, risk:'hub'};
 const ROUTES = __ROUTES__;
 const TYPE_COL = {'전쟁':'#ff4d4d','제재':'#ff9f40','외교':'#f2c94c','공급차질':'#ff7ab8','시위':'#9b8cff'};
 
@@ -4648,12 +4659,13 @@ const globe = Globe()(document.getElementById('globeViz'))
   .arcStroke(0.45)
   .arcDashLength(0.45).arcDashGap(0.25).arcDashAnimateTime(2600)
   .arcLabel(function(d){ return '<div style="font-size:11px;font-weight:700">'+d.label+'</div>'; })
-  .htmlElementsData(CHOKES.concat([{name:'부산항 HUB', lat:35.1, lng:129.04, risk:'hub'}]))
+  .htmlElementsData(CHOKES.concat([BUSAN]))
   .htmlLat('lat').htmlLng('lng').htmlAltitude(0.012)
   .htmlElement(function(d){
     var col = d.risk==='hub' ? '#0f6b45' : (d.risk==='critical' ? '#c03535' : (d.risk==='high' ? '#c2611a' : '#a97a12'));
     var el = document.createElement('div');
-    el.innerHTML = (d.risk==='hub' ? '🇰🇷 ' : '⚓ ') + d.name;
+    el.innerHTML = (d.risk==='hub' ? '🇰🇷 ' : '⚓ ') + d.name
+      + (d.badge ? '<br><span style="font-size:10px;background:rgba(255,255,255,.92);color:#8a6a10;border:1px solid #b5821088;border-radius:999px;padding:1px 8px;font-weight:800">'+d.badge+'</span>' : '');
     el.style.cssText = 'font-size:'+(d.risk==='hub'?'12px':'10.5px')+';font-weight:800;color:'+col
       +';text-shadow:0 0 5px rgba(255,255,255,.95),0 0 10px rgba(255,255,255,.85);white-space:nowrap;'
       +'transform:translate(-50%,-130%);pointer-events:none;font-family:Pretendard,sans-serif;';
@@ -4684,6 +4696,33 @@ function applyEvents(evs){
     .ringMaxRadius(function(e){ return (e.sev||1) * 3.2; })
     .ringPropagationSpeed(1.6).ringRepeatPeriod(1100);
 }
+const CH_MAP = (function(){
+  var m = {};
+  var add = function(list, chokes){ list.forEach(function(c){ m[c] = chokes; }); };
+  add(['사우디아라비아','아랍에미리트','아랍에미리트 연합','아랍에미리트연합','카타르','쿠웨이트','바레인','이란','이라크','오만'],
+      ['호르무즈 해협','말라카 해협']);
+  add(['독일','프랑스','영국','스페인','이탈리아','네덜란드','벨기에','폴란드','스웨덴','노르웨이','핀란드','오스트리아',
+       '체코','스위스','튀르키예','터키','우크라이나','그리스','포르투갈','아일랜드','덴마크','이집트','모로코','알제리','튀니지'],
+      ['수에즈 운하','밥엘만데브','말라카 해협']);
+  add(['기니','가나','나이지리아','세네갈','코트디부아르','라이베리아','시에라리온','모리타니'],
+      ['희망봉','말라카 해협']);
+  add(['남아프리카공화국','남아공','마다가스카르','모잠비크','탄자니아','케냐','잠비아','짐바브웨','콩고민주공화국','나미비아','보츠와나','말라위'],
+      ['말라카 해협']);
+  add(['인도','스리랑카','파키스탄','방글라데시','미얀마'], ['말라카 해협']);
+  add(['브라질','아르헨티나','우루과이'], ['희망봉']);
+  add(['베네수엘라','콜롬비아','트리니다드토바고','쿠바'], ['파나마 운하']);
+  return m;
+})();
+function computeChokes(rs){
+  var tot = 0, acc = {};
+  rs.forEach(function(r){
+    tot += r.amount || 0;
+    (CH_MAP[r.country] || []).forEach(function(ch){ acc[ch] = (acc[ch] || 0) + (r.amount || 0); });
+  });
+  var out = {};
+  if(tot > 0){ Object.keys(acc).forEach(function(k){ var p = Math.round(acc[k] / tot * 100); if(p >= 1) out[k] = p; }); }
+  return out;
+}
 function applyMineral(m, rs){
   var unit = (rs && rs._unit) || '';
   globe.ringsData([]);
@@ -4701,11 +4740,32 @@ function applyMineral(m, rs){
     .pointRadius(function(p){ return p.kind==='imp' ? 0.4 + (p.share||0)/100*0.45 : 0.34; })
     .pointLabel(function(p){ return '<div style="font-size:11.5px;line-height:1.5"><b>'+p.c+'</b><br>'
       + (p.kind==='imp' ? '한국 수입 '+fmtV(p.v)+(p.u==='톤'?'t':'$') : '매장량 '+fmtV(p.v)+'t')+'</div>'; });
+  var ch = computeChokes(rs);
+  globe.htmlElementsData(CHOKES.map(function(c){
+    var o = Object.assign({}, c);
+    if(ch[c.name]) o.badge = m + ' ' + ch[c.name] + '% 통과';
+    return o;
+  }).concat([BUSAN]));
+  var ci = document.getElementById('chokeInfo');
+  var keys = Object.keys(ch).sort(function(a,b){ return ch[b]-ch[a]; });
+  if(keys.length){
+    ci.innerHTML = '<div class="ct">⚓ ' + m + ' 수입이 지나는 관문</div>' + keys.map(function(k){
+      return '<div class="cr"><div class="cl"><span>'+k+'</span><span>'+ch[k]+'%</span></div>'
+        + '<div class="cb"><div class="cf" style="width:'+ch[k]+'%"></div></div></div>';
+    }).join('') + '<div class="cnone" style="margin-top:8px">해당 관문이 막히면 이 비중만큼 수입이 우회·지연될 수 있어요.</div>';
+  } else {
+    ci.innerHTML = '<div class="ct">⚓ ' + m + ' 수입이 지나는 관문</div>'
+      + '<div class="cnone">주요 해협을 거의 지나지 않아요.<br>태평양 직항(미주·호주·중국·일본) 위주 수입입니다.</div>';
+  }
+  ci.style.display = 'block';
 }
 function setMineral(m){
   window._MODE = m;
   document.querySelectorAll('.mchip').forEach(function(b){ b.classList.toggle('on', b.dataset.m===m); });
   if(m==='전체'){
+    globe.htmlElementsData(CHOKES.concat([BUSAN]));
+    var ci = document.getElementById('chokeInfo');
+    if(ci) ci.style.display = 'none';
     if(window._EVS) applyEvents(window._EVS);
     else { globe.arcsData(ROUTES).arcStroke(0.45); globe.pointsData([]); globe.ringsData([]); }
     return;
