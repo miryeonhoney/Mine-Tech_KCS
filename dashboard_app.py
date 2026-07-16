@@ -2670,7 +2670,7 @@ tr:hover td{{background:var(--bg3);}}
   <button class="cat-btn" data-cat="energy" onclick="switchCategory('energy',this)">에너지</button>
   <button class="cat-btn" data-cat="etc" onclick="switchCategory('etc',this)">기타</button>
   <div class="cb-right">
-    <a href="/globe" class="cb-link">지정학 상황실</a>
+    <a href="/globe" class="cb-link">핵심광물지도</a>
     <a href="/conference" class="cb-link">AI 회의실</a>
     <a href="/" class="to-space" title="허브 홈으로">허브 홈</a>
   </div>
@@ -4492,12 +4492,29 @@ def render_globe():
     kr_strip = " · ".join(
         f"{'🔴' if v['grade']=='위험' else ('🟡' if v['grade']=='주의' else '🟢')} {k} {v['score']:.0f}"
         for k, v in sorted(kr.items(), key=lambda x: -x[1]["score"]))
+    # 광물별 매장량 오버레이 (KOMIR 매장량 스냅샷 → 좌표 매핑)
+    _rsv_raw = load_json(os.path.join(os.path.dirname(__file__), "reserves_data1.json")) or []
+    _rsv = {}
+    for _it in _rsv_raw:
+        _nm = re.sub(r"[\s\(\)/·].*$", "", str(_it.get("name") or ""))
+        _pts = []
+        for _c in (_it.get("countries") or [])[:8]:
+            _cn = (_c.get("c") or "").strip()
+            _co = COUNTRY_COORDS.get(_cn) or COUNTRY_COORDS.get(_cn.replace(" ", ""))
+            if _co:
+                _pts.append({"c": _cn, "lat": _co[0], "lng": _co[1], "v": _c.get("v") or 0})
+        if _nm and _pts:
+            _rsv[_nm] = _pts
+    _kmin = ["전체", "리튬", "니켈", "코발트", "텅스텐", "몰리브덴", "망간", "동", "알루미늄",
+             "아연", "철", "흑연", "규소", "석탄"]
+    _chips = "".join(
+        f'<button class="mchip{" on" if m == "전체" else ""}" data-m="{m}">{m}</button>' for m in _kmin)
     PAGE = r"""<!DOCTYPE html>
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>지정학 상황실 — 마인테크</title>
+<title>핵심광물지도 — 마인테크</title>
 <link rel="icon" type="image/png" href="/static/logo_favicon.png">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
 <script src="https://unpkg.com/globe.gl@2.34.4/dist/globe.gl.min.js"></script>
@@ -4557,7 +4574,7 @@ body{background:#eef2f8;color:#16233c;font-family:Pretendard,'Apple SD Gothic Ne
   <a href="/" style="color:#fff;font-weight:800;font-size:16px;text-decoration:none;display:flex;align-items:center;gap:7px"><span style="width:9px;height:9px;border-radius:50%;background:#2fb37f;box-shadow:0 0 0 4px rgba(47,179,127,.18)"></span>마인테크</a>
   <nav style="display:flex;gap:4px">
     <a href="/" style="padding:6px 13px;border-radius:999px;color:#cfd8d2;font-size:13.5px;font-weight:650;text-decoration:none">홈</a>
-    <a href="/globe" style="padding:6px 13px;border-radius:999px;background:rgba(47,179,127,.18);color:#7ee2b8;font-size:13.5px;font-weight:650;text-decoration:none">지도</a>
+    <a href="/globe" style="padding:6px 13px;border-radius:999px;background:rgba(47,179,127,.18);color:#7ee2b8;font-size:13.5px;font-weight:650;text-decoration:none">핵심광물지도</a>
     <a href="/briefing" style="padding:6px 13px;border-radius:999px;color:#cfd8d2;font-size:13.5px;font-weight:650;text-decoration:none">브리핑</a>
     <a href="/conference" style="padding:6px 13px;border-radius:999px;color:#cfd8d2;font-size:13.5px;font-weight:650;text-decoration:none">AI 회의</a>
   </nav>
@@ -4566,7 +4583,7 @@ body{background:#eef2f8;color:#16233c;font-family:Pretendard,'Apple SD Gothic Ne
 
 <div class="hd">
   <a class="brand" href="/"><span style="font-size:19px;font-weight:900;color:#12325e;letter-spacing:-.02em">MINE<em style="font-style:normal;color:#c8931d">TECH</em></span>
-    <span><span class="s">Geo Situation Room</span><br><span class="t">지정학 상황실</span></span></a>
+    <span><span class="s">Critical Minerals Map</span><br><span class="t">핵심광물지도</span></span></a>
   <div class="right">
     <span class="clock" id="clock">— <b>● LIVE</b></span>
     <a class="btn" href="/dashboard?cat=minerals&sec=risk">🚦 리스크 신호등</a>
@@ -4576,6 +4593,18 @@ body{background:#eef2f8;color:#16233c;font-family:Pretendard,'Apple SD Gothic Ne
 </div>
 
 <div class="krisk"><b>K-RISK</b> __KRSTRIP__</div>
+<div id="mchips">__MCHIPS__
+  <span class="mkey"><b style="color:#c8931d">●</b> 수입 루트 · <b style="color:#0e7a4f">●</b> 매장량</span>
+</div>
+<style>
+#mchips{position:fixed;left:16px;top:112px;z-index:9;display:flex;gap:6px;flex-wrap:wrap;align-items:center;
+  max-width:calc(100vw - 460px);font-family:Pretendard,sans-serif}
+.mchip{border:1px solid #d8dfda;background:rgba(255,255,255,.93);color:#5f6b64;border-radius:999px;
+  padding:6px 13px;font:650 12.5px Pretendard,sans-serif;cursor:pointer}
+.mchip.on{background:#0a5c3c;border-color:#0a5c3c;color:#fff}
+#mchips .mkey{font-size:11px;color:#5f6b64;background:rgba(255,255,255,.88);border-radius:999px;padding:4px 10px}
+@media(max-width:760px){#mchips{display:none}}
+</style>
 
 <div class="panel">
   <div class="ph">
@@ -4634,6 +4663,61 @@ const globe = Globe()(document.getElementById('globeViz'))
 
 globe.controls().autoRotate = true;
 globe.controls().autoRotateSpeed = 0.45;
+
+// ── 핵심광물지도: 광물별 수입 루트 + 매장량 오버레이 ──
+const RSV = __RSV__;
+window._MODE = '전체';
+function fmtV(v){ return v>=1e8 ? (v/1e8).toFixed(1)+'억' : (v>=1e4 ? Math.round(v/1e4)+'만' : Math.round(v).toLocaleString()); }
+function applyEvents(evs){
+  globe.arcsData(ROUTES).arcStroke(0.45);
+  globe.pointsData(evs)
+    .pointLat('lat').pointLng('lng')
+    .pointColor(function(e){ return TYPE_COL[e.type] || '#fff'; })
+    .pointAltitude(function(e){ return 0.012 * (e.sev||1); })
+    .pointRadius(function(e){ return 0.32 + (e.sev||1) * 0.14; })
+    .pointLabel(function(e){ return '<div style="max-width:240px;font-size:11.5px;line-height:1.5"><b style="color:'
+      + (TYPE_COL[e.type]||'#fff') + '">[' + e.type + '] ' + e.loc + '</b><br>' + e.title + '</div>'; });
+  globe.ringsData(evs.filter(function(e){ return (e.sev||0) >= 2; }))
+    .ringLat('lat').ringLng('lng')
+    .ringColor(function(e){ return function(t){ var c = TYPE_COL[e.type] || '#fff';
+      return c + Math.round((1 - t) * 200).toString(16).padStart(2,'0'); }; })
+    .ringMaxRadius(function(e){ return (e.sev||1) * 3.2; })
+    .ringPropagationSpeed(1.6).ringRepeatPeriod(1100);
+}
+function applyMineral(m, rs){
+  var unit = (rs && rs._unit) || '';
+  globe.ringsData([]);
+  globe.arcsData(rs.map(function(r){
+      return {startLat:r.lat, startLng:r.lng, endLat:35.1, endLng:129.04,
+              label:r.country+' → 부산 · '+fmtV(r.amount)+(unit==='톤'?'t':'$')+' (상대점유 '+r.share+'%)', share:r.share};
+    }))
+    .arcStroke(function(d){ return 0.22 + (d.share||0)/100 * 1.0; });
+  var pts = rs.map(function(r){ return {kind:'imp', lat:r.lat, lng:r.lng, c:r.country, v:r.amount, share:r.share, u:unit}; });
+  (RSV[m]||[]).forEach(function(x){ pts.push({kind:'rsv', lat:x.lat, lng:x.lng, c:x.c, v:x.v}); });
+  globe.pointsData(pts)
+    .pointLat('lat').pointLng('lng')
+    .pointColor(function(p){ return p.kind==='imp' ? '#c8931d' : '#0e7a4f'; })
+    .pointAltitude(function(p){ return p.kind==='imp' ? 0.018 + (p.share||0)/100*0.05 : 0.012; })
+    .pointRadius(function(p){ return p.kind==='imp' ? 0.4 + (p.share||0)/100*0.45 : 0.34; })
+    .pointLabel(function(p){ return '<div style="font-size:11.5px;line-height:1.5"><b>'+p.c+'</b><br>'
+      + (p.kind==='imp' ? '한국 수입 '+fmtV(p.v)+(p.u==='톤'?'t':'$') : '매장량 '+fmtV(p.v)+'t')+'</div>'; });
+}
+function setMineral(m){
+  window._MODE = m;
+  document.querySelectorAll('.mchip').forEach(function(b){ b.classList.toggle('on', b.dataset.m===m); });
+  if(m==='전체'){
+    if(window._EVS) applyEvents(window._EVS);
+    else { globe.arcsData(ROUTES).arcStroke(0.45); globe.pointsData([]); globe.ringsData([]); }
+    return;
+  }
+  fetch('/api/trade-map?mineral='+encodeURIComponent(m)).then(function(r){return r.json();}).then(function(d){
+    if(window._MODE!==m) return;
+    var rs = (d && d.routes) || [];
+    rs._unit = (d && d.unit) || '';
+    applyMineral(m, rs);
+  });
+}
+document.querySelectorAll('.mchip').forEach(function(b){ b.addEventListener('click', function(){ setMineral(b.dataset.m); }); });
 window.addEventListener('resize', function(){ globe.width(innerWidth).height(innerHeight); });
 
 fetch('/api/geo-events').then(function(r){ return r.json(); }).then(function(d){
@@ -4643,19 +4727,8 @@ fetch('/api/geo-events').then(function(r){ return r.json(); }).then(function(d){
     feed.innerHTML = '<div class="loading">표시할 이벤트가 없습니다.<br>잠시 후 새로고침해 주세요.</div>';
     return;
   }
-  globe.pointsData(evs)
-    .pointLat('lat').pointLng('lng')
-    .pointColor(function(e){ return TYPE_COL[e.type] || '#fff'; })
-    .pointAltitude(function(e){ return 0.012 * e.sev; })
-    .pointRadius(function(e){ return 0.32 + e.sev * 0.14; })
-    .pointLabel(function(e){ return '<div style="max-width:240px;font-size:11.5px;line-height:1.5"><b style="color:'
-      + (TYPE_COL[e.type]||'#fff') + '">[' + e.type + '] ' + e.loc + '</b><br>' + e.title + '</div>'; });
-  globe.ringsData(evs.filter(function(e){ return e.sev >= 2; }))
-    .ringLat('lat').ringLng('lng')
-    .ringColor(function(e){ return function(t){ var c = TYPE_COL[e.type] || '#fff';
-      return c + Math.round((1 - t) * 200).toString(16).padStart(2,'0'); }; })
-    .ringMaxRadius(function(e){ return e.sev * 3.2; })
-    .ringPropagationSpeed(1.6).ringRepeatPeriod(1100);
+  window._EVS = evs;
+  if((window._MODE||'전체')==='전체') applyEvents(evs);
   // 통계 칩
   var cnt = {};
   evs.forEach(function(e){ cnt[e.type] = (cnt[e.type] || 0) + 1; });
@@ -4687,7 +4760,9 @@ function focusEv(i){
 </html>"""
     return (PAGE.replace("__CHOKE__", json.dumps(GLOBE_CHOKES, ensure_ascii=False))
                 .replace("__ROUTES__", json.dumps(routes, ensure_ascii=False))
-                .replace("__KRSTRIP__", kr_strip or "계산 중"))
+                .replace("__KRSTRIP__", kr_strip or "계산 중")
+                .replace("__MCHIPS__", _chips)
+                .replace("__RSV__", json.dumps(_rsv, ensure_ascii=False)))
 
 @app.route("/globe")
 def globe_page():
@@ -6744,7 +6819,7 @@ __EXTRA_CSS__
   <a class="logo" href="/"><span class="dot"></span>마인테크</a>
   <nav class="gnav">
     <a href="/" class="__A_HOME__">홈</a>
-    <a href="/globe" class="__A_MAP__">지도</a>
+    <a href="/globe" class="__A_MAP__">핵심광물지도</a>
     <a href="/briefing" class="__A_BRF__">브리핑</a>
     <a href="/conference" class="__A_AI__">AI 회의</a>
   </nav>
@@ -6754,7 +6829,7 @@ __CONTENT__
 <footer>마인테크 · 데이터 출처: KOMIR · 관세청 · 조달청 · 산업통상자원부 · USGS · World Bank</footer>
 <nav class="mtab">
  <a href="/" class="__A_HOME__"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M3 11 12 3l9 8v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/></svg>홈</a>
- <a href="/globe" class="__A_MAP__"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3.5 3 14 0 18M12 3c-3 3.5-3 14 0 18"/></svg>지도</a>
+ <a href="/globe" class="__A_MAP__"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3.5 3 14 0 18M12 3c-3 3.5-3 14 0 18"/></svg>광물지도</a>
  <a href="/briefing" class="__A_BRF__"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M5 4h14a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1z"/><path d="M8 9h8M8 13h8M8 17h5"/></svg>브리핑</a>
  <a href="/conference" class="__A_AI__"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M21 12a8 8 0 0 1-8 8H4l2-3a8 8 0 1 1 15-5z"/></svg>AI 회의</a>
 </nav>
