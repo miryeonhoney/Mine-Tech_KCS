@@ -1026,6 +1026,7 @@ def _ensure_db():
         return
     with _db_conn() as c:
         c.execute("CREATE TABLE IF NOT EXISTS subscribers (email TEXT PRIMARY KEY, created_at TIMESTAMP DEFAULT now())")
+        c.execute("ALTER TABLE subscribers ADD COLUMN IF NOT EXISTS minerals TEXT")
         c.commit()
     _db_ready = True
 
@@ -1045,6 +1046,55 @@ def load_subs():
     try:
         with open(SUBSCRIBERS_FILE, encoding="utf-8") as f: return json.load(f)
     except: return []
+
+SUBM_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "subscribers_minerals.json")
+
+def _subm_load():
+    try:
+        with open(SUBM_FILE, encoding="utf-8") as f: return json.load(f)
+    except Exception: return {}
+
+def _subm_save(m):
+    with open(SUBM_FILE, "w", encoding="utf-8") as f:
+        json.dump(m, f, ensure_ascii=False, indent=2)
+
+def get_sub_minerals(email):
+    """구독자의 관심 광물 목록."""
+    if DATABASE_URL:
+        try:
+            _ensure_db()
+            with _db_conn() as c:
+                row = c.execute("SELECT minerals FROM subscribers WHERE email=%s", (email,)).fetchone()
+            return json.loads(row[0]) if (row and row[0]) else []
+        except Exception as e:
+            print("[DB] get_sub_minerals:", e); return []
+    return _subm_load().get(email, [])
+
+def set_sub_minerals(email, minerals):
+    if DATABASE_URL:
+        try:
+            _ensure_db()
+            with _db_conn() as c:
+                c.execute("UPDATE subscribers SET minerals=%s WHERE email=%s",
+                          (json.dumps(minerals, ensure_ascii=False), email))
+                c.commit()
+            return
+        except Exception as e:
+            print("[DB] set_sub_minerals:", e); return
+    m = _subm_load(); m[email] = minerals; _subm_save(m)
+
+def load_subs_full():
+    """[{email, minerals}] — 일일 발송용."""
+    if DATABASE_URL:
+        try:
+            _ensure_db()
+            with _db_conn() as c:
+                rows = c.execute("SELECT email, minerals FROM subscribers ORDER BY created_at").fetchall()
+            return [{"email": r[0], "minerals": (json.loads(r[1]) if r[1] else [])} for r in rows]
+        except Exception as e:
+            print("[DB] load_subs_full:", e); return []
+    m = _subm_load()
+    return [{"email": e, "minerals": m.get(e, [])} for e in load_subs()]
 
 def add_sub(email):
     """추가되면 True, 이미 있으면 False."""
@@ -1067,6 +1117,9 @@ def remove_sub(email):
     subs = load_subs()
     if email in subs:
         subs.remove(email); save_subs(subs)
+    m = _subm_load()
+    if email in m:
+        del m[email]; _subm_save(m)
     return True
 
 def unsub_token(email):
@@ -1119,12 +1172,13 @@ def _nl_claim_today():
 
 def _send_daily_all():
     """구독자 전원에게 오늘의 광물 날씨 발송."""
-    subs = load_subs()
+    subs = load_subs_full()
     now = _kst_now()
     subj = f"[마인테크] {now.month}월 {now.day}일 광물 날씨"
     sent = failed = 0
-    for e in subs:
-        ok, info = send_mail(e, subj, build_newsletter(e))
+    for su in subs:
+        e = su["email"]
+        ok, info = send_mail(e, subj, build_newsletter(e, su.get("minerals") or []))
         sent += ok; failed += (not ok)
         if not ok:
             print("[newsletter] 발송 실패:", e, info)
@@ -1132,8 +1186,12 @@ def _send_daily_all():
     return {"sent": sent, "failed": failed, "total": len(subs)}
 
 
-def build_newsletter(to=None):
-    """V2 '오늘의 광물 날씨' 이메일 — 표 기반 HTML(메일 클라이언트 호환)."""
+def build_newsletter(to=None, minerals=None):
+    """V2 '오늘의 광물 날씨' 이메일 — 표 기반 HTML. minerals=관심 광물(개인화 블록)."""
+    if minerals is None and to:
+        try: minerals = get_sub_minerals(to)
+        except Exception: minerals = []
+    minerals = minerals or []
     G, GD, GL = "#0e7a4f", "#0a5c3c", "#e5f3ec"
     INKC, MUTC, LINE = "#1b211e", "#68726c", "#e3e8e5"
     DGR, DGL, WRN, WRL = "#d8453c", "#fdecea", "#c97a00", "#fdf3e2"
@@ -1183,6 +1241,38 @@ def build_newsletter(to=None):
         )
     lis = lis or f'<tr><td style="color:{MUTC};padding:10px 4px;">데이터 준비 중</td></tr>'
 
+    # 내 관심 광물 (개인화)
+    my_html = ""
+    if minerals:
+        rmap = {r["name"]: r for r in rows}
+        items = ""
+        from urllib.parse import quote as _q2
+        for mn in minerals[:8]:
+            r = rmap.get(mn)
+            if not r: continue
+            g = r["grade"] or "관찰"
+            cs = gcol.get(r["grade"], MUTC)
+            score = f" {r['score']:.0f}" if isinstance(r.get("score"), (int, float)) else ""
+            try: mnews = _v2_news(mn, 2)
+            except Exception: mnews = []
+            nrows = "".join(
+                f'<div style="font-size:12.5px;padding:4px 0 0 10px;line-height:1.5;">· '
+                f'<a href="{n.get("링크", "#")}" style="color:{INKC};text-decoration:none;">{n.get("제목", "")}</a>'
+                f' <span style="color:{MUTC};font-size:11px;">{(n.get("발행일") or "")[:10]}</span></div>'
+                for n in mnews)
+            items += (
+                f'<div style="border:1px solid {LINE};border-radius:12px;padding:12px 15px;margin:0 0 9px;">'
+                f'<table style="width:100%;border-collapse:collapse;"><tr>'
+                f'<td><a href="{base}/m/{_q2(mn, safe="")}" style="color:{INKC};text-decoration:none;font-weight:800;font-size:14px;">{mn}</a>'
+                f' <span style="color:{MUTC};font-size:12px;">{r["use"]}</span>'
+                f'<div style="color:{MUTC};font-size:12px;margin-top:2px;">{r["sub"]}</div></td>'
+                f'<td style="text-align:right;white-space:nowrap;vertical-align:top;">'
+                f'<span style="color:{cs};font-weight:800;font-size:13.5px;">{g}{score}</span></td></tr></table>'
+                f'{nrows}</div>')
+        if items:
+            my_html = (f'<div style="font-size:14px;font-weight:800;color:{GD};margin:0 0 8px;">'
+                       f'★ 내 관심 광물</div>{items}<div style="height:10px;"></div>')
+
     # AI 브리핑(캐시에 있을 때만) · 지정학 이벤트(캐시)
     brief = cache_get("news_brief_minerals") or ""
     brief_html = (
@@ -1228,7 +1318,7 @@ def build_newsletter(to=None):
         # 카운트
         f'<div style="font-size:12.5px;color:{MUTC};margin:0 0 16px;">오늘 48개 광물 중 '
         f'<b style="color:{DGR};">위험 {n_dg}</b> · <b style="color:{WRN};">주의 {n_wr}</b></div>'
-        f'{brief_html}{geo_html}'
+        f'{my_html}{brief_html}{geo_html}'
         # 리스트
         f'<div style="font-size:14px;font-weight:800;color:{INKC};margin:0 0 4px;">주목 광물 TOP 8</div>'
         f'<table style="width:100%;border-collapse:collapse;">{lis}</table>'
@@ -1246,8 +1336,8 @@ def build_newsletter(to=None):
     )
 
 
-def build_welcome(to=None):
-    """구독 직후 보내는 환영 메일 — 배너 + 오늘자 리포트."""
+def build_welcome(to=None, minerals=None):
+    """구독 직후 보내는 환영 메일 — 배너 + 오늘자 리포트(관심 광물 반영)."""
     banner = (
         '<div style="max-width:620px;margin:0 auto;font-family:\'Apple SD Gothic Neo\',\'Malgun Gothic\',sans-serif;padding:18px 12px 0;">'
         '<div style="background:#e5f3ec;border-radius:16px;padding:20px 24px;margin-bottom:6px;">'
@@ -1257,7 +1347,7 @@ def build_welcome(to=None):
         '위험해진 광물, 수입선 변화, 꼭 봐야 할 소식만 골라 보내드릴게요.<br>'
         '아래는 오늘자 리포트 미리보기예요.</div></div></div>'
     )
-    return banner + build_newsletter(to)
+    return banner + build_newsletter(to, minerals)
 
 
 # ═══════════════════════════════════════════════════════════════
@@ -4228,19 +4318,27 @@ def news_brief():
 
 @app.route("/subscribe", methods=["POST"])
 def subscribe():
-    email = ((request.get_json(silent=True) or {}).get("email") or "").strip().lower()
+    body = request.get_json(silent=True) or {}
+    email = (body.get("email") or "").strip().lower()
     if not valid_email(email): return jsonify(ok=False, message="올바른 이메일 형식이 아니에요.")
-    if not add_sub(email):
+    valid_names = set(MIN_USES.keys())
+    minerals = [m for m in (body.get("minerals") or []) if m in valid_names][:8]
+    is_new = add_sub(email)
+    set_sub_minerals(email, minerals)
+    if not is_new:
+        if minerals:
+            return jsonify(ok=True, message=f"관심 광물 {len(minerals)}개로 업데이트했어요! 다음 리포트부터 반영돼요.")
         return jsonify(ok=False, message="이미 구독 중인 이메일이에요.")
     if SMTP_USER and SMTP_PASS:
-        def _welcome(e=email):
+        def _welcome(e=email, mi=minerals):
             try:
-                ok, info = send_mail(e, "[마인테크] 구독 완료 — 매일 아침 광물 날씨를 보내드려요", build_welcome(e))
+                ok, info = send_mail(e, "[마인테크] 구독 완료 — 매일 아침 광물 날씨를 보내드려요", build_welcome(e, mi))
                 print("[welcome]", e, ok, info if not ok else "")
             except Exception as ex:
                 print("[welcome] 오류:", ex)
         threading.Thread(target=_welcome, daemon=True).start()
-        return jsonify(ok=True, message="구독 완료! 환영 메일을 보냈어요 — 내일 아침부터 매일 도착해요.")
+        _mi = f" 관심 광물 {len(minerals)}개의 소식도 함께 담아드려요." if minerals else ""
+        return jsonify(ok=True, message="구독 완료! 환영 메일을 보냈어요." + _mi)
     return jsonify(ok=True, message=f"구독 완료! 현재 {len(load_subs())}명이 구독 중이에요.")
 
 @app.route("/send_now", methods=["POST"])
@@ -7369,6 +7467,14 @@ V2_BRF_CSS = r"""
 .ncard .ns{font-size:13px;color:var(--mut);margin-top:3px;line-height:1.5}
 .ncard .nd{font-size:11.5px;color:var(--mut);margin-top:4px}
 .sub-card input{width:100%;border:1px solid var(--line);border-radius:12px;padding:11px 14px;font:inherit;font-size:14px;margin:10px 0 8px;outline-color:var(--g)}
+.subchips{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px}
+.sub-card .subchips .subchip{width:auto;border:1px solid var(--line);background:var(--card);color:var(--mut);
+border-radius:999px;padding:4px 11px;font-size:12px;font-weight:650;font-family:inherit;cursor:pointer}
+.sub-card .subchips .subchip.on{background:var(--gd);border-color:var(--gd);color:#fff}
+.sub-card .subchips .subchip.ext{display:none}
+.sub-card .subchips.open .subchip.ext{display:inline-block}
+.sub-card .subchips .subchip.more{border-style:dashed;color:var(--gd);background:var(--card)}
+.sub-card .subchips.open .subchip.more{display:none}
 .sub-card button{width:100%;border:0;border-radius:12px;padding:12px;background:var(--gd);color:#fff;font:inherit;font-size:14px;font-weight:750;cursor:pointer}
 .sub-card .msg{font-size:12.5px;margin-top:8px;color:var(--gd)}
 @media(max-width:860px){.bgrid{grid-template-columns:1fr}}
@@ -7376,6 +7482,12 @@ V2_BRF_CSS = r"""
 
 
 def render_briefing_v2():
+    _pop = ["리튬", "니켈", "코발트", "흑연", "텅스텐", "망간", "동(구리)", "알루미늄",
+            "네오디뮴", "갈륨", "우라늄", "금"]
+    _rest = sorted(m for m in MIN_USES.keys() if m not in _pop)
+    _chips = "".join(
+        f'<button type="button" class="subchip{" ext" if m in _rest else ""}" data-m="{m}">{m}</button>'
+        for m in _pop + _rest)
     news = [n for n in dedup_news(fetch_news() or []) if mineral_relevant(n)][:14]
     items = "".join(
         f'<a href="{n.get("링크", "#")}" target="_blank" rel="noopener">'
@@ -7395,6 +7507,8 @@ def render_briefing_v2():
         <div class="sec-t" style="margin-bottom:2px">매일 아침 메일로 받기</div>
         <div style="font-size:13px;color:var(--mut)">광물 날씨와 주요 소식을 보내드려요.</div>
         <input id="subEmail" type="email" placeholder="이메일 주소">
+        <div style="font-size:12.5px;color:var(--mut);font-weight:700;margin:2px 0 7px">관심 광물 선택 <span style="font-weight:500">(선택 · 최대 8개 — 위험도와 뉴스를 따로 담아드려요)</span></div>
+        <div class="subchips" id="subChips">__SUBCHIPS__<button type="button" class="subchip more" id="chipMore">+ 전체 보기</button></div>
         <button id="subBtn">구독하기</button>
         <div class="msg" id="subMsg"></div>
       </div>
@@ -7413,17 +7527,35 @@ def render_briefing_v2():
     var ev=(d&&d.events&&d.events[0])||null;
     document.getElementById('railGeo').textContent=ev?((ev.loc?ev.loc+' — ':'')+(ev.why||ev['제목']||'')):'특별한 이슈가 없어요.';
   }).catch(function(){});
+  var sel=[];
+  document.querySelectorAll('.subchip[data-m]').forEach(function(c){
+    c.addEventListener('click',function(){
+      var m=c.dataset.m, i=sel.indexOf(m);
+      if(i>=0){ sel.splice(i,1); c.classList.remove('on'); }
+      else if(sel.length<8){ sel.push(m); c.classList.add('on'); }
+      else { document.getElementById('subMsg').textContent='관심 광물은 최대 8개까지 고를 수 있어요.'; }
+    });
+  });
+  var mo=document.getElementById('chipMore');
+  if(mo){ mo.addEventListener('click',function(){ document.getElementById('subChips').classList.add('open'); }); }
   var btn=document.getElementById('subBtn');
   btn.addEventListener('click',function(){
     var em=document.getElementById('subEmail').value.trim();
-    fetch('/subscribe',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:em})})
+    btn.disabled=true; btn.textContent='처리 중…';
+    fetch('/subscribe',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({email:em, minerals:sel})})
       .then(function(r){return r.json()}).then(function(d){
         document.getElementById('subMsg').textContent=d.message||'';
-      }).catch(function(){document.getElementById('subMsg').textContent='잠시 후 다시 시도해 주세요.';});
+        btn.disabled=false; btn.textContent='구독하기';
+      }).catch(function(){
+        document.getElementById('subMsg').textContent='잠시 후 다시 시도해 주세요.';
+        btn.disabled=false; btn.textContent='구독하기';
+      });
   });
 })();
 """
-    return _v2_shell("brf", "브리핑 — 마인테크", content, V2_BRF_CSS, js)
+    return _v2_shell("brf", "브리핑 — 마인테크",
+                     content.replace("__SUBCHIPS__", _chips), V2_BRF_CSS, js)
 
 
 @app.route("/m/<path:name>")
