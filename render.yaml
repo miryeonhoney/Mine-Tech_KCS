@@ -24,3 +24,15 @@ services:
         sync: false
       - key: APP_BASE_URL          # 배포 후 생긴 주소 입력 (예: https://minetech.onrender.com)
         sync: false
+      - key: CUSTOMS_API_KEY       # 관세청 수출입 API 키
+        sync: false
+      - key: DATABASE_URL          # Postgres (구독자·발송 중복 방지 락)
+        sync: false
+      - key: EMAIL_ADDRESS         # 뉴스레터 발신 Gmail 주소
+        sync: false
+      - key: EMAIL_PASSWORD        # Gmail 앱 비밀번호 (2단계 인증 → 앱 비밀번호 발급)
+        sync: false
+      - key: CRON_TOKEN            # /cron/daily 보호 토큰 (외부 크론용)
+        sync: false
+      - key: NEWSLETTER_HOUR       # 매일 자동 발송 시각 (KST)
+        value: "9"
