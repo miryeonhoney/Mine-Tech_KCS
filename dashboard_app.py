@@ -1093,9 +1093,15 @@ def send_mail(to, subj, html):
         return True, "OK"
     except Exception as e: return False, str(e)
 
+def _kst_now():
+    """서버 시간대와 무관하게 한국 시간 반환 (Render=UTC 대비)."""
+    from datetime import timezone, timedelta
+    return datetime.now(timezone.utc).astimezone(timezone(timedelta(hours=9))).replace(tzinfo=None)
+
+
 def _nl_claim_today():
-    """오늘자 발송 소유권 획득 — DB(워커 간 공유) 우선, 실패 시 메모리 캐시."""
-    day = datetime.now().strftime("%Y-%m-%d")
+    """오늘자 발송 소유권 획득 — DB(워커 간 공유) 우선, 실패 시 메모리 캐시. KST 날짜 기준."""
+    day = _kst_now().strftime("%Y-%m-%d")
     if DATABASE_URL:
         try:
             with _db_conn() as c:
@@ -1114,7 +1120,7 @@ def _nl_claim_today():
 def _send_daily_all():
     """구독자 전원에게 오늘의 광물 날씨 발송."""
     subs = load_subs()
-    now = datetime.now()
+    now = _kst_now()
     subj = f"[마인테크] {now.month}월 {now.day}일 광물 날씨"
     sent = failed = 0
     for e in subs:
@@ -1132,7 +1138,7 @@ def build_newsletter(to=None):
     INKC, MUTC, LINE = "#1b211e", "#68726c", "#e3e8e5"
     DGR, DGL, WRN, WRL = "#d8453c", "#fdecea", "#c97a00", "#fdf3e2"
     base = APP_BASE_URL or "http://127.0.0.1:8081"
-    now = datetime.now()
+    now = _kst_now()
     wd = "월화수목금토일"[now.weekday()]
 
     rows = []
@@ -4277,12 +4283,13 @@ def cron_daily():
 
 
 def _newsletter_scheduler():
-    """앱 내장 일일 발송 — 매일 NEWSLETTER_HOUR시(기본 8시)에 1회. DB 가드로 워커 간 중복 방지."""
+    """앱 내장 일일 발송 — 매일 아침 NEWSLETTER_HOUR시(KST, 기본 9시)에 1회. DB 가드로 워커·서버 간 중복 방지."""
+    hh = int(os.environ.get("NEWSLETTER_HOUR", "9") or 9)
+    print(f"[newsletter] 자동 발송 대기 — 매일 {hh:02d}:00 KST")
     time.sleep(30)
     while True:
         try:
-            hh = int(os.environ.get("NEWSLETTER_HOUR", "8") or 8)
-            if datetime.now().hour == hh and load_subs() and _nl_claim_today():
+            if _kst_now().hour == hh and load_subs() and _nl_claim_today():
                 _send_daily_all()
         except Exception as e:
             print("[newsletter] 스케줄러 오류:", e)
