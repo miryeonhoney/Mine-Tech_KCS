@@ -1164,9 +1164,16 @@ def _nl_claim_today():
                 return cur.rowcount == 1
         except Exception as e:
             print("[newsletter] DB 가드 실패, 캐시 폴백:", e)
-    if cache_get("nl_sent_" + day):
-        return False
-    cache_set("nl_sent_" + day, True, ttl=86400)
+    # DB 없음 → 파일 마커 (재시작해도 유지되어 재발송 방지)
+    guard = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".newsletter_last_sent")
+    try:
+        with open(guard, encoding="utf-8") as f:
+            if f.read().strip() == day:
+                return False
+    except FileNotFoundError:
+        pass
+    with open(guard, "w", encoding="utf-8") as f:
+        f.write(day)
     return True
 
 

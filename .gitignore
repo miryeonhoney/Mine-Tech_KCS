@@ -42,3 +42,5 @@ minerals_agent/
 
 # ── Claude Code 로컬 설정 ──
 .claude/
+.newsletter_last_sent
+subscribers_minerals.json
