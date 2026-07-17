@@ -4381,13 +4381,14 @@ def cron_daily():
 
 
 def _newsletter_scheduler():
-    """앱 내장 일일 발송 — 매일 아침 NEWSLETTER_HOUR시(KST, 기본 9시)에 1회. DB 가드로 워커·서버 간 중복 방지."""
+    """앱 내장 일일 발송 — 매일 NEWSLETTER_HOUR시(KST, 기본 9시) 이후 첫 기회에 1회.
+    9시에 서버가 자고 있었어도 깨어난 시점에 밀린 발송을 처리(캐치업). DB 가드로 중복 방지."""
     hh = int(os.environ.get("NEWSLETTER_HOUR", "9") or 9)
-    print(f"[newsletter] 자동 발송 대기 — 매일 {hh:02d}:00 KST")
+    print(f"[newsletter] 자동 발송 대기 — 매일 {hh:02d}:00 KST (놓치면 깨어난 직후 발송)")
     time.sleep(30)
     while True:
         try:
-            if _kst_now().hour == hh and load_subs() and _nl_claim_today():
+            if _kst_now().hour >= hh and load_subs() and _nl_claim_today():
                 _send_daily_all()
         except Exception as e:
             print("[newsletter] 스케줄러 오류:", e)
