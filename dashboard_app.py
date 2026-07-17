@@ -1093,66 +1093,165 @@ def send_mail(to, subj, html):
         return True, "OK"
     except Exception as e: return False, str(e)
 
+def _nl_claim_today():
+    """오늘자 발송 소유권 획득 — DB(워커 간 공유) 우선, 실패 시 메모리 캐시."""
+    day = datetime.now().strftime("%Y-%m-%d")
+    if DATABASE_URL:
+        try:
+            with _db_conn() as c:
+                c.execute("CREATE TABLE IF NOT EXISTS newsletter_log (day TEXT PRIMARY KEY, sent_at TIMESTAMP DEFAULT now())")
+                cur = c.execute("INSERT INTO newsletter_log (day) VALUES (%s) ON CONFLICT DO NOTHING", (day,))
+                c.commit()
+                return cur.rowcount == 1
+        except Exception as e:
+            print("[newsletter] DB 가드 실패, 캐시 폴백:", e)
+    if cache_get("nl_sent_" + day):
+        return False
+    cache_set("nl_sent_" + day, True, ttl=86400)
+    return True
+
+
+def _send_daily_all():
+    """구독자 전원에게 오늘의 광물 날씨 발송."""
+    subs = load_subs()
+    now = datetime.now()
+    subj = f"[마인테크] {now.month}월 {now.day}일 광물 날씨"
+    sent = failed = 0
+    for e in subs:
+        ok, info = send_mail(e, subj, build_newsletter(e))
+        sent += ok; failed += (not ok)
+        if not ok:
+            print("[newsletter] 발송 실패:", e, info)
+    print(f"[newsletter] 발송 완료 {sent}/{len(subs)} (실패 {failed})")
+    return {"sent": sent, "failed": failed, "total": len(subs)}
+
+
 def build_newsletter(to=None):
-    customs = fetch_customs()
-    # 제목에 광물 용어가 있는 기사 우선, 요약에만 있는 기사는 후순위
-    def _rel_score(n):
-        ti, sm = (n.get("제목", "") or ""), (n.get("요약", "") or "")
-        return ((2 if any(k in ti for k in MINERAL_NEWS_TERMS) else 0)
-                + (1 if any(k in sm for k in MINERAL_NEWS_TERMS) else 0))
-    _cand = sorted(((_rel_score(n), i, n) for i, n in enumerate(fetch_news())),
-                   key=lambda x: (-x[0], x[1]))
-    news = [n for s, _, n in _cand if s >= 2][:8]          # 제목 매칭 우선
-    if len(news) < 5:                                       # 부족할 때만 요약 매칭으로 보충
-        news += [n for s, _, n in _cand if s == 1][:5 - len(news)]
-    summary = by_mineral(customs)[:5]
-    rows = "".join(
-        f'<tr><td style="padding:8px;border-bottom:1px solid #eee;">{nm}</td>'
-        f'<td style="padding:8px;border-bottom:1px solid #eee;text-align:right;color:#c0531a;font-weight:700;">${v:,.0f}</td></tr>'
-        for nm, v in summary
-    ) or '<tr><td colspan="2" style="color:#999;padding:8px;">데이터 없음</td></tr>'
-    news_html = "".join(
-        f'<div style="padding:10px 0;border-bottom:1px solid #f0f0f0;">'
-        f'<a href="{n.get("언론사링크","#")}" style="color:#1a3a52;text-decoration:none;font-weight:600;font-size:14px;">{n.get("제목","")}</a>'
-        f'<div style="color:#999;font-size:12px;margin-top:3px;">{n.get("검색키워드","")} · {n.get("발행일시","")}</div></div>'
-        for n in news
-    ) or '<div style="color:#999;">뉴스 없음</div>'
-    # 오늘의 리스크 신호등 (K-RISK 자동 계산)
-    risk_rows = ""
+    """V2 '오늘의 광물 날씨' 이메일 — 표 기반 HTML(메일 클라이언트 호환)."""
+    G, GD, GL = "#0e7a4f", "#0a5c3c", "#e5f3ec"
+    INKC, MUTC, LINE = "#1b211e", "#68726c", "#e3e8e5"
+    DGR, DGL, WRN, WRL = "#d8453c", "#fdecea", "#c97a00", "#fdf3e2"
+    base = APP_BASE_URL or "http://127.0.0.1:8081"
+    now = datetime.now()
+    wd = "월화수목금토일"[now.weekday()]
+
+    rows = []
     try:
-        _kr = compute_k_risk() or {}
-        _items = [("K-RISK · " + k, v["score"], v["grade"])
-                  for k, v in sorted(_kr.items(), key=lambda x: -x[1]["score"])[:5]]
-        _gc = {"위험": "#d64545", "주의": "#c9971b", "안정": "#2e9e6f"}
-        _gi = {"위험": "🔴", "주의": "🟡", "안정": "🟢"}
-        risk_rows = "".join(
-            f'<tr><td style="padding:7px 8px;border-bottom:1px solid #eee;">{nm}</td>'
-            f'<td style="padding:7px 8px;border-bottom:1px solid #eee;text-align:right;font-weight:700;color:{_gc.get(g,"#333")};">{_gi.get(g,"")} {s:.1f} · {g}</td></tr>'
-            for nm, s, g in _items)
+        rows = _v2_rows()
     except Exception as e:
-        print("[NEWSLETTER RISK]", e)
-    risk_block = (
-        '<h2 style="font-size:15px;color:#0b1a27;margin:0 0 12px;">오늘의 리스크 신호등 '
-        '<span style="font-size:11px;color:#999;font-weight:400;">K-RISK 자동 계산 · 0~100 높을수록 위험</span></h2>'
-        f'<table style="width:100%;border-collapse:collapse;font-size:14px;margin-bottom:18px;">{risk_rows}</table>'
-    ) if risk_rows else ""
-    _date  = datetime.now().strftime("%Y년 %m월 %d일")
-    _email = EMAIL_ADDRESS or "(메일 미설정)"
-    _link  = unsub_link(to) if to else ""
-    _unsub = (f' · <a href="{_link}" style="color:#bbb;">수신거부</a>' if _link else "")
+        print("[NEWSLETTER rows]", e)
+    n_dg = sum(1 for r in rows if r["grade"] == "위험")
+    n_wr = sum(1 for r in rows if r["grade"] == "주의")
+    top = next((r for r in rows if r["grade"]), None)
+
+    # 히어로 문장
+    if top and top["grade"] == "위험":
+        h_bg, h_fg, h_t = DGL, DGR, f"{top['name']}이 위험 단계예요"
+    elif top and top["grade"] == "주의":
+        h_bg, h_fg, h_t = WRL, WRN, f"{top['name']}을 지켜봐야 해요"
+    else:
+        h_bg, h_fg, h_t = GL, GD, "오늘 광물 시장은 대체로 맑아요"
+    h_b = ""
+    if top:
+        if top.get("share") and top["share"] >= 50:
+            h_b = f"수입의 {top['share']}%를 {top['top']} 한 나라에 의존하고 있어요. "
+        h_b += f"{top['use']} 가격에 영향을 줄 수 있어요."
+    else:
+        h_b = "48개 광물의 수급·가격·수입선을 매일 살펴보고 있어요."
+
+    # 상위 광물 8종 표
+    gcol = {"위험": DGR, "주의": WRN, "안정": GD}
+    lis = ""
+    for r in rows[:8]:
+        g = r["grade"] or "관찰"
+        cs = gcol.get(r["grade"], MUTC)
+        score = f" {r['score']:.0f}" if isinstance(r.get("score"), (int, float)) else ""
+        from urllib.parse import quote as _q
+        lis += (
+            f'<tr><td style="padding:10px 4px;border-bottom:1px solid {LINE};">'
+            f'<a href="{base}/m/{_q(r["name"], safe="")}" style="color:{INKC};text-decoration:none;font-weight:700;font-size:14px;">{r["name"]}</a>'
+            f' <span style="color:{MUTC};font-size:12px;">{r["use"]}</span>'
+            f'<div style="color:{MUTC};font-size:12px;margin-top:2px;">{r["sub"]}</div></td>'
+            f'<td style="padding:10px 4px;border-bottom:1px solid {LINE};text-align:right;white-space:nowrap;">'
+            f'<span style="color:{cs};font-weight:800;font-size:13.5px;">{g}{score}</span></td></tr>'
+        )
+    lis = lis or f'<tr><td style="color:{MUTC};padding:10px 4px;">데이터 준비 중</td></tr>'
+
+    # AI 브리핑(캐시에 있을 때만) · 지정학 이벤트(캐시)
+    brief = cache_get("news_brief_minerals") or ""
+    brief_html = (
+        f'<div style="background:{GL};border-radius:12px;padding:14px 18px;margin:0 0 18px;">'
+        f'<div style="font-size:11.5px;font-weight:800;color:{GD};margin-bottom:5px;">AI 애널리스트 브리핑</div>'
+        f'<div style="font-size:13px;color:{GD};line-height:1.65;">{brief}</div></div>'
+    ) if brief else ""
+    geo = (cache_get("geo_events") or [None])
+    geo = geo[0] if geo else None
+    geo_html = ""
+    if isinstance(geo, dict) and (geo.get("why") or geo.get("title")):
+        geo_html = (
+            f'<div style="background:#f5f7f6;border-radius:12px;padding:13px 18px;margin:0 0 18px;">'
+            f'<div style="font-size:11.5px;font-weight:800;color:{MUTC};margin-bottom:4px;">🌍 지금 세계에선</div>'
+            f'<div style="font-size:13px;color:{INKC};line-height:1.6;">'
+            f'{(geo.get("loc") + " — ") if geo.get("loc") else ""}{geo.get("why") or geo.get("title")}</div></div>'
+        )
+
+    # 뉴스 6건 (광물 관련성 필터)
+    news = [n for n in dedup_news(fetch_news() or []) if mineral_relevant(n)][:6]
+    news_html = "".join(
+        f'<div style="padding:10px 0;border-bottom:1px solid {LINE};">'
+        f'<a href="{n.get("링크", "#")}" style="color:{INKC};text-decoration:none;font-weight:650;font-size:13.5px;line-height:1.5;">{n.get("제목", "")}</a>'
+        f'<div style="color:{MUTC};font-size:11.5px;margin-top:3px;">{n.get("발행일", "")}</div></div>'
+        for n in news
+    ) or f'<div style="color:{MUTC};font-size:13px;">오늘은 새 소식이 없어요.</div>'
+
+    _link = unsub_link(to) if to else ""
+    _unsub = f' · <a href="{_link}" style="color:#9aa39d;">수신거부</a>' if _link else ""
+
     return (
-        '<div style="max-width:620px;margin:0 auto;font-family:Malgun Gothic,sans-serif;">'
-        '<div style="background:linear-gradient(135deg,#0b1a27,#1a3a52);padding:28px 32px;">'
-        '<h1 style="color:#fff;margin:0;font-size:22px;">핵심광물 동향 리포트</h1>'
-        f'<p style="color:#7ab3cc;margin:6px 0 0;font-size:13px;">{_date}</p></div>'
-        '<div style="padding:24px 32px;background:#fff;border:1px solid #e8e8e8;">'
-        f'{risk_block}'
-        '<h2 style="font-size:15px;color:#0b1a27;margin:0 0 12px;">광물별 수입액</h2>'
-        f'<table style="width:100%;border-collapse:collapse;font-size:14px;">{rows}</table>'
-        '<h2 style="font-size:15px;color:#0b1a27;margin:12px 0 12px;">최신 뉴스</h2>'
-        f'{news_html}</div>'
-        f'<div style="padding:16px;text-align:center;color:#aaa;font-size:12px;">문의: {_email}{_unsub}</div></div>'
+        f'<div style="max-width:620px;margin:0 auto;font-family:\'Apple SD Gothic Neo\',\'Malgun Gothic\',sans-serif;background:#f5f7f6;padding:18px 12px;">'
+        # 헤더
+        f'<div style="background:{GD};border-radius:16px 16px 0 0;padding:22px 26px;">'
+        f'<div style="color:#fff;font-size:19px;font-weight:800;">● 마인테크 — 오늘의 광물 날씨</div>'
+        f'<div style="color:#9fd4bc;font-size:12.5px;margin-top:4px;">{now.year}년 {now.month}월 {now.day}일 {wd}요일</div></div>'
+        # 본문
+        f'<div style="background:#ffffff;border:1px solid {LINE};border-top:0;border-radius:0 0 16px 16px;padding:22px 26px;">'
+        # 히어로
+        f'<div style="background:{h_bg};border-radius:12px;padding:16px 18px;margin-bottom:14px;">'
+        f'<div style="font-size:16px;font-weight:800;color:{h_fg};">{h_t}</div>'
+        f'<div style="font-size:13px;color:{h_fg};margin-top:5px;line-height:1.6;">{h_b}</div></div>'
+        # 카운트
+        f'<div style="font-size:12.5px;color:{MUTC};margin:0 0 16px;">오늘 48개 광물 중 '
+        f'<b style="color:{DGR};">위험 {n_dg}</b> · <b style="color:{WRN};">주의 {n_wr}</b></div>'
+        f'{brief_html}{geo_html}'
+        # 리스트
+        f'<div style="font-size:14px;font-weight:800;color:{INKC};margin:0 0 4px;">주목 광물 TOP 8</div>'
+        f'<table style="width:100%;border-collapse:collapse;">{lis}</table>'
+        # 뉴스
+        f'<div style="font-size:14px;font-weight:800;color:{INKC};margin:20px 0 4px;">오늘의 소식</div>'
+        f'{news_html}'
+        # CTA
+        f'<div style="text-align:center;margin:24px 0 6px;">'
+        f'<a href="{base}" style="display:inline-block;background:{GD};color:#fff;text-decoration:none;'
+        f'font-size:14px;font-weight:800;border-radius:999px;padding:12px 28px;">광물 날씨 전체 보기 →</a></div>'
+        f'</div>'
+        # 푸터
+        f'<div style="padding:16px 8px;text-align:center;color:#9aa39d;font-size:11.5px;">'
+        f'마인테크 · 데이터: KOMIR·관세청·조달청·산업부·USGS·World Bank{_unsub}</div></div>'
     )
+
+
+def build_welcome(to=None):
+    """구독 직후 보내는 환영 메일 — 배너 + 오늘자 리포트."""
+    banner = (
+        '<div style="max-width:620px;margin:0 auto;font-family:\'Apple SD Gothic Neo\',\'Malgun Gothic\',sans-serif;padding:18px 12px 0;">'
+        '<div style="background:#e5f3ec;border-radius:16px;padding:20px 24px;margin-bottom:6px;">'
+        '<div style="font-size:17px;font-weight:800;color:#0a5c3c;">구독을 환영해요 🎉</div>'
+        '<div style="font-size:13.5px;color:#1b211e;margin-top:7px;line-height:1.65;">'
+        '이제 매일 아침 <b>오늘의 광물 날씨</b>가 이 주소로 도착해요.<br>'
+        '위험해진 광물, 수입선 변화, 꼭 봐야 할 소식만 골라 보내드릴게요.<br>'
+        '아래는 오늘자 리포트 미리보기예요.</div></div></div>'
+    )
+    return banner + build_newsletter(to)
 
 
 # ═══════════════════════════════════════════════════════════════
@@ -4124,10 +4223,19 @@ def news_brief():
 @app.route("/subscribe", methods=["POST"])
 def subscribe():
     email = ((request.get_json(silent=True) or {}).get("email") or "").strip().lower()
-    if not valid_email(email): return jsonify(ok=False, message="올바른 이메일 형식이 아닙니다.")
+    if not valid_email(email): return jsonify(ok=False, message="올바른 이메일 형식이 아니에요.")
     if not add_sub(email):
-        return jsonify(ok=False, message="이미 구독 중인 이메일입니다.")
-    return jsonify(ok=True, message=f"구독 완료! 현재 {len(load_subs())}명이 구독 중입니다.")
+        return jsonify(ok=False, message="이미 구독 중인 이메일이에요.")
+    if SMTP_USER and SMTP_PASS:
+        def _welcome(e=email):
+            try:
+                ok, info = send_mail(e, "[마인테크] 구독 완료 — 매일 아침 광물 날씨를 보내드려요", build_welcome(e))
+                print("[welcome]", e, ok, info if not ok else "")
+            except Exception as ex:
+                print("[welcome] 오류:", ex)
+        threading.Thread(target=_welcome, daemon=True).start()
+        return jsonify(ok=True, message="구독 완료! 환영 메일을 보냈어요 — 내일 아침부터 매일 도착해요.")
+    return jsonify(ok=True, message=f"구독 완료! 현재 {len(load_subs())}명이 구독 중이에요.")
 
 @app.route("/send_now", methods=["POST"])
 def send_now():
@@ -4163,12 +4271,26 @@ def cron_daily():
     # 외부 크론(cron-job.org 등)이 매일 호출. CRON_TOKEN 으로 보호.
     if not CRON_TOKEN or request.args.get("token") != CRON_TOKEN:
         return jsonify(ok=False, message="forbidden"), 403
-    subs = load_subs()
-    subj = f"[핵심광물] {datetime.now().strftime('%m/%d')} 동향 리포트"
-    sent = failed = 0
-    for e in subs:
-        ok, _ = send_mail(e, subj, build_newsletter(e)); sent += ok; failed += (not ok)
-    return jsonify(ok=True, sent=sent, failed=failed, total=len(subs))
+    if request.args.get("force") != "1" and not _nl_claim_today():
+        return jsonify(ok=True, message="오늘은 이미 발송했어요(중복 방지). force=1로 강제 가능")
+    return jsonify(ok=True, **_send_daily_all())
+
+
+def _newsletter_scheduler():
+    """앱 내장 일일 발송 — 매일 NEWSLETTER_HOUR시(기본 8시)에 1회. DB 가드로 워커 간 중복 방지."""
+    time.sleep(30)
+    while True:
+        try:
+            hh = int(os.environ.get("NEWSLETTER_HOUR", "8") or 8)
+            if datetime.now().hour == hh and load_subs() and _nl_claim_today():
+                _send_daily_all()
+        except Exception as e:
+            print("[newsletter] 스케줄러 오류:", e)
+        time.sleep(240)
+
+
+if os.environ.get("NEWSLETTER_AUTO", "1") == "1" and SMTP_USER and SMTP_PASS:
+    threading.Thread(target=_newsletter_scheduler, daemon=True).start()
 
 @app.route("/favicon.ico")
 def favicon():
