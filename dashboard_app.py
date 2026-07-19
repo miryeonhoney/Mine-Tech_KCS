@@ -1468,7 +1468,7 @@ def render_dashboard(home=False):
     midx_cards = "".join([
         _midx_card("종합", "광물종합지수", "#c98500"),
         _midx_card("에너지광물", "에너지광물 (연료탄·우라늄)", "#eb6834"),
-        _midx_card("희소금속", "희소금속 (리튬·희토류)", "#1c5cab"),
+        _midx_card("희소금속", "희소금속 (리튬·희토류)", "#0e7a4f"),
         _midx_card("메이저금속", "메이저금속 (철·동·니켈)", "#4a3aa7"),
     ]) or '<div class="empty">지수 데이터 없음</div>'
 
@@ -1495,7 +1495,7 @@ def render_dashboard(home=False):
     ppa_rows = "".join(
         f'<div class="pp-row"><span class="pp-nm">{i["name"]}</span>'
         f'<span class="pp-val">${(i["close"] or 0):,.0f}</span>'
-        f'<span class="pp-chg" style="color:{"#d64545" if (i["chg"] or 0)>0 else ("#1e8e5a" if (i["chg"] or 0)<0 else "#8a94a6")}">'
+        f'<span class="pp-chg" style="color:{"#d64545" if (i["chg"] or 0)>0 else ("#1e8e5a" if (i["chg"] or 0)<0 else "#8a948e")}">'
         f'{"▲" if (i["chg"] or 0)>0 else ("▼" if (i["chg"] or 0)<0 else "·")} {abs(i["chg"] or 0):.2f}%</span></div>'
         for i in _pp) or '<div class="empty">시세 데이터 없음</div>'
     _lme = ppa.get("lme") or {}
@@ -1506,7 +1506,7 @@ def render_dashboard(home=False):
     home_metal_html = ("".join(
         f'<div class="hm-card"><span class="hm-nm">{i["name"]}</span>'
         f'<b class="hm-val">${(i["close"] or 0):,.0f}</b>'
-        f'<span class="hm-chg" style="color:{"#d64545" if (i["chg"] or 0)>0 else ("#1e8e5a" if (i["chg"] or 0)<0 else "#8a94a6")}">'
+        f'<span class="hm-chg" style="color:{"#d64545" if (i["chg"] or 0)>0 else ("#1e8e5a" if (i["chg"] or 0)<0 else "#8a948e")}">'
         f'{"▲" if (i["chg"] or 0)>0 else ("▼" if (i["chg"] or 0)<0 else "·")}{abs(i["chg"] or 0):.2f}%</span></div>'
         for i in _pp)) if _pp else ""
 
@@ -1605,7 +1605,7 @@ def render_dashboard(home=False):
             rtxt = f"×{ratio:,.2f}"
             rcol = "#1e8e5a" if 0.5 <= ratio <= 2 else "#b58a12"
         else:
-            rtxt, rcol = "미집계", "#8a94a6"
+            rtxt, rcol = "미집계", "#8a948e"
         cross_rows += (
             f'<tr><td class="t-nm" style="padding:7px 4px;font-weight:600">{m}</td>'
             f'<td class="t-num" style="padding:7px 4px">${v["total"]/1e6:,.0f}M</td>'
@@ -1747,7 +1747,7 @@ def render_dashboard(home=False):
         _rmax = _rk[0]["total"] if _rk else 1
         usgs_rank_html = "".join(
             f'<div class="rk-item"><span class="rk-no">{i+1:02d}</span>'
-            f'<div class="rk-mid"><div class="rk-nm">{x["name"]} <i class="rk-cat" style="color:{TAXO_COLOR.get(x["cat"], "#8a94a6")}">{x["cat"]}</i></div>'
+            f'<div class="rk-mid"><div class="rk-nm">{x["name"]} <i class="rk-cat" style="color:{TAXO_COLOR.get(x["cat"], "#8a948e")}">{x["cat"]}</i></div>'
             f'<div class="rk-bar"><div class="rk-fill" style="width:{max(x["total"]/_rmax*100, 2):.0f}%"></div></div></div>'
             f'<span class="rk-vl">{_tons(x["total"])}</span></div>'
             for i, x in enumerate(_rk))
@@ -1804,14 +1804,14 @@ def render_dashboard(home=False):
     DASH_OVERRIDE = r"""
 /* === MINETECH 라이트 디자인 시스템 (화이트 × 네이비 × 앰버골드) === */
 :root{
-  --bg:#f4f6fa;--bg2:#ffffff;--bg3:#eef2f8;
-  --border:#e3e8f0;--border2:#cdd6e4;
-  --text:#16233c;--muted:#4a5872;--muted2:#8a94a6;
+  --bg:#f5f7f6;--bg2:#ffffff;--bg3:#eef2ef;
+  --border:#e3e8e5;--border2:#c9d2cc;
+  --text:#1b211e;--muted:#4c5850;--muted2:#8a948e;
   --red:#d64545;--red-dim:#fdeeee;--red-bright:#c03535;
-  --accent:#b58210;--accent2:#8f6708;
-  --navy:#12325e;--navy2:#1c5cab;
-  --blue:#1c5cab;--cyan:#1c5cab;--green:#1e8e5a;
-  --gold:#c8931d;--gold-soft:#faf3dd;
+  --accent:#0a5c3c;--accent2:#0a5c3c;
+  --navy:#0a5c3c;--navy2:#0e7a4f;
+  --blue:#0e7a4f;--cyan:#0e7a4f;--green:#1e8e5a;
+  --gold:#0e7a4f;--gold-soft:#faf3dd;
   --shadow:0 1px 2px rgba(20,35,60,.04),0 8px 24px rgba(20,35,60,.07);
   --mono:'JetBrains Mono','IBM Plex Mono',monospace;
   --sans:'Inter','Noto Sans KR',sans-serif;
@@ -1831,7 +1831,7 @@ body{background:var(--bg);padding-left:256px;color:var(--text);}
 #subnav-minerals{counter-reset:nav;position:relative;}
 #subnav-minerals::before{
   content:'';position:absolute;left:22px;top:16px;bottom:16px;width:1px;
-  background:linear-gradient(180deg,transparent,rgba(200,147,29,.35),transparent);}
+  background:linear-gradient(180deg,transparent,rgba(14,122,79,.35),transparent);}
 .nav a[data-tab]{position:relative;display:flex!important;align-items:center;gap:12px;width:100%;
   padding:11px 12px 11px 46px!important;border-radius:11px!important;font-size:13.5px!important;font-weight:600;
   color:var(--muted)!important;border:0!important;transition:.24s cubic-bezier(.2,.7,.3,1);overflow:hidden;}
@@ -1842,9 +1842,9 @@ body{background:var(--bg);padding-left:256px;color:var(--text);}
   background:var(--bg3);border:1px solid var(--border);border-radius:7px;transition:.24s;z-index:1;}
 .nav a[data-tab]:hover{background:var(--gold-soft)!important;color:var(--text)!important;padding-left:50px!important;}
 .nav a[data-tab]:hover::before{border-color:var(--gold);color:var(--accent);}
-.nav a[data-tab].active{background:linear-gradient(90deg,rgba(200,147,29,.16),rgba(200,147,29,.02))!important;
+.nav a[data-tab].active{background:linear-gradient(90deg,rgba(14,122,79,.16),rgba(14,122,79,.02))!important;
   color:var(--navy)!important;font-weight:800;box-shadow:inset 3px 0 0 var(--gold);}
-.nav a[data-tab].active::before{background:linear-gradient(135deg,#e9c667,#c8931d);color:#fff;
+.nav a[data-tab].active::before{background:linear-gradient(135deg,#7ee2b8,#0e7a4f);color:#fff;
   border-color:var(--gold);}
 .nav-right{margin-top:auto!important;margin-left:0!important;flex-direction:column;align-items:stretch;gap:10px;padding-top:14px;border-top:1px solid var(--border);}
 .nav-time{color:var(--muted)!important;font-size:10px!important;text-align:center;}
@@ -1900,20 +1900,20 @@ body{background:var(--bg);padding-left:256px;color:var(--text);}
 .nh-ti{font-size:22px;font-weight:800;color:var(--text);line-height:1.35;margin-bottom:9px;}
 .nh-sm{font-size:14px;color:var(--muted);line-height:1.65;margin-bottom:12px;}
 .nh-meta{font-size:11px;color:var(--muted2);font-family:'IBM Plex Mono',monospace;}
-.ai-brief{background:linear-gradient(135deg,#eef5fc,#ffffff 60%);border:1px solid #cfe0f2;border-left:4px solid var(--navy2);border-radius:12px;padding:14px 18px;margin-bottom:14px;font-size:14px;line-height:1.6;color:#1f3a5e;}
+.ai-brief{background:linear-gradient(135deg,#eef4ef,#ffffff 60%);border:1px solid #d2e6da;border-left:4px solid var(--navy2);border-radius:12px;padding:14px 18px;margin-bottom:14px;font-size:14px;line-height:1.6;color:#0d3b27;}
 
 /* ============================================================
    ★ 라이트 배경 레이어
    ============================================================ */
-html{background:#f4f6fa;}
+html{background:#f5f7f6;}
 body{background:transparent!important;}
-body[data-cat="minerals"]{--catglow:#c8931d;--catglow2:#1c5cab;}
+body[data-cat="minerals"]{--catglow:#0e7a4f;--catglow2:#0e7a4f;}
 
 /* 밝은 페이지 배경 (은은한 네이비 그라데이션) */
 #cosmos{position:fixed;inset:0;z-index:-2;background:
-  radial-gradient(900px 480px at 82% -8%, rgba(28,92,171,.08), transparent 60%),
-  radial-gradient(700px 420px at 8% 4%, rgba(200,147,29,.07), transparent 55%),
-  linear-gradient(180deg,#f7f9fc 0%,#f2f5fa 100%);}
+  radial-gradient(900px 480px at 82% -8%, rgba(14,122,79,.08), transparent 60%),
+  radial-gradient(700px 420px at 8% 4%, rgba(14,122,79,.07), transparent 55%),
+  linear-gradient(180deg,#f6f8f6 0%,#f2f6f2 100%);}
 
 /* 화이트 카드 패널 */
 .stat-card,.chart-box,.section,.sub-box,.uc,.sidebar,.risk-card{
@@ -1944,7 +1944,7 @@ body{padding-left:0!important;}
   font-size:15px!important;font-weight:700!important;letter-spacing:-.01em;position:relative;}
 .cat-btn:first-of-type{margin-left:24px!important;}
 .cat-btn::after{content:'';position:absolute;left:0;right:0;bottom:-5px;height:2px;border-radius:2px;
-  background:linear-gradient(90deg,#e9c667,#c8931d);transform:scaleX(0);transform-origin:center;
+  background:linear-gradient(90deg,#7ee2b8,#0e7a4f);transform:scaleX(0);transform-origin:center;
   transition:.24s cubic-bezier(.2,.7,.3,1);}
 .cat-btn:hover{color:var(--navy)!important;}
 .cat-btn.active{background:transparent!important;color:var(--navy)!important;box-shadow:none!important;}
@@ -1993,16 +1993,16 @@ body{padding-left:0!important;}
 .hs-ai{background-image:linear-gradient(90deg,rgba(14,36,68,.92) 0%,rgba(14,36,68,.72) 40%,rgba(14,36,68,.3) 72%,rgba(14,36,68,.12) 100%),url('/static/hero/ai.png');}
 .hero-nav{position:absolute;top:44%;transform:translateY(-50%);z-index:5;width:40px;height:40px;border-radius:50%;
   background:rgba(255,255,255,.22);border:1px solid rgba(255,255,255,.4);color:#fff;font-size:22px;line-height:1;cursor:pointer;transition:.18s;}
-.hero-nav:hover{background:rgba(200,147,29,.6);border-color:#c8931d;}
+.hero-nav:hover{background:rgba(14,122,79,.6);border-color:#0e7a4f;}
 .hero-nav.prev{left:18px;}.hero-nav.next{right:18px;}
 .hero-dots{position:absolute;bottom:98px;left:50%;transform:translateX(-50%);z-index:5;display:flex;gap:8px;}
 .hero-dots button{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.45);border:0;cursor:pointer;padding:0;transition:.25s;}
 .hero-dots button.on{background:#f0c95c;width:22px;border-radius:4px;}
 .hero-search{position:absolute;left:50%;bottom:26px;transform:translateX(-50%);z-index:6;width:min(640px,82%);
   display:flex;align-items:center;gap:12px;background:#fff;border-radius:15px;padding:9px 11px 9px 20px;box-shadow:0 18px 44px rgba(14,36,68,.35);}
-.hsr-cat{font-size:13px;font-weight:800;color:#12325e;white-space:nowrap;border-right:1px solid #e0e0e0;padding-right:14px;}
+.hsr-cat{font-size:13px;font-weight:800;color:#0a5c3c;white-space:nowrap;border-right:1px solid #e0e0e0;padding-right:14px;}
 .hero-search input{flex:1;border:0;outline:0;font-size:14px;color:#222;background:transparent;}
-.hsr-btn{width:40px;height:40px;border-radius:11px;border:0;background:linear-gradient(135deg,#e9c667,#c8931d);color:#fff;font-size:16px;cursor:pointer;flex-shrink:0;}
+.hsr-btn{width:40px;height:40px;border-radius:11px;border:0;background:linear-gradient(135deg,#7ee2b8,#0e7a4f);color:#fff;font-size:16px;cursor:pointer;flex-shrink:0;}
 
 /* ===== 페이지 스크롤 ===== */
 body{height:auto!important;min-height:100vh;overflow-y:auto!important;overflow-x:hidden;}
@@ -2034,7 +2034,7 @@ body.is-home #home-landing{display:block;padding:44px 6vw 64px;}
 .hl-card{position:relative;overflow:hidden;display:block;text-decoration:none;padding:32px 28px;border-radius:20px;
   background:#fff;border:1px solid var(--border);box-shadow:var(--shadow);transition:.26s cubic-bezier(.2,.7,.3,1);}
 .hl-card::after{content:'';position:absolute;inset:0;background:radial-gradient(125% 130% at 82% 0%,var(--g),transparent 60%);opacity:.7;pointer-events:none;}
-.hl-min{--g:rgba(200,147,29,.14);}
+.hl-min{--g:rgba(14,122,79,.14);}
 .hl-ic{font-size:42px;line-height:1;position:relative;}
 .hl-nm{font-size:23px;font-weight:800;color:var(--navy);margin-top:16px;position:relative;}
 .hl-dc{font-size:13px;color:var(--muted);margin-top:7px;position:relative;}
@@ -2049,7 +2049,7 @@ body.is-home #home-landing{display:block;padding:44px 6vw 64px;}
 .hl-rk-cat{font-size:11px;color:var(--muted2);font-weight:700;}
 .hl-rk b{font-size:17px;letter-spacing:-.01em;}
 .hl-rk-gr{font-size:11px;font-weight:700;}
-.hl-rk.cta{justify-content:center;align-items:center;text-align:center;font-weight:800;color:var(--navy);font-size:13px;border-color:rgba(200,147,29,.45);background:var(--gold-soft);}
+.hl-rk.cta{justify-content:center;align-items:center;text-align:center;font-weight:800;color:var(--navy);font-size:13px;border-color:rgba(14,122,79,.45);background:var(--gold-soft);}
 @media(max-width:900px){.hl-risk-row{grid-template-columns:1fr 1fr;}}
 .hl-stats{display:flex;justify-content:center;gap:46px;flex-wrap:wrap;padding:24px;border-top:1px solid var(--border);}
 .hl-stat{text-align:center;}
@@ -2057,17 +2057,17 @@ body.is-home #home-landing{display:block;padding:44px 6vw 64px;}
 .hl-stat b{font-size:23px;font-weight:800;color:var(--navy);font-family:var(--mono);}
 
 /* 진입 연출 */
-#arrival{position:fixed;inset:0;z-index:9999;pointer-events:none;background:#f7f9fc;
+#arrival{position:fixed;inset:0;z-index:9999;pointer-events:none;background:#f6f8f6;
   display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;
   opacity:1;transition:opacity 1.1s ease;}
 #arrival.gone{opacity:0;}
 #arrival .a-eyebrow{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:clamp(15px,2vw,22px);
-  letter-spacing:.36em;color:#b58210;text-transform:uppercase;opacity:0;transform:translateY(14px);transition:opacity .9s .15s,transform .9s .15s;}
-#arrival .a-line{width:0;height:1px;background:linear-gradient(90deg,transparent,#c8931d,transparent);margin:24px 0;transition:width 1.1s .35s;}
+  letter-spacing:.36em;color:#0a5c3c;text-transform:uppercase;opacity:0;transform:translateY(14px);transition:opacity .9s .15s,transform .9s .15s;}
+#arrival .a-line{width:0;height:1px;background:linear-gradient(90deg,transparent,#0e7a4f,transparent);margin:24px 0;transition:width 1.1s .35s;}
 #arrival .a-title{font-family:'Noto Serif KR',serif;font-weight:700;font-size:clamp(40px,7.5vw,94px);line-height:1.05;color:var(--navy);
   opacity:0;transform:translateY(20px);transition:opacity 1s .3s,transform 1s .3s;}
-#arrival .a-title .gold{background:linear-gradient(118deg,#d9a521,#a97a12 58%,#8f6708);-webkit-background-clip:text;background-clip:text;color:transparent;}
-#arrival .a-name{margin-top:20px;font-size:12px;letter-spacing:.42em;color:#8a94a6;text-transform:uppercase;opacity:0;transition:opacity .9s .5s;}
+#arrival .a-title .gold{background:linear-gradient(118deg,#2fb37f,#128a5c 58%,#0a5c3c);-webkit-background-clip:text;background-clip:text;color:transparent;}
+#arrival .a-name{margin-top:20px;font-size:12px;letter-spacing:.42em;color:#8a948e;text-transform:uppercase;opacity:0;transition:opacity .9s .5s;}
 #arrival.show .a-eyebrow,#arrival.show .a-title,#arrival.show .a-name{opacity:1;transform:none;}
 #arrival.show .a-line{width:200px;}
 @keyframes landIn{from{opacity:0;transform:translateY(26px) scale(.992)}to{opacity:1;transform:none}}
@@ -2113,8 +2113,8 @@ body.scenes #scene-rail{display:flex;}
 .stat-card.red::after{background:var(--red)}
 .stat-card .sc-label{font-size:10px!important;letter-spacing:.18em;text-transform:uppercase;color:var(--muted2)!important;margin-bottom:9px;font-family:var(--mono)}
 .stat-card .sc-val{font-size:clamp(19px,2.1vw,28px)!important;font-weight:800!important;font-family:var(--mono);letter-spacing:-.02em;line-height:1.1;white-space:nowrap;color:var(--navy);text-shadow:none!important}
-.stat-card:first-child{background:linear-gradient(135deg,#12325e,#1c4c8a)!important;border-color:#12325e!important}
-.stat-card:first-child::after{background:#e9c667}
+.stat-card:first-child{background:linear-gradient(135deg,#0a5c3c,#0e5c3b)!important;border-color:#0a5c3c!important}
+.stat-card:first-child::after{background:#7ee2b8}
 .stat-card:first-child .sc-label{color:#b9cbe4!important}
 .stat-card:first-child .sc-val{font-size:clamp(20px,2.7vw,36px)!important;
   color:#f4e3ad!important;-webkit-text-fill-color:#f4e3ad!important;background:none!important}
@@ -2154,7 +2154,7 @@ body.scenes #scene-rail{display:flex;}
 .rk-mid{flex:1;min-width:0}
 .rk-nm{font-size:13px;font-weight:600;color:var(--text);margin-bottom:6px}
 .rk-bar{height:5px;background:var(--bg3);border-radius:3px;overflow:hidden}
-.rk-fill{height:100%;background:linear-gradient(90deg,#c8931d,#e9c667);border-radius:3px}
+.rk-fill{height:100%;background:linear-gradient(90deg,#0e7a4f,#7ee2b8);border-radius:3px}
 .rk-vl{font-family:var(--mono);font-size:13px;font-weight:700;color:var(--accent);white-space:nowrap}
 .rk-vl small{font-size:9px;color:var(--muted2);margin-left:2px;font-weight:500}
 .pr-item{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);font-size:12.5px}
@@ -2201,24 +2201,24 @@ html body .hl-stat b, html body .rk-val, html body .rk-no{
 
 /* GNB — 골드 헤어라인 + 여백 */
 .cat-bar{padding:15px 34px!important;border-bottom:none!important;
-  box-shadow:inset 0 -1px 0 rgba(18,50,94,.08),0 8px 28px rgba(18,50,94,.05);}
+  box-shadow:inset 0 -1px 0 rgba(10,92,60,.08),0 8px 28px rgba(10,92,60,.05);}
 .cat-bar::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;
-  background:linear-gradient(90deg,#c8931d,#e9c667 30%,#12325e 75%);}
+  background:linear-gradient(90deg,#0e7a4f,#7ee2b8 30%,#0a5c3c 75%);}
 .brand-txt{font-size:22px;font-family:'Archivo','Pretendard',sans-serif;}
 .cat-btn{font-size:15.5px!important;margin:0 22px!important;}
 .cat-btn::after{height:3px;bottom:-7px;}
-.ticker{background:linear-gradient(90deg,#0e2647,#16386b 55%,#0e2647)!important;border-bottom:none!important;}
-.ticker-inner{color:#e9c667!important;}
+.ticker{background:linear-gradient(90deg,#07281b,#16386b 55%,#07281b)!important;border-bottom:none!important;}
+.ticker-inner{color:#7ee2b8!important;}
 
 /* KPI — 네이비 카드 밴드 (전 카드) */
-.stat-card{background:linear-gradient(160deg,#16396a,#0e2647 90%)!important;
+.stat-card{background:linear-gradient(160deg,#0b4a30,#07281b 90%)!important;
   border:1px solid rgba(255,255,255,.07)!important;
   box-shadow:0 14px 34px rgba(14,38,71,.22)!important;}
-.stat-card .sc-label{color:#8fa6c6!important;}
+.stat-card .sc-label{color:#8fb8a4!important;}
 .stat-card .sc-val{color:#fff!important;}
 .stat-card .sc-sub{color:#7e95b5!important;}
-.stat-card::after{background:linear-gradient(180deg,#e9c667,#c8931d);opacity:1;width:4px;}
-.stat-card:first-child{background:linear-gradient(150deg,#1c4c8a,#12325e 70%)!important;}
+.stat-card::after{background:linear-gradient(180deg,#7ee2b8,#0e7a4f);opacity:1;width:4px;}
+.stat-card:first-child{background:linear-gradient(150deg,#0e5c3b,#0a5c3c 70%)!important;}
 .stat-card:first-child .sc-val{color:#f0c95c!important;-webkit-text-fill-color:#f0c95c!important;}
 .stat-card:hover{transform:translateY(-3px);border-color:rgba(233,198,103,.45)!important;
   box-shadow:0 22px 46px rgba(14,38,71,.32)!important;}
@@ -2227,33 +2227,33 @@ html body .hl-stat b, html body .rk-val, html body .rk-no{
 .section,.chart-box,.wpanel,.uc,.sub-box,.risk-card,.hl-card,.hl-risk,.hl-metal,.dcard{
   border:none!important;border-radius:18px!important;
   box-shadow:0 1px 2px rgba(20,35,60,.04),0 12px 36px rgba(20,35,60,.08)!important;}
-.wpanel .wp-head{border-bottom:1px dashed #e8ecf3;padding:15px 18px;font-size:12.5px;}
+.wpanel .wp-head{border-bottom:1px dashed #e6ebe7;padding:15px 18px;font-size:12.5px;}
 .wp-head::before{content:'';display:inline-block;width:7px;height:7px;flex-shrink:0;
-  background:linear-gradient(135deg,#e9c667,#c8931d);border-radius:2px;transform:rotate(45deg);}
+  background:linear-gradient(135deg,#7ee2b8,#0e7a4f);border-radius:2px;transform:rotate(45deg);}
 .page-title{display:flex;align-items:center;gap:9px;font-size:14px!important;}
 .page-title::before{content:'';display:inline-block;width:8px;height:8px;flex-shrink:0;
-  background:linear-gradient(135deg,#e9c667,#c8931d);border-radius:2px;transform:rotate(45deg);}
+  background:linear-gradient(135deg,#7ee2b8,#0e7a4f);border-radius:2px;transform:rotate(45deg);}
 .chart-title{color:var(--navy);font-weight:800;}
 
 /* 순위 바 — 네이비→골드 시그니처 그라데이션 */
 .rk-bar{height:7px;border-radius:4px;}
-.rk-fill{background:linear-gradient(90deg,#1c5cab 0%,#3a72b8 55%,#c8931d 100%)!important;}
-.rk-no{color:#c8931d;font-weight:800;font-size:12px;}
-.bf{background:linear-gradient(90deg,#1c5cab,#c8931d)!important;}
+.rk-fill{background:linear-gradient(90deg,#0e7a4f 0%,#3a72b8 55%,#0e7a4f 100%)!important;}
+.rk-no{color:#0e7a4f;font-weight:800;font-size:12px;}
+.bf{background:linear-gradient(90deg,#0e7a4f,#0e7a4f)!important;}
 
 /* 버튼·필 */
 .mineral-btn{border-radius:10px;font-weight:600;}
-.mineral-btn.active{box-shadow:0 6px 16px rgba(18,50,94,.28)!important;}
+.mineral-btn.active{box-shadow:0 6px 16px rgba(10,92,60,.28)!important;}
 .megapanel{border-radius:0 0 22px 22px;overflow:hidden;}
 
 /* 테이블 line 완화 */
 .wp-table td{border-bottom:1px solid #eef1f6;}
-tr:hover td{background:#f7f9fc;}
+tr:hover td{background:#f6f8f6;}
 
 /* 홈 — 통계 밴드 */
-.hl-stats{background:linear-gradient(160deg,#16396a,#0e2647);border-radius:20px;border-top:none;
+.hl-stats{background:linear-gradient(160deg,#0b4a30,#07281b);border-radius:20px;border-top:none;
   box-shadow:0 16px 40px rgba(14,38,71,.25);padding:28px 24px;}
-.hl-stat span{color:#8fa6c6;}
+.hl-stat span{color:#8fb8a4;}
 .hl-stat b{color:#f0c95c;font-size:26px;}
 .hm-card{border:none;box-shadow:0 1px 2px rgba(20,35,60,.05),0 8px 20px rgba(20,35,60,.07);}
 
@@ -2301,11 +2301,11 @@ function drawCoreTrade(m){
   if(_coreChart) _coreChart.destroy();
   _coreChart=new Chart(document.getElementById('coreChart'),{type:'line',
     data:{labels:months,datasets:[{label:m+' 월별 수입($)',data:months.map(function(k){return d.monthly[k];}),
-      borderColor:'#1c5cab',backgroundColor:'rgba(28,92,171,.08)',fill:true,borderWidth:2,tension:.25,pointRadius:2}]},
+      borderColor:'#0e7a4f',backgroundColor:'rgba(14,122,79,.08)',fill:true,borderWidth:2,tension:.25,pointRadius:2}]},
     options:{responsive:true,maintainAspectRatio:false,
       plugins:{legend:{display:false},tooltip:{callbacks:{label:function(c){return ' $'+c.raw.toLocaleString();}}}},
-      scales:{x:{ticks:{color:'#6f7b90',maxTicksLimit:12},grid:{color:'#e8ecf3'}},
-        y:{ticks:{color:'#6f7b90',callback:function(v){return '$'+(v/1e6).toFixed(0)+'M';}},grid:{color:'#e8ecf3'}}}}});
+      scales:{x:{ticks:{color:'#6b7570',maxTicksLimit:12},grid:{color:'#e6ebe7'}},
+        y:{ticks:{color:'#6b7570',callback:function(v){return '$'+(v/1e6).toFixed(0)+'M';}},grid:{color:'#e6ebe7'}}}}});
 }
 buildCoreTrade();
 
@@ -2317,8 +2317,8 @@ function drawReeChart(){
     data:{labels:keys,datasets:[{label:'수입액($)',data:keys.map(function(k){return REETRADE[k];}),backgroundColor:'#4a3aa7',borderRadius:3}]},
     options:{responsive:true,maintainAspectRatio:false,
       plugins:{legend:{display:false},tooltip:{callbacks:{label:function(c){return ' $'+c.raw.toLocaleString();}}}},
-      scales:{x:{ticks:{color:'#6f7b90',maxTicksLimit:12},grid:{color:'#e8ecf3'}},
-        y:{ticks:{color:'#6f7b90',callback:function(v){return '$'+(v/1e6).toFixed(0)+'M';}},grid:{color:'#e8ecf3'}}}}});
+      scales:{x:{ticks:{color:'#6b7570',maxTicksLimit:12},grid:{color:'#e6ebe7'}},
+        y:{ticks:{color:'#6b7570',callback:function(v){return '$'+(v/1e6).toFixed(0)+'M';}},grid:{color:'#e6ebe7'}}}}});
 }
 function initCatForecast(cat){
   if(cat==='ree') drawReeChart();
@@ -2344,12 +2344,12 @@ function drawCatForecast(cat,m){
   if(_catFc[cat] && _catFc[cat].chart) _catFc[cat].chart.destroy();
   _catFc[cat]={chart:new Chart(document.getElementById('fcCatChart_'+cat),{type:'line',
     data:{labels:d.dates,datasets:[
-      {label:'실측',data:actual,borderColor:'#1c5cab',backgroundColor:'rgba(28,92,171,.08)',fill:true,borderWidth:2,tension:.25,pointRadius:0},
+      {label:'실측',data:actual,borderColor:'#0e7a4f',backgroundColor:'rgba(14,122,79,.08)',fill:true,borderWidth:2,tension:.25,pointRadius:0},
       {label:'예측',data:fut,borderColor:'#c98500',borderDash:[7,5],backgroundColor:'transparent',borderWidth:2,tension:.25,pointRadius:0}]},
     options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},
-      plugins:{legend:{labels:{color:'#4a5872',font:{size:10},boxWidth:10}}},
-      scales:{x:{ticks:{color:'#6f7b90',maxTicksLimit:10},grid:{color:'#e8ecf3'}},
-        y:{ticks:{color:'#6f7b90'},grid:{color:'#e8ecf3'}}}}})};
+      plugins:{legend:{labels:{color:'#4c5850',font:{size:10},boxWidth:10}}},
+      scales:{x:{ticks:{color:'#6b7570',maxTicksLimit:10},grid:{color:'#e6ebe7'}},
+        y:{ticks:{color:'#6b7570'},grid:{color:'#e6ebe7'}}}}})};
 }
 // 메가메뉴 → 해당 섹션 선택
 function goSec(cat, sec){
@@ -2466,14 +2466,14 @@ fetchNewsBrief('', 'aiBrief');   // 핵심광물(기본)
 var _riskChart=null;
 function drawRiskChart(){
   if(_riskChart || typeof RISK==='undefined' || !RISK.length) return;
-  var pal=['#1c5cab','#c98500','#1baf7a','#e34948','#4a3aa7','#e87ba4'];
+  var pal=['#0e7a4f','#c98500','#1baf7a','#e34948','#4a3aa7','#e87ba4'];
   var labels=RISK[0].months;
   var ds=RISK.map(function(r,i){return {label:r.name,data:r.vals,borderColor:pal[i%pal.length],backgroundColor:'transparent',tension:.25,pointRadius:0};});
   _riskChart=new Chart(document.getElementById('riskChart'),{type:'line',data:{labels:labels,datasets:ds},
     options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},
-      plugins:{legend:{labels:{color:'#4a5872',font:{size:10},boxWidth:10}}},
-      scales:{x:{ticks:{color:'#6f7b90',maxTicksLimit:12},grid:{color:'#e8ecf3'}},
-        y:{min:0,max:100,ticks:{color:'#6f7b90'},grid:{color:'#e8ecf3'}}}}});
+      plugins:{legend:{labels:{color:'#4c5850',font:{size:10},boxWidth:10}}},
+      scales:{x:{ticks:{color:'#6b7570',maxTicksLimit:12},grid:{color:'#e6ebe7'}},
+        y:{min:0,max:100,ticks:{color:'#6b7570'},grid:{color:'#e6ebe7'}}}}});
 }
 var _mindexChart=null;
 // ── 가격 전망 (실측 실선 + 예측 점선) ──
@@ -2497,11 +2497,11 @@ function drawWb(m){
   if(t) t.innerHTML='국제 원자재 시세 — '+m+' ('+(WBP.units[m]||'')+') <span style="color:var(--muted2)">· World Bank Pink Sheet · 월별</span>';
   if(_wbChart) _wbChart.destroy();
   _wbChart=new Chart(document.getElementById('wbChart'),{type:'line',
-    data:{labels:WBP.months,datasets:[{label:m,data:vals,borderColor:'#1c5cab',backgroundColor:'rgba(28,92,171,.07)',fill:true,borderWidth:2,tension:.25,pointRadius:0}]},
+    data:{labels:WBP.months,datasets:[{label:m,data:vals,borderColor:'#0e7a4f',backgroundColor:'rgba(14,122,79,.07)',fill:true,borderWidth:2,tension:.25,pointRadius:0}]},
     options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},
       plugins:{legend:{display:false},tooltip:{callbacks:{label:function(c){return ' '+(c.raw||0).toLocaleString()+' '+(WBP.units[m]||'');}}}},
-      scales:{x:{ticks:{color:'#6f7b90',maxTicksLimit:14},grid:{color:'#e8ecf3'}},
-        y:{ticks:{color:'#6f7b90'},grid:{color:'#e8ecf3'}}}}});
+      scales:{x:{ticks:{color:'#6b7570',maxTicksLimit:14},grid:{color:'#e6ebe7'}},
+        y:{ticks:{color:'#6b7570'},grid:{color:'#e6ebe7'}}}}});
 }
 function initForecast(){
   if(_fcInit){ return; } _fcInit=true;
@@ -2527,36 +2527,36 @@ function drawForecast(m){
   if(_fcChart) _fcChart.destroy();
   _fcChart=new Chart(document.getElementById('fcChart'),{type:'line',
     data:{labels:d.dates,datasets:[
-      {label:'실측',data:actual,borderColor:'#1c5cab',backgroundColor:'rgba(28,92,171,.08)',fill:true,borderWidth:2,tension:.25,pointRadius:0},
+      {label:'실측',data:actual,borderColor:'#0e7a4f',backgroundColor:'rgba(14,122,79,.08)',fill:true,borderWidth:2,tension:.25,pointRadius:0},
       {label:'예측',data:fut,borderColor:'#c98500',borderDash:[7,5],backgroundColor:'transparent',borderWidth:2,tension:.25,pointRadius:0}]},
     options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},
-      plugins:{legend:{labels:{color:'#4a5872',font:{size:11},boxWidth:12}}},
-      scales:{x:{ticks:{color:'#6f7b90',maxTicksLimit:14},grid:{color:'#e8ecf3'}},
-        y:{ticks:{color:'#6f7b90'},grid:{color:'#e8ecf3'}}}}});
+      plugins:{legend:{labels:{color:'#4c5850',font:{size:11},boxWidth:12}}},
+      scales:{x:{ticks:{color:'#6b7570',maxTicksLimit:14},grid:{color:'#e6ebe7'}},
+        y:{ticks:{color:'#6b7570'},grid:{color:'#e6ebe7'}}}}});
 }
 var _olChart=null,_stChart=null,_stChart2=null;
 function drawOutlookChart(){
   if(_olChart || !OUTLOOK) return;
-  var pal={'동':'#1c5cab','아연':'#c98500'};
+  var pal={'동':'#0e7a4f','아연':'#c98500'};
   var keys=Object.keys(OUTLOOK); if(!keys.length) return;
   var labels=OUTLOOK[keys[0]].months;
-  var ds=keys.map(function(k){ return {label:k,data:OUTLOOK[k].values,borderColor:pal[k]||'#8a94a6',backgroundColor:'transparent',borderWidth:2,tension:.25,pointRadius:0}; });
+  var ds=keys.map(function(k){ return {label:k,data:OUTLOOK[k].values,borderColor:pal[k]||'#8a948e',backgroundColor:'transparent',borderWidth:2,tension:.25,pointRadius:0}; });
   _olChart=new Chart(document.getElementById('olChart'),{type:'line',data:{labels:labels,datasets:ds},
     options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},
-      plugins:{legend:{labels:{color:'#4a5872',font:{size:10},boxWidth:10}}},
-      scales:{x:{ticks:{color:'#6f7b90',maxTicksLimit:10},grid:{color:'#e8ecf3'}},y:{ticks:{color:'#6f7b90'},grid:{color:'#e8ecf3'}}}}});
+      plugins:{legend:{labels:{color:'#4c5850',font:{size:10},boxWidth:10}}},
+      scales:{x:{ticks:{color:'#6b7570',maxTicksLimit:10},grid:{color:'#e6ebe7'}},y:{ticks:{color:'#6b7570'},grid:{color:'#e6ebe7'}}}}});
 }
 function drawSteelCharts(){
   if(_stChart || !STEEL || !STEEL.months) return;
-  var conf1=[['철광석(달러_톤)','#1c5cab'],['유연탄(달러_톤)','#c98500'],['철스크랩(달러_톤)','#1baf7a']];
-  var conf2=[['철근(천원_톤)','#1c5cab'],['열연(천원_톤)','#c98500'],['후판(천원_톤)','#1baf7a'],['냉연(천원_톤)','#e34948']];
+  var conf1=[['철광석(달러_톤)','#0e7a4f'],['유연탄(달러_톤)','#c98500'],['철스크랩(달러_톤)','#1baf7a']];
+  var conf2=[['철근(천원_톤)','#0e7a4f'],['열연(천원_톤)','#c98500'],['후판(천원_톤)','#1baf7a'],['냉연(천원_톤)','#e34948']];
   function mk(id,conf){
     var ds=conf.filter(function(c){return STEEL.series[c[0]];}).map(function(c){
       return {label:c[0].split('(')[0],data:STEEL.series[c[0]],borderColor:c[1],backgroundColor:'transparent',borderWidth:2,tension:.25,pointRadius:0};});
     return new Chart(document.getElementById(id),{type:'line',data:{labels:STEEL.months,datasets:ds},
       options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},
-        plugins:{legend:{labels:{color:'#4a5872',font:{size:10},boxWidth:10}}},
-        scales:{x:{ticks:{color:'#6f7b90',maxTicksLimit:12},grid:{color:'#e8ecf3'}},y:{ticks:{color:'#6f7b90'},grid:{color:'#e8ecf3'}}}}});
+        plugins:{legend:{labels:{color:'#4c5850',font:{size:10},boxWidth:10}}},
+        scales:{x:{ticks:{color:'#6b7570',maxTicksLimit:12},grid:{color:'#e6ebe7'}},y:{ticks:{color:'#6b7570'},grid:{color:'#e6ebe7'}}}}});
   }
   _stChart=mk('stChart',conf1); _stChart2=mk('stChart2',conf2);
 }
@@ -2569,21 +2569,21 @@ function drawMines(){
     {label:'가행 광산',data:t['가행'],borderColor:'#1e8e5a',backgroundColor:'rgba(30,142,90,.08)',fill:true,borderWidth:2,tension:.25,pointRadius:3},
     {label:'폐광 (누적)',data:t['폐광'],borderColor:'#d64545',backgroundColor:'transparent',borderWidth:2,tension:.25,pointRadius:3}]},
     options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},
-      plugins:{legend:{labels:{color:'#4a5872',font:{size:11},boxWidth:12}}},
-      scales:{x:{ticks:{color:'#6f7b90'},grid:{color:'#e8ecf3'}},y:{ticks:{color:'#6f7b90'},grid:{color:'#e8ecf3'}}}}});
+      plugins:{legend:{labels:{color:'#4c5850',font:{size:11},boxWidth:12}}},
+      scales:{x:{ticks:{color:'#6b7570'},grid:{color:'#e6ebe7'}},y:{ticks:{color:'#6b7570'},grid:{color:'#e6ebe7'}}}}});
 }
 function drawMineralIndex(){
   if(_mindexChart || typeof MIDX==='undefined' || !MIDX.series) return;
-  var conf=[['종합','#c98500'],['에너지광물','#eb6834'],['희소금속','#1c5cab'],['메이저금속','#4a3aa7']];
+  var conf=[['종합','#c98500'],['에너지광물','#eb6834'],['희소금속','#0e7a4f'],['메이저금속','#4a3aa7']];
   var base=MIDX.series['종합']||{}; var labels=base.months||[];
   var ds=conf.filter(function(c){return MIDX.series[c[0]];}).map(function(c){
     return {label:c[0],data:MIDX.series[c[0]].values,borderColor:c[1],backgroundColor:'transparent',borderWidth:2,tension:.25,pointRadius:0};
   });
   _mindexChart=new Chart(document.getElementById('mindexChart'),{type:'line',data:{labels:labels,datasets:ds},
     options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},
-      plugins:{legend:{labels:{color:'#4a5872',font:{size:11},boxWidth:12}}},
-      scales:{x:{ticks:{color:'#6f7b90',maxTicksLimit:12},grid:{color:'#e8ecf3'}},
-        y:{ticks:{color:'#6f7b90'},grid:{color:'#e8ecf3'}}}}});
+      plugins:{legend:{labels:{color:'#4c5850',font:{size:11},boxWidth:12}}},
+      scales:{x:{ticks:{color:'#6b7570',maxTicksLimit:12},grid:{color:'#e6ebe7'}},
+        y:{ticks:{color:'#6b7570'},grid:{color:'#e6ebe7'}}}}});
 }
 
 """
@@ -2649,12 +2649,12 @@ body{{font-variant-numeric:tabular-nums;}}
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <style>
 :root{{
-  --bg:#f4f6fa;--bg2:#ffffff;--bg3:#eef2f8;
-  --border:#e3e8f0;--border2:#cdd6e4;
-  --text:#16233c;--muted:#4a5872;--muted2:#8a94a6;
+  --bg:#f5f7f6;--bg2:#ffffff;--bg3:#eef2ef;
+  --border:#e3e8e5;--border2:#c9d2cc;
+  --text:#1b211e;--muted:#4c5850;--muted2:#8a948e;
   --red:#d64545;--red-dim:#fdeeee;--red-bright:#c03535;
-  --accent:#b58210;--accent2:#8f6708;
-  --blue:#1c5cab;--cyan:#1c5cab;--green:#1e8e5a;
+  --accent:#0a5c3c;--accent2:#0a5c3c;
+  --blue:#0e7a4f;--cyan:#0e7a4f;--green:#1e8e5a;
   --sans:'Inter','Noto Sans KR',sans-serif;
   --mono:'IBM Plex Mono',monospace;
 }}
@@ -2673,11 +2673,11 @@ body{{background:var(--bg);color:var(--text);font-family:var(--sans);line-height
 @keyframes sys-blink{{to{{opacity:.25}}}}
 .nav a{{color:var(--muted);text-decoration:none;font-size:12px;font-weight:500;padding:6px 12px;border-radius:3px;transition:.2s;cursor:pointer;border:1px solid transparent;}}
 .nav a:hover{{color:var(--blue);background:var(--bg3);}}
-.nav a.active{{color:var(--blue);background:var(--bg3);border-color:rgba(28,92,171,.35);}}
+.nav a.active{{color:var(--blue);background:var(--bg3);border-color:rgba(14,122,79,.35);}}
 .nav-right{{margin-left:auto;display:flex;align-items:center;gap:12px;}}
 .nav-time{{font-size:11px;color:var(--muted);font-family:var(--mono);letter-spacing:.08em;opacity:.85;}}
-.nav-conf{{font-size:11px;color:var(--accent);text-decoration:none;font-weight:600;border:1px solid rgba(181,130,16,.4);padding:4px 10px;border-radius:3px;}}
-.nav-conf:hover{{background:rgba(200,147,29,.1);}}
+.nav-conf{{font-size:11px;color:var(--accent);text-decoration:none;font-weight:600;border:1px solid rgba(10,92,60,.4);padding:4px 10px;border-radius:3px;}}
+.nav-conf:hover{{background:rgba(14,122,79,.1);}}
 
 /* TAB PANELS */
 .tab-panel{{display:none;flex:1;overflow:hidden;}}
@@ -2737,7 +2737,7 @@ tr:hover td{{background:var(--bg3);}}
 .map-body{{display:flex;overflow:hidden;align-items:flex-start;}}
 #mineral-map{{flex:1;min-width:0;aspect-ratio:16/9;}}
 .leaflet-container{{outline:0 !important;}}
-.choke-tip{{background:#fff;border:1px solid #d64545;color:#16233c;font-size:11px;padding:4px 7px;border-radius:4px;box-shadow:0 4px 14px rgba(20,35,60,.18);}}
+.choke-tip{{background:#fff;border:1px solid #d64545;color:#1b211e;font-size:11px;padding:4px 7px;border-radius:4px;box-shadow:0 4px 14px rgba(20,35,60,.18);}}
 .leaflet-interactive{{outline:0 !important;}}
 .leaflet-grab{{outline:0 !important;}}
 .route-line {{ stroke-linecap: round; stroke-linejoin: round; }}
@@ -2750,10 +2750,10 @@ tr:hover td{{background:var(--bg3);}}
 /* 지도 격자 오버레이 (위경도 눈금 느낌) */
 .map-grid{{position:absolute;inset:0;z-index:450;pointer-events:none;
   background:
-    repeating-linear-gradient(0deg,  transparent 0 79px, rgba(28,92,171,.045) 79px 80px),
-    repeating-linear-gradient(90deg, transparent 0 79px, rgba(28,92,171,.045) 79px 80px);}}
+    repeating-linear-gradient(0deg,  transparent 0 79px, rgba(14,122,79,.045) 79px 80px),
+    repeating-linear-gradient(90deg, transparent 0 79px, rgba(14,122,79,.045) 79px 80px);}}
 .map-grid::after{{content:'';position:absolute;inset:0;
-  background:linear-gradient(180deg,transparent 0%,rgba(28,92,171,.02) 50%,transparent 100%);
+  background:linear-gradient(180deg,transparent 0%,rgba(14,122,79,.02) 50%,transparent 100%);
   background-size:100% 240px;animation:grid-scan 7s linear infinite;}}
 @keyframes grid-scan{{from{{background-position:0 -240px}}to{{background-position:0 100vh}}}}
 
@@ -2782,7 +2782,7 @@ tr:hover td{{background:var(--bg3);}}
 .kp-amount{{font-size:11px;font-family:var(--mono);color:var(--accent);}}
 .kp-bar{{margin-top:4px;height:4px;background:var(--bg3);border-radius:2px;overflow:hidden;}}
 .kp-bar i{{display:block;height:100%;background:linear-gradient(90deg,#6da7ec,var(--blue));border-radius:2px;}}
-.kp-bar.warn i{{background:linear-gradient(90deg,#e9c667,var(--accent));}}
+.kp-bar.warn i{{background:linear-gradient(90deg,#7ee2b8,var(--accent));}}
 .kp-bar.crit i{{background:linear-gradient(90deg,#e88a8a,var(--red));}}
 
 /* RISK 배지 */
@@ -2791,7 +2791,7 @@ tr:hover td{{background:var(--bg3);}}
 .risk-badge .rb-dot{{width:7px;height:7px;border-radius:50%;background:currentColor;box-shadow:0 0 7px currentColor;}}
 .risk-badge.high{{color:var(--red-bright);border-color:rgba(214,69,69,.5);background:rgba(214,69,69,.07);}}
 .risk-badge.high .rb-dot{{animation:cp-blink .8s steps(2,start) infinite;}}
-.risk-badge.medium{{color:var(--accent);border-color:rgba(181,130,16,.5);background:rgba(200,147,29,.08);}}
+.risk-badge.medium{{color:var(--accent);border-color:rgba(10,92,60,.5);background:rgba(14,122,79,.08);}}
 .risk-badge.low{{color:var(--green);border-color:rgba(30,142,90,.5);background:rgba(30,142,90,.07);}}
 .map-legend{{position:absolute;bottom:20px;left:20px;background:rgba(255,255,255,.95);border:1px solid var(--border);border-radius:8px;padding:10px 14px;z-index:1000;font-size:11px;box-shadow:0 6px 20px rgba(20,35,60,.12);}}
 .legend-title{{color:var(--muted);font-family:var(--mono);font-size:9px;text-transform:uppercase;letter-spacing:.1em;margin-bottom:6px;}}
@@ -2841,8 +2841,23 @@ tr:hover td{{background:var(--bg3);}}
 .page-title{{font-size:14px;font-weight:700;color:var(--muted);margin-bottom:16px;font-family:var(--mono);text-transform:uppercase;letter-spacing:.1em;}}
 </style>
 <style>{DASH_OVERRIDE}</style>
+<style>
+/* ══ V2 딥그린 스킨 — 신규 홈과 디자인 통일 ══ */
+:root{{
+  --bg:#f5f7f6;--bg2:#ffffff;--bg3:#eef2ef;
+  --border:#e3e8e5;--border2:#c9d2cc;
+  --text:#1b211e;--muted:#4c5850;--muted2:#8a948e;
+  --red:#d8453c;--red-dim:#fdecea;--red-bright:#c0392b;
+  --accent:#0e7a4f;--accent2:#0a5c3c;
+  --navy:#0a5c3c;--navy2:#0e7a4f;
+  --blue:#0e7a4f;--cyan:#128a5c;--green:#1e8e5a;
+}}
+</style>
 </head>
 <body class="{body_cls}">
+<a href="/" style="position:fixed;left:16px;bottom:16px;z-index:99;background:#0a5c3c;color:#fff;
+font:700 12.5px 'Pretendard','Noto Sans KR',sans-serif;padding:9px 16px;border-radius:999px;text-decoration:none;
+box-shadow:0 6px 16px rgba(0,40,20,.28)">◂ 마인테크 새 홈</a>
 <div id="cosmos"></div>
 <div id="arrival">
   <div class="a-eyebrow" id="a-eyebrow"></div>
@@ -3061,9 +3076,9 @@ tr:hover td{{background:var(--bg3);}}
           <div class="legend-item"><div class="legend-color" style="background:#ff2200"></div> 초대형 (30%+)</div>
           <div class="legend-item"><div class="legend-color" style="background:#ff6600"></div> 대형 (15-30%)</div>
           <div class="legend-item"><div class="legend-color" style="background:#ffaa00"></div> 중형 (5-15%)</div>
-          <div class="legend-item"><div class="legend-color" style="background:#ffdd44"></div> 소형 (1-5%)</div>
+          <div class="legend-item"><div class="legend-color" style="background:#8fe9c3"></div> 소형 (1-5%)</div>
           <div class="legend-item"><div class="legend-color" style="background:#88bb44"></div> 미량 (&lt;1%)</div>
-          <div class="legend-item"><div class="legend-color" style="background:#1c5cab"></div> 🇰🇷 한국 (수입의존)</div>
+          <div class="legend-item"><div class="legend-color" style="background:#0e7a4f"></div> 🇰🇷 한국 (수입의존)</div>
         </div>
         <!-- 초크포인트 뉴스 패널 -->
         <div id="choke-panel" style="
@@ -3072,7 +3087,7 @@ tr:hover td{{background:var(--bg3);}}
           background:rgba(255,255,255,0.97);border:1px solid #dbe2ec;
           border-radius:8px;padding:14px;
           box-shadow:0 10px 30px rgba(20,35,60,0.16);
-          scrollbar-width:thin;scrollbar-color:#cdd6e4 transparent;
+          scrollbar-width:thin;scrollbar-color:#c9d2cc transparent;
         "></div>
       </div><!-- /#mineral-map -->
       <div class="map-korea-panel">
@@ -3246,8 +3261,8 @@ const CHART_OPTS = {{
   responsive: true, maintainAspectRatio: false,
   plugins: {{ legend: {{ display: false }}, tooltip: {{ callbacks: {{ label: ctx => ' $' + ctx.raw.toLocaleString() }} }} }},
   scales: {{
-    x: {{ ticks: {{ color: '#6f7b90', font: {{ size: 10 }} }}, grid: {{ color: '#e8ecf3' }} }},
-    y: {{ ticks: {{ color: '#6f7b90', font: {{ size: 10 }}, callback: v => '$' + (v/1e6).toFixed(1)+'M' }}, grid: {{ color: '#e8ecf3' }} }}
+    x: {{ ticks: {{ color: '#6b7570', font: {{ size: 10 }} }}, grid: {{ color: '#e6ebe7' }} }},
+    y: {{ ticks: {{ color: '#6b7570', font: {{ size: 10 }}, callback: v => '$' + (v/1e6).toFixed(1)+'M' }}, grid: {{ color: '#e6ebe7' }} }}
   }}
 }};
 const isCntTon = {imports_unit_js} === '톤';
@@ -3255,13 +3270,13 @@ const CHART_CNT_OPTS = {{
   responsive: true, maintainAspectRatio: false,
   plugins: {{ legend: {{ display: false }}, tooltip: {{ callbacks: {{ label: ctx => ' ' + ctx.raw.toLocaleString() + (isCntTon ? ' 톤' : '') }} }} }},
   scales: {{
-    x: {{ ticks: {{ color: '#6f7b90', font: {{ size: 10 }} }}, grid: {{ color: '#e8ecf3' }} }},
-    y: {{ ticks: {{ color: '#6f7b90', font: {{ size: 10 }}, callback: v => isCntTon ? (v/1e3).toFixed(0)+'K톤' : '$'+(v/1e6).toFixed(1)+'M' }}, grid: {{ color: '#e8ecf3' }} }}
+    x: {{ ticks: {{ color: '#6b7570', font: {{ size: 10 }} }}, grid: {{ color: '#e6ebe7' }} }},
+    y: {{ ticks: {{ color: '#6b7570', font: {{ size: 10 }}, callback: v => isCntTon ? (v/1e3).toFixed(0)+'K톤' : '$'+(v/1e6).toFixed(1)+'M' }}, grid: {{ color: '#e6ebe7' }} }}
   }}
 }};
 new Chart(document.getElementById('chartMin'), {{
   type: 'bar',
-  data: {{ labels: {cl}, datasets: [{{ data: {cd}, backgroundColor: '#1c5cab', borderRadius: 3 }}] }},
+  data: {{ labels: {cl}, datasets: [{{ data: {cd}, backgroundColor: '#0e7a4f', borderRadius: 3 }}] }},
   options: CHART_OPTS
 }});
 new Chart(document.getElementById('chartCnt'), {{
@@ -3391,7 +3406,7 @@ function getColor(share) {{
   if (share >= 30) return '#ff2200';
   if (share >= 15) return '#ff6600';
   if (share >=  5) return '#ffaa00';
-  if (share >=  1) return '#ffdd44';
+  if (share >=  1) return '#8fe9c3';
   return '#88bb44';
 }}
 
@@ -3407,7 +3422,7 @@ function renderMineralLayer(mineral) {{
     style: feature => {{
       const p = feature.properties;
       const iso = p['ISO3166-1-Alpha-3'] || p.ISO_A3 || p.ADM0_A3 || p.iso_a3 || '';
-      if (iso === 'KOR') return {{ fillColor:'#1c5cab', fillOpacity:.9, color:'#fff', weight:2 }};
+      if (iso === 'KOR') return {{ fillColor:'#0e7a4f', fillOpacity:.9, color:'#fff', weight:2 }};
       const d = isoMap[iso];
       if (d) return {{ fillColor: getColor(d.share), fillOpacity:.85, color:'#222', weight:.5 }};
       return {{ fillColor:'#2a2a2a', fillOpacity:.5, color:'#333', weight:.3 }};
@@ -3620,11 +3635,11 @@ const CHOKEPOINTS = [
      reason:'수에즈 봉쇄 대안 경로. 우회 시 운항 기간 10~14일 추가. 강풍·高파도 위험' }},
   {{ key:'PANAMA_P', name:'파나마 운하',   pos:WP.PANAMA_P,  color:'#ffaa00', risk:'medium',
      reason:'2023~24년 엘니뇨 가뭄으로 통항 40% 감소. 기후변화로 반복 위험. 미국 영향력 확대 논란' }},
-  {{ key:'LOMBOK',   name:'롬복 해협',     pos:WP.LOMBOK,    color:'#ffcc44', risk:'low',
+  {{ key:'LOMBOK',   name:'롬복 해협',     pos:WP.LOMBOK,    color:'#7ee2b8', risk:'low',
      reason:'말라카 우회 대안. 수심 깊어 대형 선박 통과 가능. 인도네시아 정세에 의존' }},
-  {{ key:'TORRES',   name:'토레스 해협',   pos:WP.TORRES,    color:'#ffcc44', risk:'low',
+  {{ key:'TORRES',   name:'토레스 해협',   pos:WP.TORRES,    color:'#7ee2b8', risk:'low',
      reason:'호주 동부~아시아 경로. 수심 얕고 암초 많아 항법 주의. 호주산 니켈·코발트 수입에 활용' }},
-  {{ key:'CAPE_HORN',name:'케이프혼',      pos:WP.CAPE_HORN, color:'#ffcc44', risk:'low',
+  {{ key:'CAPE_HORN',name:'케이프혼',      pos:WP.CAPE_HORN, color:'#7ee2b8', risk:'low',
      reason:'칠레산 리튬·구리의 아시아행 경로. 강풍·너울로 운항 위험. 파나마 막힐 경우 대안 경로' }},
 ];
 
@@ -3677,13 +3692,13 @@ function openChokeNews(cp) {{
   const RISK_KO = {{critical:'🔴 위험 (Critical)', high:'🟠 높음 (High)', medium:'🟡 보통 (Medium)', low:'🟢 낮음 (Low)'}};
   panel.innerHTML = `
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
-      <span style="font-size:15px;font-weight:bold;color:#1c5cab;font-family:var(--mono);">⚓ ${{cp.name}}</span>
+      <span style="font-size:15px;font-weight:bold;color:#0e7a4f;font-family:var(--mono);">⚓ ${{cp.name}}</span>
       <button onclick="document.getElementById('choke-panel').style.display='none'"
-        style="background:none;border:none;color:#8a94a6;font-size:18px;cursor:pointer;line-height:1;">✕</button>
+        style="background:none;border:none;color:#8a948e;font-size:18px;cursor:pointer;line-height:1;">✕</button>
     </div>
     <div style="font-size:11px;color:${{cp.color}};margin-bottom:6px;font-weight:bold;">${{RISK_KO[cp.risk] || cp.risk}}</div>
     <div style="font-size:11px;color:#42536e;margin-bottom:12px;line-height:1.5;">${{cp.reason}}</div>
-    <div id="choke-news-list" style="font-size:11px;color:#7d8aa3;">뉴스 로딩 중...</div>
+    <div id="choke-news-list" style="font-size:11px;color:#7f8f85;">뉴스 로딩 중...</div>
   `;
   panel.style.display = 'block';
 
@@ -3692,27 +3707,27 @@ function openChokeNews(cp) {{
     .then(data => {{
       const list = document.getElementById('choke-news-list');
       if (!data.articles || data.articles.length === 0) {{
-        list.innerHTML = '<div style="color:#8a94a6;padding:8px 0;">관련 뉴스가 없습니다</div>';
+        list.innerHTML = '<div style="color:#8a948e;padding:8px 0;">관련 뉴스가 없습니다</div>';
         return;
       }}
-      list.innerHTML = '<div style="color:#7d8aa3;margin-bottom:6px;border-bottom:1px solid #e3e8f0;padding-bottom:4px;">📰 관련 뉴스</div>' +
+      list.innerHTML = '<div style="color:#7f8f85;margin-bottom:6px;border-bottom:1px solid #e3e8e5;padding-bottom:4px;">📰 관련 뉴스</div>' +
         data.articles.map(a => `
-          <div style="margin-bottom:8px;padding:6px;background:#f4f6fa;border-radius:4px;border-left:2px solid ${{cp.color}};">
+          <div style="margin-bottom:8px;padding:6px;background:#f5f7f6;border-radius:4px;border-left:2px solid ${{cp.color}};">
             <div style="margin-bottom:2px;">
               <a href="${{a.link}}" target="_blank"
-                style="color:#16233c;text-decoration:none;font-size:11px;line-height:1.4;"
-                onmouseover="this.style.color='#1c5cab'" onmouseout="this.style.color='#16233c'">
+                style="color:#1b211e;text-decoration:none;font-size:11px;line-height:1.4;"
+                onmouseover="this.style.color='#0e7a4f'" onmouseout="this.style.color='#1b211e'">
                 ${{a.title}}
               </a>
             </div>
             ${{a.desc ? `<div style="color:#5d6b80;font-size:10px;margin-top:2px;line-height:1.3;">${{a.desc}}</div>` : ''}}
-            <div style="color:#8a94a6;font-size:10px;margin-top:3px;">${{a.date}} · ${{a.kw}}</div>
+            <div style="color:#8a948e;font-size:10px;margin-top:3px;">${{a.date}} · ${{a.kw}}</div>
           </div>
         `).join('');
     }})
     .catch(() => {{
       const list = document.getElementById('choke-news-list');
-      list.innerHTML = '<div style="color:#8a94a6;">뉴스를 불러올 수 없습니다</div>';
+      list.innerHTML = '<div style="color:#8a948e;">뉴스를 불러올 수 없습니다</div>';
     }});
 }}
 
@@ -4010,7 +4025,7 @@ function renderRoutes(mineral) {{
 
           // Glow line (thicker, transparent)
           const glow = L.polyline(pts, {{
-            color: '#1c5cab',
+            color: '#0e7a4f',
             weight: width * 2.6,
             opacity: 0.10,
             smoothFactor: 1,
@@ -4019,7 +4034,7 @@ function renderRoutes(mineral) {{
 
           // Main route line — 점선 흐름 애니메이션 (CSS stroke-dashoffset)
           const line = L.polyline(pts, {{
-            color: '#1c5cab',
+            color: '#0e7a4f',
             weight: width,
             opacity: opacity,
             smoothFactor: 1,
@@ -4047,7 +4062,7 @@ function renderRoutes(mineral) {{
       // Korea marker
       const korea = L.circleMarker(BUSAN, {{
         radius: 10,
-        fillColor: '#1c5cab',
+        fillColor: '#0e7a4f',
         color: '#fff',
         weight: 2,
         fillOpacity: 1,
