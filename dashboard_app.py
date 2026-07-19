@@ -1540,7 +1540,7 @@ V2_CHROME_HEADER = """
       <div class="vcol"><div class="vt">지표별</div>
         <a href="/dashboard#supply">수급 현황</a><a href="/dashboard#mindex">가격지수</a>
         <a href="/dashboard#forecast">가격 전망</a><a href="/dashboard#map">글로벌 매장량</a>
-        <a href="/dashboard#risk">리스크 신호등</a><a href="/dashboard#mines">국내 광산</a>
+        <a href="/dashboard#routes">수입 루트</a><a href="/dashboard#risk">리스크 신호등</a><a href="/dashboard#mines">국내 광산</a>
       </div>
       <div class="vcol"><div class="vt">광종별</div>
         <a href="/dashboard#cat-minerals">핵심광물 종합</a><a href="/dashboard#cat-nf">비철금속 (6종)</a>
@@ -3329,7 +3329,8 @@ tr:hover td{{background:var(--bg3);}}
     <div class="map-ctrl">
       <span class="map-ctrl-label">모드:</span>
       <button class="mode-btn active" id="modeReserves" onclick="setMode('reserves',this)">🌍 매장량</button>
-      <a class="mode-btn" href="/globe" style="text-decoration:none">🌍 수입 루트·해협 통과율 → 핵심광물지도</a>
+      <button class="mode-btn" id="modeRoutes" onclick="setMode('routes',this)">🚢 수입 루트</button>
+      <a class="mode-btn" href="/globe" style="text-decoration:none">🌐 3D 지구본으로 보기</a>
       <span class="map-ctrl-label" style="margin-left:12px;">광물:</span>
       <button class="mineral-btn active" onclick="selectMineral('리튬',this)">리튬</button>
       <button class="mineral-btn" onclick="selectMineral('코발트',this)">코발트</button>
@@ -3520,6 +3521,16 @@ function _applyHashNav(){{
         var el = document.getElementById('ssi');
         if (el) el.scrollIntoView({{behavior:'smooth', block:'start'}});
       }}, 200);
+    }}, 0);
+    return;
+  }}
+  if (h === 'routes') {{
+    setTimeout(function(){{
+      switchTab('map', document.querySelector('.nav a[data-tab="map"]'));
+      setTimeout(function(){{
+        var b = document.getElementById('modeRoutes');
+        if (b && typeof setMode === 'function') setMode('routes', b);
+      }}, 400);
     }}, 0);
     return;
   }}
@@ -7562,6 +7573,7 @@ __EXTRA_CSS__
       <a href="/dashboard#mindex">가격지수</a>
       <a href="/dashboard#forecast">가격 전망</a>
       <a href="/dashboard#map">글로벌 매장량</a>
+      <a href="/dashboard#routes">수입 루트</a>
       <a href="/dashboard#risk">리스크 신호등</a>
       <a href="/dashboard#mines">국내 광산</a>
     </div>
