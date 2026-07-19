@@ -5877,10 +5877,20 @@ def render_conference():
     kr = {}
     try:
         kr = compute_k_risk() or {}
-        for k, v in sorted(kr.items(), key=lambda x: -x[1]["score"])[:2]:
-            ico = "🔴" if v["grade"] == "위험" else ("🟡" if v["grade"] == "주의" else "🟢")
+        _tops = [(k, v) for k, v in sorted(kr.items(), key=lambda x: -x[1]["score"])
+                 if v["grade"] in ("위험", "주의")][:6]
+        _QTPL = {
+            "위험": "{ico} [K-RISK {sc}{pv}] {k} 공급망이 '위험' 단계입니다. 원인 진단과 한국의 긴급 대응 전략은?",
+            "주의": "{ico} [K-RISK {sc}{pv}] {k} 위험이 '주의' 단계로 관측됩니다. 선제적으로 무엇을 준비해야 합니까?",
+        }
+        for k, v in _tops:
+            ico = "🔴" if v["grade"] == "위험" else "🟡"
+            pv = "·잠정" if v.get("잠정") else ""
+            comp = v.get("요소") or {}
+            hhi = comp.get("수입집중도")
+            extra = f" (수입집중 {hhi:.0f})" if isinstance(hhi, (int, float)) and hhi >= 60 else ""
             agenda.append({
-                "q": f"{ico} [K-RISK {v['score']}] {k} 공급망 위험이 '{v['grade']}' 단계입니다. 원인 진단과 한국의 대응 전략은?",
+                "q": _QTPL[v["grade"]].format(ico=ico, sc=v["score"], pv=pv, k=k) + extra,
                 "ex": _valid_ex(([k] if k in MINERAL_EXPERTS else ["통상"]) + ["지정학", "정책", "경제"])})
     except Exception: pass
     agenda_json = json.dumps(agenda, ensure_ascii=False)
@@ -6211,7 +6221,7 @@ tailwind.config = {
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 </head>
 <body class="flex min-h-screen bg-background">
-<a href="/" style="position:fixed;top:14px;left:16px;z-index:95;display:flex;align-items:center;gap:6px;padding:7px 14px;border-radius:999px;background:rgba(10,25,48,.55);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.12);color:#cfd8d2;font-size:12.5px;font-weight:700;text-decoration:none;font-family:'Pretendard Variable',Pretendard,sans-serif"><span style="width:7px;height:7px;border-radius:50%;background:#5C8FD6"></span>K Mineral Risk 홈</a>
+<a href="/" style="position:fixed;bottom:16px;left:16px;z-index:95;display:flex;align-items:center;gap:6px;padding:8px 15px;border-radius:999px;background:rgba(10,25,48,.72);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.14);color:#dbe6f5;font-size:12.5px;font-weight:700;text-decoration:none;font-family:'Pretendard Variable',Pretendard,sans-serif;box-shadow:0 6px 16px rgba(0,0,0,.25)"><span style="width:7px;height:7px;border-radius:50%;background:#5C8FD6"></span>K Mineral Risk 홈</a>
 
 <!-- Main (사이드바 없음 — 회의에 집중) -->
 <main class="flex-1 h-screen flex flex-col bg-background overflow-hidden">
