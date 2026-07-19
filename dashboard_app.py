@@ -879,9 +879,17 @@ NEWS_AUDIENCE = {
 MINERAL_NEWS_TERMS = ("리튬", "니켈", "코발트", "희토류", "텅스텐", "망간", "흑연", "광물", "광산",
                       "광종", "제련", "2차전지", "양극재", "음극재", "희소금속", "몰리브덴",
                       "구리", "아연", "공급망", "원자재", "배터리")
+# 검색어에 우연히 걸리는 무관 기사 차단 (운세의 '광물·비축', 병역'자원' 등)
+NEWS_BLACKLIST = ("운세", "띠별", "사주", "별자리", "로또", "부고", "인사동정", "사관학교",
+                  "오늘의 날씨", "TV 편성")
+# 정책 뉴스는 광물 용어 외에 자원안보 계열 용어도 관련으로 인정
+AUD_NEWS_TERMS = MINERAL_NEWS_TERMS + ("자원안보", "핵심광물", "확보전략", "국가 비축",
+                                        "전략비축", "자원 협력", "자원외교")
 
 def news_relevant(n, terms):
     t = (n.get("제목", "") or "") + " " + (n.get("요약", "") or "")
+    if any(b in t for b in NEWS_BLACKLIST):
+        return False
     return any(k in t for k in terms)
 
 def mineral_relevant(n):
@@ -906,8 +914,11 @@ def _fetch_audience_news(cache_key, aud_map):
                         seen.add(lnk)
                         try: dt = datetime.strptime(it.get("pubDate",""), "%a, %d %b %Y %H:%M:%S +0900").strftime("%Y-%m-%d %H:%M")
                         except: dt = it.get("pubDate","")
-                        out.append({"제목": clean(it.get("title","")), "요약": clean(it.get("description",""))[:80],
-                                    "언론사링크": lnk, "발행일시": dt, "검색키워드": kw, "aud": aud})
+                        _item = {"제목": clean(it.get("title","")), "요약": clean(it.get("description",""))[:80],
+                                 "언론사링크": lnk, "발행일시": dt, "검색키워드": kw, "aud": aud}
+                        if not news_relevant(_item, AUD_NEWS_TERMS):
+                            continue   # 검색어 오염(운세·무관 기사) 차단
+                        out.append(_item)
                 except: continue
                 time.sleep(0.12)
     cache_set(cache_key, out)
@@ -7256,6 +7267,8 @@ def _v2_news(name, limit=4):
                 for it in (r.json().get("items") or []):
                     t = clean(it.get("title", ""))
                     d = clean(it.get("description", ""))[:90]
+                    if any(b in (t + d) for b in NEWS_BLACKLIST):
+                        continue
                     if name not in _V2_NEWS_Q and base not in (t + d):
                         continue
                     key = re.sub(r"[^0-9A-Za-z가-힣]", "", t)[:18]
