@@ -1750,17 +1750,19 @@ def render_dashboard(home=False):
     <div class="stat-card"><div class="sc-label">가격 전망 제공</div><div class="sc-val">{_n_fc}<small style="font-size:14px;font-weight:600">광종</small></div><div class="sc-sub">~2028 예측</div></div>
   </div>
   <div class="charts-row" style="height:auto!important;align-items:stretch;">
-    <div class="section" style="flex:1;padding:14px 16px;">
+    <div class="section" id="sec-{cid}-supply" style="flex:1;padding:14px 16px;">
       <div class="chart-title">광종별 수입액 <span style="color:var(--muted2)">· KOMIR</span></div>
       {_bar_rows(_imp)}
     </div>
-    <div class="section" style="flex:1;padding:14px 16px;">
+    <div class="section" id="sec-{cid}-map" style="flex:1;padding:14px 16px;">
       <div class="chart-title">글로벌 매장량 순위 <span style="color:var(--muted2)">· KOMIR 2026</span></div>
       {_rsv_rows}
     </div>
   </div>
   <div class="charts-row" style="height:auto!important;align-items:stretch;margin-top:14px;">
+    <span id="sec-{cid}-forecast" style="position:absolute"></span>
     {_fc_panel}
+    <span id="sec-{cid}-mindex" style="position:absolute"></span>
     {_ppa_panel}
     <div class="section" style="flex:1;padding:14px 16px;">
       <div class="chart-title">{cname} 광종 <span style="color:var(--muted2)">· 커버리지</span></div>
@@ -2347,6 +2349,19 @@ function switchCategory(cat, el){
   if(cat!=='minerals' && typeof initCatForecast==='function') initCatForecast(cat);
   document.body.dataset.cat = 'minerals';
   if(window._applyScenes) window._applyScenes('minerals');
+  // 통계 탭(가격 전망 등) 컨텍스트 유지: 카테고리 페이지의 대응 섹션으로 이동
+  if(cat!=='minerals' && window._curTab){
+    var sec = document.getElementById('sec-'+cat+'-'+window._curTab);
+    if(sec){
+      var tgt = sec.nextElementSibling || sec;   // 앵커는 크기 0 → 실제 패널로 스크롤
+      setTimeout(function(){ tgt.scrollIntoView({behavior:'smooth', block:'start'}); }, 150);
+    }
+  }
+  if(cat==='minerals' && window._curTab){
+    // 핵심광물로 복귀 시 보던 탭 복원
+    var tb = document.querySelector('.nav a[data-tab="'+window._curTab+'"]');
+    if(tb) setTimeout(function(){ switchTab(window._curTab, tb); }, 60);
+  }
 }
 // ── 분류 페이지 가격전망 미니차트 ──
 var _catFc={};
@@ -3297,6 +3312,7 @@ tr:hover td{{background:var(--bg3);}}
 <script>
 // ── 탭 전환 ──────────────────────────────────────────────────
 function switchTab(name, el) {{
+  window._curTab = name;
   document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav a[data-tab]').forEach(a => a.classList.remove('active'));
   document.getElementById('tab-' + name).classList.add('active');
