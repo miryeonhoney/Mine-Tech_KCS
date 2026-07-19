@@ -1393,7 +1393,7 @@ V2_CHROME_CSS = r"""
 .cat-bar .brand-lock{display:none!important}
 .cat-bar .cb-right{display:none!important}
 .megapanel{display:none!important}
-.v2tbar{z-index:500!important}
+.v2tbar{z-index:2000!important}
 .v2menu{z-index:9999!important}
 /* 카테고리 줄: 구 탭 디자인 폐기 → 알약 칩 */
 .cat-bar{background:#fff!important;border-bottom:1px solid #E8ECF1!important;padding:12px 24px!important;gap:9px!important;box-shadow:none!important}
@@ -2353,6 +2353,33 @@ var CATS=['minerals','nf','rare','ree','energy','etc'];
 function switchCategory(cat, el){
   if(CATS.indexOf(cat)<0) cat='minerals';
   if(document.body.classList.contains('is-home')){ location.href='/dashboard?cat='+cat; return; }  // 메인에선 카테고리 화면으로 이동
+  // 리스크 신호등: 카테고리 클릭 = K-RISK 카드 분류 필터 (페이지 전환 없음)
+  if(window._curTab==='risk'){
+    document.querySelectorAll('.cat-btn').forEach(function(b){b.classList.remove('active');});
+    var _rb=el||document.querySelector('.cat-btn[data-cat="'+cat+'"]'); if(_rb)_rb.classList.add('active');
+    var RC={'니켈':'nf','동':'nf','리튬':'rare','코발트':'rare','텅스텐':'rare','몰리브덴':'rare'};
+    var grid=document.querySelector('#tab-risk .risk-grid');
+    var note=document.getElementById('riskCatNote');
+    if(!note && grid){ note=document.createElement('div'); note.id='riskCatNote';
+      note.style.cssText='padding:12px 4px;color:#888;font-size:13.5px'; grid.parentNode.insertBefore(note,grid); }
+    if(cat!=='minerals'){
+      var any=false;
+      document.querySelectorAll('#tab-risk .risk-card').forEach(function(c){
+        var nm=((c.querySelector('.rk-nm')||{}).textContent||'').trim();
+        var show=RC[nm]===cat; c.style.display=show?'':'none'; if(show)any=true;
+      });
+      if(note) note.textContent=any?'':'이 분류에는 K-RISK 산출 대상 광종(수급안정화지수 제공 6광종)이 아직 없습니다.';
+      return;
+    }
+    document.querySelectorAll('#tab-risk .risk-card').forEach(function(c){c.style.display='';});
+    if(note) note.textContent='';
+  }
+  // 국내 광산·뉴스: 전국/전체 단위 데이터 — 카테고리와 무관, 페이지 유지
+  if((window._curTab==='mines'||window._curTab==='news') && cat!=='minerals'){
+    document.querySelectorAll('.cat-btn').forEach(function(b){b.classList.remove('active');});
+    var _mb=el||document.querySelector('.cat-btn[data-cat="'+cat+'"]'); if(_mb)_mb.classList.add('active');
+    return;
+  }
   // 가격지수 탭: 카테고리 클릭 = 그 분류의 지수 라인 필터 (페이지 전환 없음)
   if(window._curTab==='mindex' && typeof _mindexChart!=='undefined'){
     document.querySelectorAll('.cat-btn').forEach(function(b){b.classList.remove('active');});
