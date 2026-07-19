@@ -4952,6 +4952,19 @@ def conference_chat():
         except Exception as _e:
             print("[VIZ prompt]", _e)
 
+        # 진행자 언어 감지 — 영어로 물으면 영어로 답한다 (그 외엔 한국어 기본)
+        _lq = ""
+        for _h in reversed(history):
+            if _h.get("role") == "user":
+                _lq = _h.get("content", ""); break
+        _lq = _lq or topic
+        _hang = sum(1 for ch in _lq if '가' <= ch <= '힣')
+        _lat = sum(1 for ch in _lq if ch.isascii() and ch.isalpha())
+        lang_rule = ""
+        if _lat >= 8 and _hang == 0:
+            lang_rule = ("\n\n[Language] The moderator spoke in English. Respond ENTIRELY in English this turn "
+                         "(keep the source-chip rule as [dataset name]; keep numbers and expert names as-is).")
+
         sys_prompt = SHARED_A2A_PREAMBLE + "\n\n[당신의 역할]\n" + expert["system"] + (
             f"\n\n[대상 맞춤] {aud_ctx}"
             "\n\n[회의 형식] 이것은 여러 전문가와 진행자가 함께하는 실시간 회의입니다. "
@@ -4959,7 +4972,7 @@ def conference_chat():
             "자신의 핵심 의견을 200자 내외로 말하세요. 위 공통 규칙을 따르되, 특히 수치·사실 끝에는 "
             "[데이터셋명] 출처칩을 붙이세요. 이미 나온 말을 반복하지 말고 논의를 진전시키세요. "
             "발언 앞에 자신의 이름이나 '[이름]' 같은 라벨을 붙이지 말고, 바로 본문부터 말하세요."
-        ) + viz_block + repeat_guard
+        ) + viz_block + repeat_guard + lang_rule
         convo = transcript_text(history) or f"회의 주제: {topic}"
         # 진행자가 방금 끼어들어 질문했다면 — 그 질문에 대한 직접 답변이 최우선
         mod_q = ""
