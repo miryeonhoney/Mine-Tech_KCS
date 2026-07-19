@@ -1410,8 +1410,13 @@ def build_newsletter(to=None, minerals=None):
             f'{(geo.get("loc") + " — ") if geo.get("loc") else ""}{geo.get("why") or geo.get("title")}</div></div>'
         )
 
-    # 뉴스 6건 (광물 관련성 필터)
-    news = [n for n in dedup_news(fetch_news() or []) if mineral_relevant(n)][:6]
+    # 뉴스 6건 — 규칙 필터 + AI 관련성 검열 (구독자별 재사용 위해 30분 캐시)
+    news = cache_get("nl_news_gated")
+    if news is None:
+        news = [n for n in dedup_news(fetch_news() or []) if mineral_relevant(n)]
+        news = ai_relevance_gate(news[:12], "핵심광물·원자재의 수급·가격·공급망·정책 관련성 (운세·연예·스포츠·무관 기사 제외)")
+        cache_set("nl_news_gated", news, ttl=1800)
+    news = news[:6]
     news_html = "".join(
         f'<div style="padding:10px 0;border-bottom:1px solid {LINE};">'
         f'<a href="{n.get("링크", "#")}" style="color:{INKC};text-decoration:none;font-weight:650;font-size:13.5px;line-height:1.5;">{n.get("제목", "")}</a>'
