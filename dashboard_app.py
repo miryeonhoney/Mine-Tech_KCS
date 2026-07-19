@@ -1430,6 +1430,10 @@ V2_CHROME_CSS = r"""
 .v2drop:hover .v2menu{display:block}
 .v2menu a{display:block;padding:9px 20px;font-size:14px;font-weight:500;color:#555;text-decoration:none}
 .v2menu a:hover{background:#EAF2FC;color:#155BB8;font-weight:700}
+.v2menu-w{padding:14px 6px 12px!important}
+.v2drop:hover .v2menu-w{display:flex!important;gap:4px}
+.v2menu-w .vcol{min-width:172px}
+.v2menu-w .vt{font-size:11.5px;font-weight:800;color:#888;letter-spacing:.06em;padding:0 20px 7px}
 .v2foot{background:#16305C;color:#B9CCEA;font-size:13px;font-family:'Noto Sans KR','Pretendard',sans-serif;margin-top:40px;position:relative;z-index:5}
 .v2foot .fin{max-width:1200px;margin:0 auto;padding:24px}
 .v2foot a{color:#B9CCEA;text-decoration:none}.v2foot a:hover{color:#fff}
@@ -1466,16 +1470,18 @@ V2_CHROME_HEADER = """
   <a class="v2logo" href="/"><span class="dot"></span><span><b>마인<em>테크</em></b><i>MINE-TECH CRITICAL MINERALS SERVICE</i></span></a>
   <nav class="v2gnb">
     <a href="/">홈</a>
-    <div class="v2drop"><a href="#" onclick="return false">광종별 현황</a><div class="v2menu">
-      <a href="/dashboard#cat-minerals">핵심광물 종합</a><a href="/dashboard#cat-nf">비철금속 (6종)</a>
-      <a href="/dashboard#cat-rare">희소금속 (20종)</a><a href="/dashboard#cat-ree">희토류 (14종)</a>
-      <a href="/dashboard#cat-energy">에너지 (2종)</a><a href="/dashboard#cat-etc">기타 (6종)</a>
-    </div></div>
     <a href="/globe">핵심광물지도</a>
-    <div class="v2drop"><a href="#" onclick="return false">통계</a><div class="v2menu">
-      <a href="/dashboard#supply">수급 현황</a><a href="/dashboard#mindex">가격지수</a>
-      <a href="/dashboard#forecast">가격 전망</a><a href="/dashboard#map">글로벌 매장량</a>
-      <a href="/dashboard#risk">리스크 신호등</a><a href="/dashboard#mines">국내 광산</a>
+    <div class="v2drop"><a href="#" onclick="return false">통계</a><div class="v2menu v2menu-w">
+      <div class="vcol"><div class="vt">지표별</div>
+        <a href="/dashboard#supply">수급 현황</a><a href="/dashboard#mindex">가격지수</a>
+        <a href="/dashboard#forecast">가격 전망</a><a href="/dashboard#map">글로벌 매장량</a>
+        <a href="/dashboard#risk">리스크 신호등</a><a href="/dashboard#mines">국내 광산</a>
+      </div>
+      <div class="vcol"><div class="vt">광종별</div>
+        <a href="/dashboard#cat-minerals">핵심광물 종합</a><a href="/dashboard#cat-nf">비철금속 (6종)</a>
+        <a href="/dashboard#cat-rare">희소금속 (20종)</a><a href="/dashboard#cat-ree">희토류 (14종)</a>
+        <a href="/dashboard#cat-energy">에너지 (2종)</a><a href="/dashboard#cat-etc">기타 (6종)</a>
+      </div>
     </div></div>
     <a href="/briefing">브리핑</a>
     <a href="/conference">AI 회의</a>
@@ -3259,7 +3265,7 @@ tr:hover td{{background:var(--bg3);}}
     <div class="map-ctrl">
       <span class="map-ctrl-label">모드:</span>
       <button class="mode-btn active" id="modeReserves" onclick="setMode('reserves',this)">🌍 매장량</button>
-      <button class="mode-btn" id="modeRoutes" onclick="setMode('routes',this)">🚢 수입 루트</button>
+      <a class="mode-btn" href="/globe" style="text-decoration:none">🌍 수입 루트·해협 통과율 → 핵심광물지도</a>
       <span class="map-ctrl-label" style="margin-left:12px;">광물:</span>
       <button class="mineral-btn active" onclick="selectMineral('리튬',this)">리튬</button>
       <button class="mineral-btn" onclick="selectMineral('코발트',this)">코발트</button>
@@ -7346,6 +7352,10 @@ border-top:2px solid var(--blue);min-width:184px;padding:8px 0;box-shadow:0 10px
 .gmenu a{display:block;height:auto;padding:9px 20px;font-size:14px;font-weight:500;color:var(--ink2)}
 .gmenu a::after{display:none}
 .gmenu a:hover{background:var(--sky);color:var(--blue);font-weight:700}
+.gmenu-w{display:none;min-width:0;padding:14px 6px 12px}
+.gdrop:hover .gmenu-w{display:flex;gap:4px}
+.gmenu-w .gcol{min-width:172px}
+.gmenu-w .gt{font-size:11.5px;font-weight:800;color:var(--ink3);letter-spacing:.06em;padding:0 20px 7px}
 .sbox{display:flex;align-items:center;gap:8px;background:var(--bg);border:1px solid var(--line2);border-radius:100px;padding:9px 16px;width:185px;flex:none}
 .sbox svg{width:15px;height:15px;stroke:var(--ink3);flex:none}
 .sbox input{border:0;outline:0;background:none;font:inherit;font-size:13px;width:100%;color:var(--ink)}
@@ -7406,22 +7416,24 @@ __EXTRA_CSS__
   <a class="logo" href="/"><span class="dot"></span><span><b>마인<em>테크</em></b><i>MINE-TECH CRITICAL MINERALS SERVICE</i></span></a>
   <nav class="gnbbar">
   <a href="/" class="__A_HOME__">홈</a>
-  <div class="gdrop"><a href="#" onclick="return false">광종별 현황</a><div class="gmenu">
-    <a href="/dashboard#cat-minerals">핵심광물 종합</a>
-    <a href="/dashboard#cat-nf">비철금속 (6종)</a>
-    <a href="/dashboard#cat-rare">희소금속 (20종)</a>
-    <a href="/dashboard#cat-ree">희토류 (14종)</a>
-    <a href="/dashboard#cat-energy">에너지 (2종)</a>
-    <a href="/dashboard#cat-etc">기타 (6종)</a>
-  </div></div>
   <a href="/globe" class="__A_MAP__">핵심광물지도</a>
-  <div class="gdrop"><a href="#" onclick="return false">통계</a><div class="gmenu">
-    <a href="/dashboard#supply">수급 현황</a>
-    <a href="/dashboard#mindex">가격지수</a>
-    <a href="/dashboard#forecast">가격 전망</a>
-    <a href="/dashboard#map">글로벌 매장량</a>
-    <a href="/dashboard#risk">리스크 신호등</a>
-    <a href="/dashboard#mines">국내 광산</a>
+  <div class="gdrop"><a href="#" onclick="return false">통계</a><div class="gmenu gmenu-w">
+    <div class="gcol"><div class="gt">지표별</div>
+      <a href="/dashboard#supply">수급 현황</a>
+      <a href="/dashboard#mindex">가격지수</a>
+      <a href="/dashboard#forecast">가격 전망</a>
+      <a href="/dashboard#map">글로벌 매장량</a>
+      <a href="/dashboard#risk">리스크 신호등</a>
+      <a href="/dashboard#mines">국내 광산</a>
+    </div>
+    <div class="gcol"><div class="gt">광종별</div>
+      <a href="/dashboard#cat-minerals">핵심광물 종합</a>
+      <a href="/dashboard#cat-nf">비철금속 (6종)</a>
+      <a href="/dashboard#cat-rare">희소금속 (20종)</a>
+      <a href="/dashboard#cat-ree">희토류 (14종)</a>
+      <a href="/dashboard#cat-energy">에너지 (2종)</a>
+      <a href="/dashboard#cat-etc">기타 (6종)</a>
+    </div>
   </div></div>
   <a href="/briefing" class="__A_BRF__">브리핑</a>
   <a href="/conference" class="__A_AI__">AI 회의</a>
