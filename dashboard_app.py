@@ -4337,7 +4337,7 @@ function selectMineral(mineral, btn) {{
 def index(): return Response(render_home_v2(), mimetype="text/html")   # V2 소비자 홈
 
 @app.route("/pro")
-def pro(): return Response(render_dashboard(home=True), mimetype="text/html")   # 이전 화면(전문가용)
+def pro(): return Response(render_dashboard(home=False), mimetype="text/html")   # 전문가용 = 통계 대시보드
 
 @app.route("/dashboard")
 def dashboard(): return Response(render_dashboard(home=False), mimetype="text/html")  # 카테고리 화면 (검색 없음)
@@ -7730,7 +7730,7 @@ def render_home_v2():
     <a href="/globe"><span class="qi">🌍</span>광물 지도</a>
     <a href="/briefing"><span class="qi">📰</span>브리핑</a>
     <a href="/conference"><span class="qi">🎙</span>AI 회의</a>
-    <a href="/briefing"><span class="qi">✉️</span>리포트 구독</a>
+    <a href="/briefing#sub"><span class="qi">✉️</span>리포트 구독</a>
     <a href="/minerals.csv"><span class="qi">⬇</span>데이터 받기</a>
     <a href="/dashboard"><span class="qi">📊</span>통계 대시보드</a>
     <a href="/pro"><span class="qi">🛠</span>전문가용</a>
@@ -7748,12 +7748,12 @@ def render_home_v2():
   </div>
 
   <div class="mod3">
-    <div class="card"><div class="mh"><b>수급안정화지수</b><a href="/dashboard#supply">더보기 +</a></div>
+    <div class="card"><div class="mh"><b>수급안정화지수</b><a href="/dashboard#risk">더보기 +</a></div>
       <div style="height:215px"><canvas id="cRisk"></canvas></div>
       <div class="srcline">출처: KOMIR 수급안정화지수(핵심 6광종·월간)</div></div>
-    <div class="card"><div class="mh"><b>오늘의 금속 시세</b><a href="/dashboard#mindex">더보기 +</a></div>
+    <div class="card"><div class="mh"><b>오늘의 금속 시세</b><a href="/dashboard#supply">더보기 +</a></div>
       {lme_html}</div>
-    <div class="card"><div class="mh"><b>K-RISK 위험 상위</b><a href="/pro">더보기 +</a></div>
+    <div class="card"><div class="mh"><b>K-RISK 위험 상위</b><a href="/dashboard#risk">더보기 +</a></div>
       {ktop_html}
       <div class="srcline">공급망 위험지수 높은 순 · 1시간 자동 갱신</div></div>
   </div>
@@ -7788,7 +7788,7 @@ def render_home_v2():
   <div class="bnr4">
     <a href="/globe"><b>🌍 핵심광물지도</b><span>수입 루트·해협 통과율</span></a>
     <a href="/conference"><b>🎙 AI 전문가 회의실</b><span>발언마다 출처 첨부</span></a>
-    <a href="/briefing"><b>✉️ 데일리 리포트 구독</b><span>매일 09:00 이메일 발송</span></a>
+    <a href="/briefing#sub"><b>✉️ 데일리 리포트 구독</b><span>매일 09:00 이메일 발송</span></a>
     <a href="/minerals.csv"><b>⬇ 데이터 개방(CSV)</b><span>48광종 현황 내려받기</span></a>
   </div>
 </div>
@@ -8020,6 +8020,7 @@ V2_BRF_CSS = r"""
 .ncard .nt{font-size:14.5px;font-weight:700;line-height:1.45}
 .ncard .ns{font-size:13px;color:var(--mut);margin-top:3px;line-height:1.5}
 .ncard .nd{font-size:11.5px;color:var(--mut);margin-top:4px}
+.sub-card{scroll-margin-top:120px}
 .sub-card input{width:100%;border:1px solid var(--line);border-radius:12px;padding:11px 14px;font:inherit;font-size:14px;margin:10px 0 8px;outline-color:var(--g)}
 .subchips{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px}
 .sub-card .subchips .subchip{width:auto;border:1px solid var(--line);background:var(--card);color:var(--mut);
@@ -8057,7 +8058,7 @@ def render_briefing_v2():
   <div class="bgrid">
     <div class="card ncard" style="padding:4px 0">{items}</div>
     <div class="rail" style="position:sticky;top:78px">
-      <div class="card sub-card">
+      <div class="card sub-card" id="sub">
         <div class="sec-t" style="margin-bottom:2px">매일 아침 메일로 받기</div>
         <div style="font-size:13px;color:var(--mut)">광물 날씨와 주요 소식을 보내드려요.</div>
         <input id="subEmail" type="email" placeholder="이메일 주소">
