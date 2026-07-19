@@ -2467,9 +2467,12 @@ tr:hover td{background:#F8FAFD;}
 
 """
     CAT_JS = r"""
-var CATS=['minerals','nf','rare','ree','energy','etc'];
+var CATS=['all','minerals','nf','rare','ree','energy','etc'];
+// 정부 지정 핵심광물(핵심광물 확보전략 33종 중 서비스 보유 32종 + 표기 별칭)
+var CORE_NMS=['리튬','니켈','코발트','망간','흑연','네오디뮴','디스프로슘','터븀','세륨','란탄','동(구리)','동','알루미늄','아연','연(납)','연','주석','티타늄','텅스텐','몰리브덴','크롬','마그네슘','안티모니','바나듐','니오븀','탄탈륨','지르코늄','갈륨','인듐','게르마늄','규소','셀레늄','창연/비스무트','비스무트','백금'];
 function switchCategory(cat, el){
   if(CATS.indexOf(cat)<0) cat='minerals';
+  if(cat==='all' && window._curTab!=='risk') cat='minerals';
   if(document.body.classList.contains('is-home')){ location.href='/dashboard?cat='+cat; return; }  // 메인에선 카테고리 화면으로 이동
   // 리스크 신호등: 카테고리 클릭 = K-RISK 카드 분류 필터 (페이지 전환 없음)
   if(window._curTab==='risk'){
@@ -2480,13 +2483,21 @@ function switchCategory(cat, el){
     var note=document.getElementById('riskCatNote');
     if(!note && grid){ note=document.createElement('div'); note.id='riskCatNote';
       note.style.cssText='padding:12px 4px;color:#888;font-size:13.5px'; grid.parentNode.insertBefore(note,grid); }
-    if(cat!=='minerals'){
+    if(cat==='minerals'){
+      document.querySelectorAll('#tab-risk .risk-card').forEach(function(c){
+        var nm=((c.querySelector('.rk-nm')||{}).textContent||'').trim();
+        c.style.display=(CORE_NMS.indexOf(nm)>=0)?'':'none';
+      });
+      if(note) note.textContent='정부 지정 핵심광물(핵심광물 확보전략 33종 기준)만 표시 중 — 전체를 보려면 [전체] 탭';
+      return;
+    }
+    if(cat!=='all'){
       var any=false;
       document.querySelectorAll('#tab-risk .risk-card').forEach(function(c){
         var nm=((c.querySelector('.rk-nm')||{}).textContent||'').trim();
         var show=(c.dataset.cat||RC[nm])===cat; c.style.display=show?'':'none'; if(show)any=true;
       });
-      if(note) note.textContent=any?'':'이 분류에는 K-RISK 산출 대상 광종(수급안정화지수 제공 6광종)이 아직 없습니다.';
+      if(note) note.textContent=any?'':'이 분류에는 해당 광종이 없습니다.';
       return;
     }
     document.querySelectorAll('#tab-risk .risk-card').forEach(function(c){c.style.display='';});
@@ -3140,6 +3151,7 @@ tr:hover td{{background:var(--bg3);}}
 <!-- 상단 카테고리 전환 -->
 <div class="cat-bar">
   <a href="/" class="brand-lock" title="허브 홈"><span class="brand-txt">K<em>MR</em><small>MINERAL INTELLIGENCE</small></span></a>
+  <button class="cat-btn" data-cat="all" onclick="switchCategory('all',this)">전체</button>
   <div class="cat-menu">
     <button class="cat-btn active" data-cat="minerals" onclick="switchCategory('minerals',this)">핵심광물</button>
     <div class="megapanel"><div class="mp-grid mp-c4">
@@ -3506,6 +3518,10 @@ function switchTab(name, el) {{
   if (el) el.classList.add('active');
   if (name === 'map' && !window._mapInited) initMap();
   if (name === 'risk' && typeof drawRiskChart === 'function') drawRiskChart();
+  if (name === 'risk') {{
+    var ab = document.querySelector('.cat-btn.active');
+    if (ab && typeof switchCategory === 'function') setTimeout(function(){{ switchCategory(ab.dataset.cat, ab); }}, 0);
+  }}
   if (name === 'mindex' && typeof drawMineralIndex === 'function') drawMineralIndex();
   if (name === 'forecast' && typeof initForecast === 'function') initForecast();
   if (name === 'mines' && typeof drawMines === 'function') drawMines();
