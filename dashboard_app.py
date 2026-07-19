@@ -1393,6 +1393,14 @@ V2_CHROME_CSS = r"""
 .cat-bar .brand-lock{display:none!important}
 .cat-bar .cb-right{display:none!important}
 .megapanel{display:none!important}
+.v2tbar{z-index:500!important}
+.v2menu{z-index:9999!important}
+/* 탭 포커스 모드: 통계 탭 컨텍스트로 카테고리 진입 시 해당 기능 섹션만 표시 */
+.catpage.tabfocus .stat-row{display:none!important}
+.catpage.tabfocus .charts-row{display:none!important}
+.catpage.tabfocus .charts-row.row-focus{display:flex!important}
+.catpage.tabfocus .charts-row.row-focus > *{display:none!important}
+.catpage.tabfocus .charts-row.row-focus > .sec-focus{display:block!important;flex:1!important}
 @media(max-width:900px){.v2ubar{display:none}.v2gnb{display:none}.v2tbar .v2wrap{height:64px}}
 """
 
@@ -2349,16 +2357,26 @@ function switchCategory(cat, el){
   if(cat!=='minerals' && typeof initCatForecast==='function') initCatForecast(cat);
   document.body.dataset.cat = 'minerals';
   if(window._applyScenes) window._applyScenes('minerals');
-  // 통계 탭(가격 전망 등) 컨텍스트 유지: 카테고리 페이지의 대응 섹션으로 이동
+  // 탭 포커스 모드 초기화
+  document.querySelectorAll('.catpage.tabfocus').forEach(function(p){ p.classList.remove('tabfocus'); });
+  document.querySelectorAll('.row-focus').forEach(function(r){ r.classList.remove('row-focus'); });
+  document.querySelectorAll('.sec-focus').forEach(function(x){ x.classList.remove('sec-focus'); });
+  // 통계 탭 컨텍스트 유지: 카테고리 진입 시 그 기능의 섹션만 포커스 표시
   if(cat!=='minerals' && window._curTab){
-    var sec = document.getElementById('sec-'+cat+'-'+window._curTab);
-    if(sec){
-      var tgt = sec.nextElementSibling || sec;   // 앵커는 크기 0 → 실제 패널로 스크롤
-      setTimeout(function(){ tgt.scrollIntoView({behavior:'smooth', block:'start'}); }, 150);
+    var anchor = document.getElementById('sec-'+cat+'-'+window._curTab);
+    if(anchor){
+      var tgt = (anchor.classList.contains('section')) ? anchor : anchor.nextElementSibling;
+      var row = tgt ? tgt.closest('.charts-row') : null;
+      var page = document.getElementById('cat-'+cat);
+      if(tgt && row && page){
+        page.classList.add('tabfocus');
+        row.classList.add('row-focus');
+        tgt.classList.add('sec-focus');
+        window.scrollTo({top:0});
+      }
     }
   }
   if(cat==='minerals' && window._curTab){
-    // 핵심광물로 복귀 시 보던 탭 복원
     var tb = document.querySelector('.nav a[data-tab="'+window._curTab+'"]');
     if(tb) setTimeout(function(){ switchTab(window._curTab, tb); }, 60);
   }
