@@ -4447,14 +4447,22 @@ function selectMineral(mineral, btn) {{
 # ═══════════════════════════════════════════════════════════════
 #  ③ 라우트
 # ═══════════════════════════════════════════════════════════════
+def _page_cached(key, builder, ttl=1500):
+    """완성 HTML을 캐시로 서빙 — 저사양 서버에서 요청당 재조립 비용 제거 (워머가 주기 갱신)."""
+    h = cache_get(key)
+    if h is None:
+        h = builder()
+        cache_set(key, h, ttl=ttl)
+    return h
+
 @app.route("/")
-def index(): return Response(render_home_v2(), mimetype="text/html")   # V2 소비자 홈
+def index(): return Response(_page_cached("page_home", render_home_v2), mimetype="text/html")   # V2 소비자 홈
 
 @app.route("/pro")
-def pro(): return Response(render_dashboard(home=False), mimetype="text/html")   # 전문가용 = 통계 대시보드
+def pro(): return Response(_page_cached("page_dash", lambda: render_dashboard(home=False)), mimetype="text/html")
 
 @app.route("/dashboard")
-def dashboard(): return Response(render_dashboard(home=False), mimetype="text/html")  # 카테고리 화면 (검색 없음)
+def dashboard(): return Response(_page_cached("page_dash", lambda: render_dashboard(home=False)), mimetype="text/html")
 
 @app.route("/search")
 def search(): return Response(render_search(request.args.get("q", "")), mimetype="text/html")
@@ -4781,9 +4789,19 @@ def _cache_warmer():
         try:
             t0 = time.time()
             fetch_news(); fetch_audience_news()
-            render_dashboard()
-            try: render_home_v2()
+            cache_set("page_dash", render_dashboard(home=False), ttl=1900)
+            try: cache_set("page_home", render_home_v2(), ttl=1900)
             except Exception: pass
+            try: cache_set("page_brief", render_briefing_v2(), ttl=1900)
+            except Exception: pass
+            # 광종 상세 — K-RISK 상위 8종 + 인기 광종 선렌더
+            try:
+                _top = [k for k, _ in sorted(compute_k_risk().items(), key=lambda x: -x[1]["score"])[:8]]
+                for _nm in dict.fromkeys(_top + ["리튬", "니켈", "코발트", "텅스텐", "흑연", "네오디뮴"]):
+                    try: cache_set("page_m_" + _v2_norm(_nm), render_mineral_v2(_nm), ttl=1900)
+                    except Exception: pass
+            except Exception as _e:
+                print("[warmer] minerals:", _e)
             # 브리핑 5개 탭 AI 분석 선생성 (콜드 시 탭당 14~33초 → 0초)
             try:
                 with app.test_client() as _tc:
@@ -8368,12 +8386,12 @@ def render_briefing_v2():
 
 @app.route("/m/<path:name>")
 def mineral_v2(name):
-    return Response(render_mineral_v2(name), mimetype="text/html")
+    return Response(_page_cached("page_m_" + _v2_norm(name), lambda: render_mineral_v2(name)), mimetype="text/html")
 
 
 @app.route("/briefing")
 def briefing_v2():
-    return Response(render_briefing_v2(), mimetype="text/html")
+    return Response(_page_cached("page_brief", render_briefing_v2), mimetype="text/html")
 
 
 @app.route("/minerals.csv")
