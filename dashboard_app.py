@@ -1522,7 +1522,7 @@ text-decoration:none!important;letter-spacing:0!important}
 V2_CHROME_HEADER = """
 <div class="v2ubar"><div class="v2wrap">
   <div class="l">데이터 출처: KOMIS · 공공데이터포털 · 관세청 · USGS</div>
-  <div class="r"><a href="/briefing">리포트 구독</a><a href="/pro">전문가용</a></div>
+  <div class="r"><a href="/briefing">리포트 구독</a></div>
 </div></div>
 <div class="v2tbar"><div class="v2wrap">
   <a class="v2logo" href="/"><svg width="36" height="36" viewBox="0 0 40 40" aria-hidden="true"><defs>
@@ -1550,7 +1550,6 @@ V2_CHROME_HEADER = """
     </div></div>
     <a href="/briefing">브리핑</a>
     <a href="/conference">AI 회의</a>
-    <a href="/pro">전문가용</a>
   </nav>
 </div></div>
 """
@@ -7506,7 +7505,7 @@ __EXTRA_CSS__
     <a href="https://www.data.go.kr" target="_blank" rel="noopener">공공데이터포털</a>&nbsp;·&nbsp;
     <a href="https://tradedata.go.kr" target="_blank" rel="noopener">관세청</a>&nbsp;·&nbsp;
     <a href="https://www.usgs.gov" target="_blank" rel="noopener">USGS</a></div>
-  <div class="u-r"><a href="/briefing">리포트 구독</a><a href="/pro">전문가용</a></div>
+  <div class="u-r"><a href="/briefing">리포트 구독</a></div>
 </div></div>
 <div class="tbar"><div class="wrap">
   <a class="logo" href="/"><svg width="36" height="36" viewBox="0 0 40 40" aria-hidden="true"><defs>
@@ -7540,7 +7539,6 @@ __EXTRA_CSS__
   </div></div>
   <a href="/briefing" class="__A_BRF__">브리핑</a>
   <a href="/conference" class="__A_AI__">AI 회의</a>
-  <a href="/pro">전문가용</a>
   </nav>
   <div class="sbox"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input id="gq" placeholder="광물·용도 검색" value="__Q__"></div>
 </div></div>
@@ -7586,7 +7584,6 @@ __CONTENT__
       <li><a href="/briefing">브리핑 · 리포트 구독</a></li>
       <li><a href="/conference">AI 전문가 회의실</a></li>
       <li><a href="/minerals.csv">데이터 내려받기(CSV)</a></li>
-      <li><a href="/pro">전문가용 대시보드</a></li>
     </ul>
   </div>
 </div>
@@ -7836,7 +7833,6 @@ def render_home_v2():
     <a href="/briefing#sub"><span class="qi">✉️</span>리포트 구독</a>
     <a href="/minerals.csv"><span class="qi">⬇</span>데이터 받기</a>
     <a href="/dashboard"><span class="qi">📊</span>통계 대시보드</a>
-    <a href="/pro"><span class="qi">🛠</span>전문가용</a>
   </div>
   <div class="hgrid">
     <div class="alert {acls}">
@@ -8067,8 +8063,7 @@ def render_mineral_v2(name):
   {kbars or '<div style="margin-top:8px;font-size:13.5px;color:var(--mut)">K-RISK 계산 데이터가 없어요.</div>'}
   {'<div style="margin-top:8px;font-size:12px;color:var(--mut)">※ 수급안정화지수 미제공 광종 — 수입집중도·지정학·변동성 3축 잠정 점수입니다.</div>' if krisk.get("잠정") else ''}
   <div style="margin-top:14px;font-size:13.5px">
-    <a href="/dashboard" style="color:var(--gd);font-weight:700">카테고리 대시보드 →</a> ·
-    <a href="/pro" style="color:var(--gd);font-weight:700">전문가 화면 →</a></div>
+    <a href="/dashboard" style="color:var(--gd);font-weight:700">카테고리 대시보드 →</a></div>
 </details>"""
 
     side = _v2_grade_pill(r["grade"], r["score"], r.get("prov")) if r["grade"] else '<span class="pill p-mu">관찰 대상</span>'
