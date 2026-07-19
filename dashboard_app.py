@@ -3247,6 +3247,15 @@ function switchTab(name, el) {{
     setTimeout(function(){{
       switchTab(h, document.querySelector('.nav a[data-tab="' + h + '"]'));
     }}, 0);
+  }} else if (h.indexOf('cat-') === 0) {{
+    // GNB '광종별 현황' 딥링크: #cat-nf / #cat-rare / #cat-ree / #cat-energy / #cat-etc
+    var c = h.slice(4);
+    setTimeout(function(){{
+      if (typeof switchCategory === 'function') {{
+        var b = document.querySelector('.cat-btn[data-cat="' + c + '"]');
+        switchCategory(c, b);
+      }}
+    }}, 0);
   }}
 }})();
 
@@ -7176,11 +7185,12 @@ __EXTRA_CSS__
 <nav class="gnbbar"><div class="wrap">
   <a href="/" class="__A_HOME__">홈</a>
   <div class="gdrop"><a href="#" onclick="return false" style="cursor:default">광종별 현황 ▾</a><div class="gmenu">
-    <a href="/#pcat-비철금속">비철금속 (6종)</a>
-    <a href="/#pcat-희소금속">희소금속 (20종)</a>
-    <a href="/#pcat-희토류">희토류 (14종)</a>
-    <a href="/#pcat-에너지">에너지 (2종)</a>
-    <a href="/#pcat-기타">기타 (6종)</a>
+    <a href="/dashboard#cat-minerals">핵심광물 종합</a>
+    <a href="/dashboard#cat-nf">비철금속 (6종)</a>
+    <a href="/dashboard#cat-rare">희소금속 (20종)</a>
+    <a href="/dashboard#cat-ree">희토류 (14종)</a>
+    <a href="/dashboard#cat-energy">에너지 (2종)</a>
+    <a href="/dashboard#cat-etc">기타 (6종)</a>
   </div></div>
   <a href="/globe" class="__A_MAP__">핵심광물지도</a>
   <div class="gdrop"><a href="#" onclick="return false" style="cursor:default">통계 ▾</a><div class="gmenu">
