@@ -7102,13 +7102,37 @@ a{color:inherit;text-decoration:none}
 .p-ok{background:var(--okl);color:var(--gd)}.p-mu{background:#eef1ef;color:var(--mut)}
 h1{font-size:24px;font-weight:800;letter-spacing:-.02em}
 .sec-t{font-size:16px;font-weight:800;margin:0 0 10px}
-footer{margin:56px 0 28px;text-align:center;color:var(--mut);font-size:12.5px}
+.ubar{background:#eef2ef;border-bottom:1px solid var(--line);font-size:12px;color:var(--mut)}
+.ubar .wrap{display:flex;justify-content:space-between;align-items:center;height:34px}
+.ubar a{color:var(--mut)} .ubar a:hover{color:var(--gd)}
+.ubar .u-r a{font-weight:650} .ubar .u-r span{margin:0 8px;color:var(--line)}
+.logo i{display:block;font-style:normal;font-size:9.5px;font-weight:500;color:var(--mut);letter-spacing:.02em;margin-top:1px}
+footer{margin:56px 0 0;background:var(--gd);color:#cfe6da;font-size:13px}
+footer .f-wrap{max-width:1060px;margin:0 auto;padding:34px 20px 26px;display:grid;grid-template-columns:1.3fr 1fr 1fr;gap:28px}
+footer h4{color:#fff;font-size:13.5px;font-weight:800;margin-bottom:10px}
+footer .f-brand{font-size:16px;font-weight:800;color:#fff;display:flex;align-items:center;gap:7px;margin-bottom:8px}
+footer .f-brand .dot{width:9px;height:9px;border-radius:50%;background:#7ee2b8}
+footer p{line-height:1.65;font-size:12.5px}
+footer ul{list-style:none} footer li{margin:5px 0;font-size:12.5px}
+footer a{color:#cfe6da} footer a:hover{color:#fff}
+footer .f-status{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.08);border-radius:999px;padding:5px 13px;font-size:12px;margin-top:10px}
+footer .f-status .ok{width:7px;height:7px;border-radius:50%;background:#7ee2b8}
+footer .f-bot{border-top:1px solid rgba(255,255,255,.12);text-align:center;padding:14px;font-size:11.5px;color:#9fc7b3}
+@media(max-width:860px){.ubar{display:none}footer .f-wrap{grid-template-columns:1fr;gap:18px}}
 __EXTRA_CSS__
 </style>
 </head>
 <body>
+<div class="ubar"><div class="wrap">
+  <div class="u-l">데이터 출처:
+    <a href="https://www.komis.or.kr" target="_blank" rel="noopener">KOMIS</a> ·
+    <a href="https://www.data.go.kr" target="_blank" rel="noopener">공공데이터포털</a> ·
+    <a href="https://tradedata.go.kr" target="_blank" rel="noopener">관세청</a> ·
+    <a href="https://www.usgs.gov" target="_blank" rel="noopener">USGS</a></div>
+  <div class="u-r"><a href="/briefing">리포트 구독</a><span>|</span><a href="/pro">전문가용</a></div>
+</div></div>
 <div class="tbar"><div class="wrap">
-  <a class="logo" href="/"><span class="dot"></span>마인테크</a>
+  <a class="logo" href="/"><span class="dot"></span><span><b>마인테크</b><i>Mine-Tech Critical Minerals Intelligence</i></span></a>
   <nav class="gnav">
     <a href="/" class="__A_HOME__">홈</a>
     <a href="/globe" class="__A_MAP__">핵심광물지도</a>
@@ -7118,7 +7142,36 @@ __EXTRA_CSS__
   <div class="sbox"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input id="gq" placeholder="광물·용도 검색 (리튬, 배터리…)" value="__Q__"></div>
 </div></div>
 __CONTENT__
-<footer>마인테크 · 데이터 출처: KOMIR · 관세청 · 조달청 · 산업통상자원부 · USGS · World Bank</footer>
+<footer>
+<div class="f-wrap">
+  <div>
+    <div class="f-brand"><span class="dot"></span>마인테크 Mine-Tech</div>
+    <p>흩어진 광물 공공데이터를 융합해 공급망 위험을 하나의 지수로 진단하는
+    핵심광물 인텔리전스 서비스입니다. 모든 수치에 출처가 표기됩니다.</p>
+    <div class="f-status"><span class="ok"></span>정상 운영 · 데이터 기준 __ASOF__</div>
+  </div>
+  <div>
+    <h4>데이터 출처 · 갱신</h4>
+    <ul>
+      <li>KOMIR 수급안정화지수·파생지수 — 월간</li>
+      <li>관세청 수출입 통계(OpenAPI) — 12개월 실시간</li>
+      <li>조달청 LME 시세 · 산업부 철강 — 일·월간</li>
+      <li>USGS MCS · World Bank CMO — 연·월간</li>
+    </ul>
+  </div>
+  <div>
+    <h4>바로가기</h4>
+    <ul>
+      <li><a href="/globe">핵심광물지도</a></li>
+      <li><a href="/briefing">브리핑 · 리포트 구독</a></li>
+      <li><a href="/conference">AI 전문가 회의실</a></li>
+      <li><a href="/minerals.csv">데이터 내려받기(CSV)</a></li>
+      <li><a href="/pro">전문가용 대시보드</a></li>
+    </ul>
+  </div>
+</div>
+<div class="f-bot">본 서비스는 산업통상자원부·산하기관 공공데이터를 활용합니다 · 팀 SMART-X, 세종대학교 에너지자원공학과 © 2026 Mine-Tech</div>
+</footer>
 <nav class="mtab">
  <a href="/" class="__A_HOME__"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M3 11 12 3l9 8v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/></svg>홈</a>
  <a href="/globe" class="__A_MAP__"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3.5 3 14 0 18M12 3c-3 3.5-3 14 0 18"/></svg>광물지도</a>
@@ -7139,6 +7192,7 @@ __JS__
 
 def _v2_shell(active, title, content, extra_css="", js="", q=""):
     html = (V2_SHELL
+            .replace("__ASOF__", datetime.now().strftime("%Y-%m-%d %H:%M"))
             .replace("__TITLE__", title)
             .replace("__EXTRA_CSS__", extra_css)
             .replace("__CONTENT__", content)
@@ -7190,6 +7244,21 @@ font:inherit;font-size:13.5px;font-weight:700;color:var(--gd);cursor:pointer}
 .rail .ai-card .r-q{font-size:12.5px;opacity:.85;margin-top:4px}
 .rail .ai-card a{display:inline-block;margin-top:10px;background:rgba(255,255,255,.16);border-radius:999px;
 padding:6px 14px;font-size:12.5px;font-weight:700;color:#fff}
+.qmenu{display:grid;grid-template-columns:repeat(8,1fr);gap:8px;margin:0 0 18px}
+.qmenu a{display:flex;flex-direction:column;align-items:center;gap:7px;background:var(--card);
+border:1px solid var(--line);border-radius:14px;padding:13px 4px 11px;font-size:12px;font-weight:650;color:var(--ink);transition:.12s}
+.qmenu a:hover{border-color:var(--g);color:var(--gd)}
+.qmenu .qi{width:34px;height:34px;border-radius:50%;background:var(--gl);display:flex;align-items:center;justify-content:center;font-size:16px}
+.popq{font-size:12.5px;color:var(--mut);font-weight:700;margin:0 0 10px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.popq button{border:1px solid var(--line);background:var(--card);color:var(--gd);border-radius:999px;
+padding:3px 11px;font:650 12px/1.5 inherit;font-family:inherit;cursor:pointer}
+.popq button:hover{border-color:var(--g)}
+.notice{list-style:none}
+.notice li{border-bottom:1px solid var(--line);padding:8px 0}
+.notice li:last-child{border-bottom:0}
+.notice a{display:block;font-size:12.5px;line-height:1.5;color:var(--ink)}
+.notice span{display:block;font-size:11px;color:var(--mut);margin-top:1px}
+@media(max-width:860px){.qmenu{grid-template-columns:repeat(4,1fr)}}
 @media(max-width:860px){.hgrid{grid-template-columns:1fr 1fr}.hgrid .alert{grid-column:1/3}
 .hgrid2{grid-template-columns:1fr}.rail{position:static}}
 """
@@ -7257,6 +7326,22 @@ def render_home_v2():
       <div class="s-v" style="color:var(--wrn)">{n_wr}<span style="font-size:13px;color:var(--mut);font-weight:600"> / 48</span></div></div>
   </div>
 
+  <div class="qmenu">
+    <a href="#mlist"><span class="qi">◉</span>전체 광종</a>
+    <a href="/globe"><span class="qi">🌍</span>광물 지도</a>
+    <a href="/briefing"><span class="qi">📰</span>브리핑</a>
+    <a href="/conference"><span class="qi">🎙</span>AI 회의</a>
+    <a href="/briefing"><span class="qi">✉️</span>리포트 구독</a>
+    <a href="/minerals.csv"><span class="qi">⬇</span>데이터 받기</a>
+    <a href="/dashboard"><span class="qi">📊</span>통계 대시보드</a>
+    <a href="/pro"><span class="qi">🛠</span>전문가용</a>
+  </div>
+
+  <div class="popq">인기 검색어
+    <button data-q="리튬">#리튬</button><button data-q="텅스텐">#텅스텐</button>
+    <button data-q="흑연">#흑연</button><button data-q="네오디뮴">#네오디뮴</button>
+    <button data-q="갈륨">#갈륨</button><button data-q="배터리">#배터리</button>
+  </div>
   <div class="chips">{''.join(chips)}</div>
 
   <div class="hgrid2">
@@ -7270,6 +7355,12 @@ def render_home_v2():
       <div class="card ai-card"><div class="r-t">AI 전문가에게 물어보기</div>
         <div class="r-q">"흑연이 위험하면 나한테 뭐가 문제야?"</div>
         <a href="/conference">회의실 입장 →</a></div>
+      <div class="card"><div class="r-l">📌 새 소식</div>
+        <ul class="notice">
+          <li><a href="/briefing">관심 광물 맞춤 리포트 오픈 — 매일 09:00 발송<span>07-17</span></a></li>
+          <li><a href="/globe">핵심광물지도 개편 — 수입 루트·해협 통과율<span>07-17</span></a></li>
+          <li><a href="/">'오늘의 광물 날씨' 새 홈 오픈<span>07-16</span></a></li>
+        </ul></div>
     </div>
   </div>
 </div>"""
@@ -7297,6 +7388,9 @@ def render_home_v2():
     cat=c.dataset.c; apply();
   });});
   more.addEventListener('click',function(){expanded=true;apply();});
+  [].slice.call(document.querySelectorAll('.popq button')).forEach(function(b){
+    b.addEventListener('click',function(){ if(q){ q.value=b.dataset.q; apply(); q.focus(); } });
+  });
   if(q){q.addEventListener('input',apply); if(q.value) apply(); else apply();}
   fetch('/api/news-brief?cat=minerals').then(function(r){return r.json()}).then(function(d){
     document.getElementById('railBrief').textContent=(d&&d.brief)?d.brief:'오늘은 새 브리핑이 없어요.';
@@ -7574,6 +7668,22 @@ def mineral_v2(name):
 @app.route("/briefing")
 def briefing_v2():
     return Response(render_briefing_v2(), mimetype="text/html")
+
+
+@app.route("/minerals.csv")
+def minerals_csv():
+    """광종 현황 CSV 내려받기 — '실제 서비스' 데이터 개방."""
+    rows = _v2_rows()
+    lines = ["광물,분류,용도,위험등급,K-RISK점수,주요수입국,수입점유율(%)"]
+    for r in rows:
+        lines.append(",".join([
+            r["name"], r["cat"], r["use"].replace(",", "·"),
+            r["grade"] or "관찰", str(r["score"] if r["score"] is not None else ""),
+            r["top"] or "", str(r["share"] if r["share"] is not None else ""),
+        ]))
+    csv = "\ufeff" + "\n".join(lines)
+    return Response(csv, mimetype="text/csv",
+                    headers={"Content-Disposition": "attachment; filename=minetech_minerals.csv"})
 
 
 
