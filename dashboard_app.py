@@ -7123,6 +7123,12 @@ footer .f-bot{border-top:1px solid rgba(255,255,255,.12);text-align:center;paddi
 .gnbbar a{display:flex;align-items:center;padding:0 26px;font-size:16px;font-weight:750;color:var(--ink)}
 .gnbbar a:hover{color:var(--gd);box-shadow:inset 0 -3px 0 var(--g)}
 .gnbbar a.on{color:var(--gd);box-shadow:inset 0 -3px 0 var(--gd)}
+.gdrop{position:relative;display:flex}
+.gmenu{display:none;position:absolute;top:52px;left:0;min-width:190px;background:#fff;border:1px solid var(--line);
+border-top:2px solid var(--gd);box-shadow:0 10px 24px rgba(20,40,30,.12);z-index:60;padding:6px 0}
+.gdrop:hover .gmenu{display:block}
+.gmenu a{display:block;padding:10px 18px;font-size:14px;font-weight:600;color:var(--ink);box-shadow:none!important}
+.gmenu a:hover{background:var(--gl);color:var(--gd)}
 .card{border-radius:8px}
 .modt{display:flex;justify-content:space-between;align-items:flex-end;border-bottom:2px solid var(--ink);padding-bottom:9px;margin:26px 0 0}
 .modt b{font-size:19px;font-weight:800}
@@ -7151,10 +7157,24 @@ __EXTRA_CSS__
 </div></div>
 <nav class="gnbbar"><div class="wrap">
   <a href="/" class="__A_HOME__">홈</a>
+  <div class="gdrop"><a href="/#pcat">광종별 현황 ▾</a><div class="gmenu">
+    <a href="/#pcat-비철금속">비철금속 (6종)</a>
+    <a href="/#pcat-희소금속">희소금속 (20종)</a>
+    <a href="/#pcat-희토류">희토류 (14종)</a>
+    <a href="/#pcat-에너지">에너지 (2종)</a>
+    <a href="/#pcat-기타">기타 (6종)</a>
+  </div></div>
   <a href="/globe" class="__A_MAP__">핵심광물지도</a>
+  <div class="gdrop"><a href="/dashboard">통계 ▾</a><div class="gmenu">
+    <a href="/dashboard#supply">수급 현황</a>
+    <a href="/dashboard#mindex">가격지수</a>
+    <a href="/dashboard#forecast">가격 전망</a>
+    <a href="/dashboard#map">글로벌 매장량</a>
+    <a href="/dashboard#risk">리스크 신호등</a>
+    <a href="/dashboard#mines">국내 광산</a>
+  </div></div>
   <a href="/briefing" class="__A_BRF__">브리핑</a>
   <a href="/conference" class="__A_AI__">AI 회의</a>
-  <a href="/dashboard">통계</a>
   <a href="/pro">전문가용</a>
 </div></nav>
 __CONTENT__
@@ -7302,8 +7322,35 @@ padding:3px 11px;font:650 12px/1.5 inherit;font-family:inherit;cursor:pointer}
 .notice a{display:block;font-size:12.5px;line-height:1.5;color:var(--ink)}
 .notice span{display:block;font-size:11px;color:var(--mut);margin-top:1px}
 @media(max-width:860px){.qmenu{grid-template-columns:repeat(4,1fr)}}
+.mod3{display:grid;grid-template-columns:1.25fr 1fr 1fr;gap:14px;margin:20px 0 0}
+.mh{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.mh b{font-size:15px;font-weight:800}
+.mh a{font-size:12px;color:var(--mut);font-weight:650}
+.srcline{font-size:11px;color:var(--mut);margin-top:9px}
+.ptable{width:100%;border-collapse:collapse;font-size:13px}
+.ptable th{font-size:11.5px;color:var(--mut);font-weight:700;border-bottom:1px solid var(--line);padding:4px 2px;text-align:left}
+.ptable td{padding:7px 2px;border-bottom:1px solid var(--line)}
+.ptable tr:last-child td{border-bottom:0}
+.ptable .num{text-align:right;font-variant-numeric:tabular-nums}
+.krow{display:flex;align-items:center;gap:8px;padding:7.5px 0;border-bottom:1px solid var(--line);font-size:13.5px}
+.krow:last-of-type{border-bottom:0}
+.krow b{font-weight:750}
+.krow i{font-style:normal;font-size:11.5px;color:var(--mut);flex:1}
+.nrow{display:flex;gap:8px;align-items:baseline;padding:7px 0;border-bottom:1px solid var(--line);font-size:13px;line-height:1.45}
+.nrow:last-of-type{border-bottom:0}
+.nrow span{flex:1;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.nrow em{font-style:normal;font-size:11px;color:var(--mut);flex:none}
+.chiprow{display:flex;gap:10px;align-items:flex-start;margin-top:12px}
+.chiprow>span{font-size:12px;font-weight:800;color:var(--mut);padding:8px 0 0;flex:none;width:44px}
+.chiprow .chips{margin:0}
+.bnr4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:26px}
+.bnr4 a{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:16px 18px;transition:.12s}
+.bnr4 a:hover{border-color:var(--g)}
+.bnr4 b{display:block;font-size:14px;font-weight:800}
+.bnr4 span{display:block;font-size:12px;color:var(--mut);margin-top:3px}
 @media(max-width:860px){.hgrid{grid-template-columns:1fr 1fr}.hgrid .alert{grid-column:1/3}
-.hgrid2{grid-template-columns:1fr}.rail{position:static}}
+.hgrid2{grid-template-columns:1fr}.rail{position:static}.mod3{grid-template-columns:1fr}
+.bnr4{grid-template-columns:1fr 1fr}.chiprow>span{display:none}}
 """
 
 
@@ -7339,6 +7386,43 @@ def render_home_v2():
         f'<button class="chip" data-c="{key}">{label}</button>'
         for key, label, _m in LIFE_CATS
     ]
+    pchips = "".join(
+        f'<button class="chip pchip" data-c="p:{c}">{c}</button>'
+        for c in ["비철금속", "희소금속", "희토류", "에너지", "기타"])
+
+    _rk = load_risk_data() or []
+    _colors = ["#0e7a4f", "#c8931d", "#1c5cab", "#c0392b", "#7a5195", "#2e8b8b"]
+    risk_js = json.dumps({
+        "labels": (_rk[0].get("months") if _rk else []) or [],
+        "series": [{"name": r["name"], "vals": r.get("vals") or [], "color": _colors[i % 6]}
+                   for i, r in enumerate(_rk)],
+    }, ensure_ascii=False)
+
+    _ppa = load_json(os.path.join(os.path.dirname(__file__), "ppa_data1.json")) or {}
+    _lme_rows = ""
+    for it in (_ppa.get("items") or [])[:6]:
+        chg = it.get("chg") or 0
+        cc = "#c0392b" if chg > 0 else ("#1c5cab" if chg < 0 else "#8a948e")
+        arrow = "▲" if chg > 0 else ("▼" if chg < 0 else "—")
+        _lme_rows += (f'<tr><td>{it.get("name", "")}</td>'
+                      f'<td class="num">{(it.get("close") or 0):,.0f}</td>'
+                      f'<td class="num" style="color:{cc}">{arrow} {abs(chg):.2f}%</td></tr>')
+    lme_html = (f'<table class="ptable"><thead><tr><th>품목</th><th class="num">종가($/t)</th>'
+                f'<th class="num">등락</th></tr></thead><tbody>{_lme_rows}</tbody></table>'
+                f'<div class="srcline">조달청 비축물자·LME · 기준 {_ppa.get("date", "—")}'
+                + (f' · LME지수 {_ppa["lme"]["idx"]:,.0f}' if _ppa.get("lme") else "") + "</div>")                if _lme_rows else '<div class="srcline">시세 데이터 준비 중</div>'
+
+    _top6 = [r for r in rows if r["grade"]][:6]
+    ktop_html = "".join(
+        f'<a class="krow" href="/m/{_v2q(r["name"], safe="")}"><b>{r["name"]}</b>'
+        f'<i>{r["cat"]}</i>{_v2_grade_pill(r["grade"], r["score"])}</a>'
+        for r in _top6) or '<div class="srcline">계산 중</div>'
+
+    _nws = [n for n in dedup_news(fetch_news() or []) if mineral_relevant(n)][:5]
+    news_mod = "".join(
+        f'<a class="nrow" href="{n.get("링크", "#")}" target="_blank" rel="noopener">'
+        f'<span>{n.get("제목", "")}</span><em>{(n.get("발행일") or "")[5:10]}</em></a>'
+        for n in _nws) or '<div class="srcline">뉴스 준비 중</div>' 
 
     row_html = []
     for r in rows:
@@ -7346,7 +7430,7 @@ def render_home_v2():
         side = _v2_grade_pill(r["grade"], r["score"]) if r["grade"] else '<span class="pill p-mu">관찰</span>'
         dataq = f'{r["name"]} {r["use"]} {r["cat"]} {r["sub"]}'
         row_html.append(
-            f'<a class="mrow" href="/m/{_v2q(r["name"], safe="")}" data-cats="{" ".join(r["life"])}" '
+            f'<a class="mrow" href="/m/{_v2q(r["name"], safe="")}" data-cats="{" ".join(r["life"])} p:{r["cat"]}" '
             f'data-q="{dataq}">'
             f'<span class="sig {sig}"></span>'
             f'<span class="m-main"><b>{r["name"]}</b><i>{r["use"]}</i><em>{r["sub"]}</em></span>'
@@ -7389,8 +7473,20 @@ def render_home_v2():
       <div class="s-v" style="color:var(--wrn)">{n_wr}<span style="font-size:13px;color:var(--mut);font-weight:600"> / 48</span></div></div>
   </div>
 
+  <div class="mod3">
+    <div class="card"><div class="mh"><b>수급안정화지수</b><a href="/dashboard#supply">더보기 +</a></div>
+      <div style="height:215px"><canvas id="cRisk"></canvas></div>
+      <div class="srcline">출처: KOMIR 수급안정화지수(핵심 6광종·월간)</div></div>
+    <div class="card"><div class="mh"><b>오늘의 금속 시세</b><a href="/dashboard#mindex">더보기 +</a></div>
+      {lme_html}</div>
+    <div class="card"><div class="mh"><b>K-RISK 위험 상위</b><a href="/pro">더보기 +</a></div>
+      {ktop_html}
+      <div class="srcline">공급망 위험지수 높은 순 · 1시간 자동 갱신</div></div>
+  </div>
+
   <div class="modt"><b>광물 종합 현황</b><a href="/minerals.csv">CSV 내려받기 ↓</a></div>
-  <div class="chips" style="margin-top:14px">{''.join(chips)}</div>
+  <div class="chiprow"><span>용도별</span><div class="chips">{''.join(chips)}</div></div>
+  <div class="chiprow"><span>분류별</span><div class="chips">{pchips}</div></div>
 
   <div class="hgrid2">
     <div>
@@ -7403,6 +7499,8 @@ def render_home_v2():
       <div class="card ai-card"><div class="r-t">AI 전문가에게 물어보기</div>
         <div class="r-q">"흑연이 위험하면 나한테 뭐가 문제야?"</div>
         <a href="/conference">회의실 입장 →</a></div>
+      <div class="card"><div class="mh" style="margin-bottom:4px"><b>자원 뉴스</b><a href="/briefing">더보기 +</a></div>
+        {news_mod}</div>
       <div class="card"><div class="r-l">📌 새 소식</div>
         <ul class="notice">
           <li><a href="/briefing">관심 광물 맞춤 리포트 오픈 — 매일 09:00 발송<span>07-17</span></a></li>
@@ -7411,7 +7509,15 @@ def render_home_v2():
         </ul></div>
     </div>
   </div>
-</div>"""
+
+  <div class="bnr4">
+    <a href="/globe"><b>🌍 핵심광물지도</b><span>수입 루트·해협 통과율</span></a>
+    <a href="/conference"><b>🎙 AI 전문가 회의실</b><span>발언마다 출처 첨부</span></a>
+    <a href="/briefing"><b>✉️ 데일리 리포트 구독</b><span>매일 09:00 이메일 발송</span></a>
+    <a href="/minerals.csv"><b>⬇ 데이터 개방(CSV)</b><span>48광종 현황 내려받기</span></a>
+  </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>"""
 
     js = r"""
 (function(){
@@ -7443,6 +7549,25 @@ def render_home_v2():
   fetch('/api/news-brief?cat=minerals').then(function(r){return r.json()}).then(function(d){
     document.getElementById('railBrief').textContent=(d&&d.brief)?d.brief:'오늘은 새 브리핑이 없어요.';
   }).catch(function(){document.getElementById('railBrief').textContent='브리핑을 불러오지 못했어요.';});
+  var ph=(location.hash||'').replace('#','');
+  if(ph.indexOf('pcat-')===0){
+    var pc=decodeURIComponent(ph.slice(5));
+    var pb=document.querySelector('.chip[data-c="p:'+pc+'"]');
+    if(pb){ pb.click(); var ml=document.getElementById('mlist'); if(ml) ml.scrollIntoView({behavior:'smooth'}); }
+  }
+  function drawRisk(){
+    if(!window.Chart) return setTimeout(drawRisk, 150);
+    var R=__RISKJS__;
+    if(!R.labels.length) return;
+    new Chart(document.getElementById('cRisk'),{type:'line',
+      data:{labels:R.labels,datasets:R.series.map(function(sr){
+        return {label:sr.name,data:sr.vals,borderColor:sr.color,borderWidth:1.8,pointRadius:0,tension:.3};})},
+      options:{maintainAspectRatio:false,interaction:{mode:'index',intersect:false},
+        plugins:{legend:{position:'bottom',labels:{boxWidth:8,boxHeight:8,font:{size:10.5},padding:8}}},
+        scales:{x:{grid:{display:false},ticks:{maxTicksLimit:6,font:{size:10}}},
+                y:{grid:{color:'#eef1ef'},ticks:{font:{size:10}}}}}});
+  }
+  drawRisk();
   fetch('/api/geo-events').then(function(r){return r.json()}).then(function(d){
     var ev=(d&&d.events&&d.events[0])||null;
     document.getElementById('railGeo').textContent=ev?((ev.loc?ev.loc+' — ':'')+(ev.why||ev['제목']||'')):'특별한 이슈가 없어요.';
@@ -7450,7 +7575,7 @@ def render_home_v2():
 })();
 """
     return _v2_shell("home", "마인테크 — 오늘의 광물 날씨",
-                     content, V2_HOME_CSS, js, q=q0)
+                     content, V2_HOME_CSS, js.replace("__RISKJS__", risk_js), q=q0)
 
 
 V2_DETAIL_CSS = r"""
