@@ -872,6 +872,7 @@ NEWS_AUDIENCE = {
     "투자자": ["2차전지 테마주", "핵심광물 수혜주", "희토류 관련주"],
     "기업":   ["핵심광물 공급망", "핵심광물 수출규제", "광물 수급"],
     "소비자": ["전기차 배터리 원자재", "리튬 가격", "니켈 가격"],
+    "정책":   ["핵심광물 확보전략", "자원안보", "광물 비축"],
 }
 
 # 광물 뉴스 관련성 필터 — 제목·요약에 아래 단어가 하나도 없으면 광물 뉴스로 보지 않는다
@@ -4545,12 +4546,29 @@ def news_brief():
         return jsonify(ok=bool(c), brief=c)
     if not OPENAI_API_KEY:
         return jsonify(ok=False, brief="")
-    items = fetch_news()
-    sysmsg = ("너는 핵심광물·공급망 애널리스트다. 아래 핵심광물(리튬·니켈·코발트·희토류 등) 뉴스 "
-              "헤드라인을 종합해 오늘의 광물 수급·공급망 핵심 흐름을 2문장으로 요약하고, "
-              "관련 산업(배터리·방산·반도체 소재 등) 관점 시사점을 한 줄 덧붙여라. "
-              "광물과 무관한 증시 일반·거시경제 얘기는 하지 마라. "
-              "특정 종목 추천이나 매수·매도 조언은 하지 말고 정보·교육 차원으로만. 전체 3문장 이내.")
+    AUD_MAP = {"inv": "투자자", "biz": "기업", "con": "소비자", "pol": "정책"}
+    if cat in AUD_MAP:
+        aud = AUD_MAP[cat]
+        items = [n for n in (fetch_audience_news() or []) if n.get("aud") == aud]
+        AUD_SYS = {
+            "투자자": "투자자 관점에서 오늘 뉴스가 어떤 광물·소재 섹터에 호재/악재인지 2문장으로 요약하고, "
+                     "리스크 체크포인트를 한 줄 덧붙여라. 특정 종목 추천·매수매도 조언은 절대 금지, 섹터 흐름만.",
+            "기업": "제조·조달 기업 관점에서 오늘 뉴스가 원자재 조달 비용·공급 안정성에 주는 영향을 2문장으로 요약하고, "
+                   "조달 담당자가 점검할 액션 한 줄을 덧붙여라.",
+            "소비자": "일반 소비자 관점에서 오늘 뉴스가 전기차·전자제품 등 체감 물가에 주는 영향을 아주 쉬운 말로 "
+                     "2문장 요약하고, 생활 시사점 한 줄을 덧붙여라. 전문용어는 풀어서 써라.",
+            "정책": "정책 연구자 관점에서 오늘 뉴스가 자원안보·비축·통상 정책에 주는 함의를 2문장으로 요약하고, "
+                   "정책적 검토 포인트 한 줄을 덧붙여라.",
+        }
+        sysmsg = ("너는 핵심광물·공급망 애널리스트다. 아래 뉴스 헤드라인을 종합하라. "
+                  + AUD_SYS[aud] + " 광물·자원과 무관한 얘기는 하지 마라. 전체 3문장 이내.")
+    else:
+        items = fetch_news()
+        sysmsg = ("너는 핵심광물·공급망 애널리스트다. 아래 핵심광물(리튬·니켈·코발트·희토류 등) 뉴스 "
+                  "헤드라인을 종합해 오늘의 광물 수급·공급망 핵심 흐름을 2문장으로 요약하고, "
+                  "관련 산업(배터리·방산·반도체 소재 등) 관점 시사점을 한 줄 덧붙여라. "
+                  "광물과 무관한 증시 일반·거시경제 얘기는 하지 마라. "
+                  "특정 종목 추천이나 매수·매도 조언은 하지 말고 정보·교육 차원으로만. 전체 3문장 이내.")
     heads = [(n.get("제목") or n.get("title", "")) for n in items[:12] if (n.get("제목") or n.get("title"))]
     if not heads:
         cache_set(ckey, "", ttl=600); return jsonify(ok=False, brief="")
@@ -8080,19 +8098,21 @@ def render_briefing_v2():
     content = f"""
 <div class="wrap">
   <div class="bh"><h1>오늘의 브리핑</h1></div>
-  <div class="brf-ai"><div class="bl">AI 애널리스트 3문장 요약</div><div id="aiBrief">불러오는 중…</div></div>
+  <div class="audtabs" style="margin:14px 0 12px">
+    <button class="audtab on" data-a="all">전체</button>
+    <button class="audtab" data-a="inv">투자자</button>
+    <button class="audtab" data-a="biz">기업</button>
+    <button class="audtab" data-a="con">소비자</button>
+    <button class="audtab" data-a="pol">정책</button>
+  </div>
+  <div class="brf-ai"><div class="bl" id="aiBriefLabel">AI 애널리스트 3문장 요약 — 전체</div><div id="aiBrief">불러오는 중…</div></div>
   <div class="bgrid">
     <div>
-      <div class="audtabs">
-        <button class="audtab on" data-a="all">전체</button>
-        <button class="audtab" data-a="inv">투자자</button>
-        <button class="audtab" data-a="biz">기업</button>
-        <button class="audtab" data-a="con">소비자</button>
-      </div>
       <div class="card ncard aud-list" id="aud-all" style="padding:4px 0">{items}</div>
       <div class="card ncard aud-list" id="aud-inv" style="padding:4px 0;display:none">{_aud_items("투자자")}</div>
       <div class="card ncard aud-list" id="aud-biz" style="padding:4px 0;display:none">{_aud_items("기업")}</div>
       <div class="card ncard aud-list" id="aud-con" style="padding:4px 0;display:none">{_aud_items("소비자")}</div>
+      <div class="card ncard aud-list" id="aud-pol" style="padding:4px 0;display:none">{_aud_items("정책")}</div>
     </div>
     <div class="rail" style="position:sticky;top:78px">
       <div class="card sub-card" id="sub">
@@ -8119,6 +8139,16 @@ def render_briefing_v2():
     var ev=(d&&d.events&&d.events[0])||null;
     document.getElementById('railGeo').textContent=ev?((ev.loc?ev.loc+' — ':'')+(ev.why||ev['제목']||'')):'특별한 이슈가 없어요.';
   }).catch(function(){});
+  var AUD_LB={all:'전체',inv:'투자자',biz:'기업',con:'소비자',pol:'정책'};
+  function loadBrief(a){
+    var cat=(a==='all')?'minerals':a;
+    var lb=document.getElementById('aiBriefLabel');
+    if(lb) lb.textContent='AI 애널리스트 3문장 요약 — '+AUD_LB[a];
+    document.getElementById('aiBrief').textContent='분석 생성 중…';
+    fetch('/api/news-brief?cat='+cat).then(function(r){return r.json()}).then(function(d){
+      document.getElementById('aiBrief').textContent=(d&&d.brief)?d.brief:'아직 분석할 뉴스가 부족해요.';
+    }).catch(function(){document.getElementById('aiBrief').textContent='분석을 불러오지 못했어요.';});
+  }
   [].slice.call(document.querySelectorAll('.audtab')).forEach(function(t){
     t.addEventListener('click', function(){
       document.querySelectorAll('.audtab').forEach(function(x){x.classList.remove('on')});
@@ -8126,6 +8156,7 @@ def render_briefing_v2():
       document.querySelectorAll('.aud-list').forEach(function(l){l.style.display='none'});
       var el=document.getElementById('aud-'+t.dataset.a);
       if(el) el.style.display='';
+      loadBrief(t.dataset.a);
     });
   });
   var sel=[];
