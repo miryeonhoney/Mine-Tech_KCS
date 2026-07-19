@@ -6148,7 +6148,7 @@ tailwind.config = {
   body.cine #chatArea{position:fixed!important;right:0;top:64px;bottom:0;width:390px;z-index:30;
     background:rgba(6,10,22,.82);backdrop-filter:blur(16px);
     border-left:1px solid rgba(126,166,255,.14);
-    padding:52px 16px 150px 16px!important;overflow-y:auto;}
+    padding:92px 16px 150px 16px!important;overflow-y:auto;}
   body.cine #chatArea::before{content:'LIVE TRANSCRIPT';position:fixed;right:0;top:64px;width:390px;z-index:31;
     font-size:9.5px;font-weight:900;letter-spacing:.26em;color:#7d93b8;box-sizing:border-box;
     padding:14px 16px 9px;border-bottom:1px solid rgba(126,166,255,.12);
