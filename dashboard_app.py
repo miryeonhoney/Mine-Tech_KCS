@@ -71,6 +71,7 @@ SMTP_PORT    = int(os.environ.get("SMTP_PORT", "587") or 587)
 SMTP_USER    = os.environ.get("SMTP_USER", "") or EMAIL_ADDRESS
 SMTP_PASS    = os.environ.get("SMTP_PASS", "") or EMAIL_PASSWORD
 MAIL_FROM    = os.environ.get("MAIL_FROM", "") or EMAIL_ADDRESS
+MAIL_FROM_NAME = os.environ.get("MAIL_FROM_NAME", "K Mineral Risk")  # 받은편지함에 뜨는 발신자 이름
 APP_BASE_URL = os.environ.get("APP_BASE_URL", "").rstrip("/")  # 수신거부 링크용 (예: https://app.onrender.com)
 CRON_TOKEN   = os.environ.get("CRON_TOKEN", "")            # /cron/daily 보호 토큰
 
@@ -1240,7 +1241,9 @@ def send_mail(to, subj, html):
         return False, "메일 발송 설정(SMTP_USER/SMTP_PASS 또는 EMAIL_ADDRESS/PASSWORD)이 필요합니다."
     try:
         msg = MIMEMultipart("alternative")
-        msg["Subject"] = subj; msg["From"] = MAIL_FROM; msg["To"] = to
+        from email.header import Header
+        from email.utils import formataddr
+        msg["Subject"] = subj; msg["From"] = formataddr((str(Header(MAIL_FROM_NAME, "utf-8")), MAIL_FROM)); msg["To"] = to
         msg.attach(MIMEText(html, "html", "utf-8"))
         with smtplib.SMTP(SMTP_HOST, SMTP_PORT) as s:
             s.starttls(); s.login(SMTP_USER, SMTP_PASS)
