@@ -1395,6 +1395,15 @@ V2_CHROME_CSS = r"""
 .megapanel{display:none!important}
 .v2tbar{z-index:500!important}
 .v2menu{z-index:9999!important}
+/* 카테고리 줄: 구 탭 디자인 폐기 → 알약 칩 */
+.cat-bar{background:#fff!important;border-bottom:1px solid #E8ECF1!important;padding:12px 24px!important;gap:9px!important;box-shadow:none!important}
+.cat-bar .cat-btn{background:#fff!important;border:1.5px solid #D9DEE8!important;border-radius:999px!important;
+padding:9px 22px!important;font-size:14px!important;font-weight:700!important;color:#444!important;
+font-family:'Noto Sans KR','Pretendard',sans-serif!important;box-shadow:0 1px 3px rgba(22,48,92,.06)!important;
+text-decoration:none!important;letter-spacing:0!important}
+.cat-bar .cat-btn::after,.cat-bar .cat-btn::before{display:none!important}
+.cat-bar .cat-btn:hover{border-color:#155BB8!important;color:#155BB8!important}
+.cat-bar .cat-btn.active{background:#16305C!important;border-color:#16305C!important;color:#fff!important}
 /* 탭 포커스 모드: 통계 탭 컨텍스트로 카테고리 진입 시 해당 기능 섹션만 표시 */
 .catpage.tabfocus .stat-row{display:none!important}
 .catpage.tabfocus .charts-row{display:none!important}
@@ -2344,6 +2353,20 @@ var CATS=['minerals','nf','rare','ree','energy','etc'];
 function switchCategory(cat, el){
   if(CATS.indexOf(cat)<0) cat='minerals';
   if(document.body.classList.contains('is-home')){ location.href='/dashboard?cat='+cat; return; }  // 메인에선 카테고리 화면으로 이동
+  // 가격지수 탭: 카테고리 클릭 = 그 분류의 지수 라인 필터 (페이지 전환 없음)
+  if(window._curTab==='mindex' && typeof _mindexChart!=='undefined'){
+    document.querySelectorAll('.cat-btn').forEach(function(b){b.classList.remove('active');});
+    var _b=el||document.querySelector('.cat-btn[data-cat="'+cat+'"]'); if(_b)_b.classList.add('active');
+    if(!_mindexChart && typeof drawMineralIndex==='function') drawMineralIndex();
+    if(_mindexChart){
+      var _g={nf:'메이저금속',rare:'희소금속',ree:'희소금속',energy:'에너지광물',etc:'종합'}[cat];
+      _mindexChart.data.datasets.forEach(function(d,i){
+        _mindexChart.setDatasetVisibility(i, (cat==='minerals') ? true : d.label===_g);
+      });
+      _mindexChart.update();
+    }
+    if(cat!=='minerals') return;   // 핵심광물 클릭 시엔 아래 일반 로직으로 계속(전체 복원)
+  }
   var mn=document.getElementById('cat-minerals'); if(mn) mn.style.display=(cat==='minerals')?'flex':'none';
   CATS.slice(1).forEach(function(c){
     var d=document.getElementById('cat-'+c); if(d) d.style.display=(c===cat)?'block':'none';
