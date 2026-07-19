@@ -886,6 +886,35 @@ NEWS_BLACKLIST = ("운세", "띠별", "사주", "별자리", "로또", "부고",
 AUD_NEWS_TERMS = MINERAL_NEWS_TERMS + ("자원안보", "핵심광물", "확보전략", "국가 비축",
                                         "전략비축", "자원 협력", "자원외교")
 
+def ai_relevance_gate(items, context):
+    """뉴스 배치를 LLM이 한 번에 판정 — 관련 기사만 통과.
+    키워드 필터(1차)를 통과한 목록에서 우연 매칭·무관 기사를 걸러내는 2차 게이트.
+    LLM 실패 시 입력 그대로 반환(성능 저하 폴백), 과도한 전멸 응답도 무시."""
+    if not items or not OPENAI_API_KEY:
+        return items
+    try:
+        heads = "\n".join(f"{i}. {n.get('제목', '')} — {n.get('요약', '')}"
+                           for i, n in enumerate(items))
+        sysmsg = (f"너는 뉴스 큐레이터다. 아래 기사 중 '{context}'와 실질적으로 관련된 기사의 번호만 골라라. "
+                  "단어만 우연히 겹치는 기사(운세·연예·스포츠·무관 정치·무관 군사 등)는 반드시 제외한다. "
+                  '응답은 JSON {"keep": [번호, ...]} 형식만 출력한다.')
+        r = OpenAI(api_key=OPENAI_API_KEY).chat.completions.create(
+            model=DEFAULT_OPENAI_MODEL, max_completion_tokens=2000,
+            response_format={"type": "json_object"},
+            messages=[{"role": "system", "content": sysmsg},
+                      {"role": "user", "content": heads}])
+        keep = json.loads(r.choices[0].message.content or "{}").get("keep", [])
+        keep = {int(i) for i in keep if str(i).isdigit()}
+        sel = [n for i, n in enumerate(items) if i in keep]
+        # 3건 이상에서 전멸 판정이 나오면 응답 오류로 보고 폴백
+        if not sel and len(items) >= 3:
+            return items
+        return sel
+    except Exception as e:
+        print("[AI 관련성 게이트]", e)
+        return items
+
+
 def news_relevant(n, terms):
     t = (n.get("제목", "") or "") + " " + (n.get("요약", "") or "")
     if any(b in t for b in NEWS_BLACKLIST):
@@ -921,6 +950,16 @@ def _fetch_audience_news(cache_key, aud_map):
                         out.append(_item)
                 except: continue
                 time.sleep(0.12)
+        # 2차: 청중별 AI 관련성 판정 (키워드 필터 통과분만 대상 — 호출 4회/캐시 주기)
+        _CTX = {"투자자": "광물·배터리·소재 산업의 투자 동향",
+                "기업": "기업의 광물 원자재 조달·공급망 리스크",
+                "소비자": "광물 가격이 전기차·전자제품 등 소비자 생활에 주는 영향",
+                "정책": "핵심광물 자원안보·비축·통상 정책"}
+        gated = []
+        for aud in aud_map.keys():
+            aud_items = [n for n in out if n.get("aud") == aud]
+            gated += ai_relevance_gate(aud_items, _CTX.get(aud, "핵심광물 공급망"))
+        out = gated
     cache_set(cache_key, out)
     return out
 
@@ -7281,6 +7320,7 @@ def _v2_news(name, limit=4):
                               "링크": it.get("originallink") or it.get("link", ""), "발행일": dt})
             except Exception as e:
                 print("[v2news]", name, e)
+        c = ai_relevance_gate(c, f"'{name}' 광물(자원·소재)의 시장·수급·산업 동향")
         cache_set(ck, c, ttl=1800)
     if not c:
         base = re.sub(r"[\(\)/].*$", "", name)
