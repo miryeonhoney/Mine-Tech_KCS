@@ -6148,11 +6148,11 @@ tailwind.config = {
   body.cine #chatArea{position:fixed!important;right:0;top:64px;bottom:0;width:390px;z-index:30;
     background:rgba(6,10,22,.82);backdrop-filter:blur(16px);
     border-left:1px solid rgba(126,166,255,.14);
-    padding:92px 16px 150px 16px!important;overflow-y:auto;}
-  body.cine #chatArea::before{content:'LIVE TRANSCRIPT';position:fixed;right:0;top:64px;width:390px;z-index:31;
-    font-size:9.5px;font-weight:900;letter-spacing:.26em;color:#7d93b8;box-sizing:border-box;
-    padding:14px 16px 9px;border-bottom:1px solid rgba(126,166,255,.12);
-    background:linear-gradient(rgba(6,10,22,.97),rgba(6,10,22,.88));backdrop-filter:blur(10px);}
+    padding:0 16px 150px 16px!important;overflow-y:auto;}
+  body.cine #chatArea::before{content:'LIVE TRANSCRIPT';display:block;position:sticky;top:0;z-index:31;
+    font-size:9.5px;font-weight:900;letter-spacing:.26em;color:#7d93b8;
+    margin:0 -16px 18px;padding:16px 16px 10px;border-bottom:1px solid rgba(126,166,255,.12);
+    background:rgba(6,10,22,.96);}
   body.cine #chatArea .max-w-\[85\%\]{max-width:100%!important;}
   body.cine #chatArea .max-w-\[75\%\]{max-width:92%!important;}
   body.cine .msg-bubble{font-size:13px!important;padding:10px 13px!important;}
