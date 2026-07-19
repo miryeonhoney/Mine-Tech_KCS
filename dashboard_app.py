@@ -1360,6 +1360,76 @@ def build_welcome(to=None, minerals=None):
 # ═══════════════════════════════════════════════════════════════
 #  ② 대시보드 HTML 렌더링
 # ═══════════════════════════════════════════════════════════════
+# ── V2 공통 크롬 — 통계 대시보드에 본 사이트 헤더·푸터 입히기 ──
+V2_CHROME_CSS = r"""
+.v2ubar,.v2tbar,.v2foot{width:100%!important;min-width:100%;flex:0 0 auto!important;align-self:stretch!important;box-sizing:border-box}
+.v2wrap{max-width:1200px;margin:0 auto;padding:0 24px;width:100%;box-sizing:border-box}
+.v2ubar{background:#F2F4F7;border-bottom:1px solid #DDE3EA;font-size:12px;font-family:'Noto Sans KR','Pretendard',sans-serif}
+.v2ubar .v2wrap{display:flex;justify-content:space-between;align-items:center;height:36px}
+.v2ubar a{color:#555;text-decoration:none}.v2ubar a:hover{color:#155BB8;text-decoration:underline}
+.v2ubar .l{color:#888}
+.v2ubar .r a{padding:0 11px}
+.v2tbar{border-bottom:2px solid #155BB8;background:#fff;font-family:'Noto Sans KR','Pretendard',sans-serif;position:relative;z-index:80}
+.v2tbar .v2wrap{display:flex;align-items:center;height:86px;gap:18px}
+.v2logo{display:flex;align-items:center;gap:11px;flex:none;text-decoration:none}
+.v2logo .dot{width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg,#155BB8,#16305C);box-shadow:inset 0 0 0 3px rgba(255,255,255,.22)}
+.v2logo b{font-size:21px;font-weight:900;letter-spacing:-.5px;color:#16305C;display:block;line-height:1.25}
+.v2logo b em{font-style:normal;color:#155BB8}
+.v2logo i{display:block;font-style:normal;font-size:11px;color:#888;letter-spacing:.4px;font-weight:500}
+.v2gnb{display:flex;flex:1}
+.v2gnb>a,.v2drop>a{display:flex;align-items:center;height:86px;padding:0 16px;font-size:15.5px;font-weight:700;color:#222;position:relative;white-space:nowrap;text-decoration:none}
+.v2gnb>a::after,.v2drop>a::after{content:'';position:absolute;left:16px;right:16px;bottom:-2px;height:3px;background:#155BB8;transform:scaleX(0);transition:transform .2s}
+.v2gnb>a:hover,.v2drop:hover>a{color:#155BB8}
+.v2gnb>a:hover::after,.v2drop:hover>a::after{transform:scaleX(1)}
+.v2drop{position:relative;display:flex}
+.v2menu{display:none;position:absolute;left:50%;transform:translateX(-50%);top:86px;background:#fff;border:1px solid #DDE3EA;border-top:2px solid #155BB8;min-width:184px;padding:8px 0;box-shadow:0 10px 24px rgba(22,48,92,.12);z-index:90}
+.v2drop:hover .v2menu{display:block}
+.v2menu a{display:block;padding:9px 20px;font-size:14px;font-weight:500;color:#555;text-decoration:none}
+.v2menu a:hover{background:#EAF2FC;color:#155BB8;font-weight:700}
+.v2foot{background:#16305C;color:#B9CCEA;font-size:13px;font-family:'Noto Sans KR','Pretendard',sans-serif;margin-top:40px;position:relative;z-index:5}
+.v2foot .fin{max-width:1200px;margin:0 auto;padding:24px}
+.v2foot a{color:#B9CCEA;text-decoration:none}.v2foot a:hover{color:#fff}
+.v2foot .fb{border-top:1px solid rgba(255,255,255,.14);text-align:center;padding:12px;font-size:11.5px;color:#8FA6C6}
+.cat-bar .brand-lock{display:none!important}
+.cat-bar .cb-right{display:none!important}
+@media(max-width:900px){.v2ubar{display:none}.v2gnb{display:none}.v2tbar .v2wrap{height:64px}}
+"""
+
+V2_CHROME_HEADER = """
+<div class="v2ubar"><div class="v2wrap">
+  <div class="l">데이터 출처: KOMIS · 공공데이터포털 · 관세청 · USGS</div>
+  <div class="r"><a href="/briefing">리포트 구독</a><a href="/pro">전문가용</a></div>
+</div></div>
+<div class="v2tbar"><div class="v2wrap">
+  <a class="v2logo" href="/"><span class="dot"></span><span><b>마인<em>테크</em></b><i>MINE-TECH CRITICAL MINERALS SERVICE</i></span></a>
+  <nav class="v2gnb">
+    <a href="/">홈</a>
+    <div class="v2drop"><a href="#" onclick="return false">광종별 현황</a><div class="v2menu">
+      <a href="/dashboard#cat-minerals">핵심광물 종합</a><a href="/dashboard#cat-nf">비철금속 (6종)</a>
+      <a href="/dashboard#cat-rare">희소금속 (20종)</a><a href="/dashboard#cat-ree">희토류 (14종)</a>
+      <a href="/dashboard#cat-energy">에너지 (2종)</a><a href="/dashboard#cat-etc">기타 (6종)</a>
+    </div></div>
+    <a href="/globe">핵심광물지도</a>
+    <div class="v2drop"><a href="#" onclick="return false">통계</a><div class="v2menu">
+      <a href="/dashboard#supply">수급 현황</a><a href="/dashboard#mindex">가격지수</a>
+      <a href="/dashboard#forecast">가격 전망</a><a href="/dashboard#map">글로벌 매장량</a>
+      <a href="/dashboard#risk">리스크 신호등</a><a href="/dashboard#mines">국내 광산</a>
+    </div></div>
+    <a href="/briefing">브리핑</a>
+    <a href="/conference">AI 회의</a>
+    <a href="/pro">전문가용</a>
+  </nav>
+</div></div>
+"""
+
+V2_CHROME_FOOTER = """
+<div class="v2foot"><div class="fin">
+  <b style="color:#fff">마인테크 Mine-Tech</b> — 흩어진 광물 공공데이터를 융합해 공급망 위험을 하나의 지수로 진단합니다 ·
+  <a href="/globe">핵심광물지도</a> · <a href="/briefing">브리핑</a> · <a href="/conference">AI 회의실</a> · <a href="/minerals.csv">데이터(CSV)</a>
+</div><div class="fb">본 서비스는 산업통상자원부·산하기관 공공데이터를 활용합니다 · 팀 SMART-X © 2026 Mine-Tech</div></div>
+"""
+
+
 def render_dashboard(home=False):
     body_cls = "is-home" if home else ""
     customs  = fetch_customs()
@@ -2853,11 +2923,10 @@ tr:hover td{{background:var(--bg3);}}
   --blue:#155BB8;--cyan:#1E74D8;--green:#1e8e5a;
 }}
 </style>
+<style>{V2_CHROME_CSS}</style>
 </head>
 <body class="{body_cls}">
-<a href="/" style="position:fixed;left:16px;bottom:16px;z-index:99;background:#16305C;color:#fff;
-font:700 12.5px 'Pretendard','Noto Sans KR',sans-serif;padding:9px 16px;border-radius:999px;text-decoration:none;
-box-shadow:0 6px 16px rgba(10,31,62,.28)">◂ 마인테크 새 홈</a>
+{V2_CHROME_HEADER}
 <div id="cosmos"></div>
 <div id="arrival">
   <div class="a-eyebrow" id="a-eyebrow"></div>
@@ -3239,16 +3308,14 @@ function switchTab(name, el) {{
 }}
 
 // 다른 페이지(회의실 등)에서 #map / #news 등으로 들어오면 해당 탭으로 이동
-(function(){{
+function _applyHashNav(){{
   var h = (location.hash || '').replace('#','');
   var valid = ['supply','mindex','forecast','map','news','subscribe','risk','mines'];
   if (valid.indexOf(h) >= 0) {{
-    // 스크립트 하단의 let 선언(_map 등)이 모두 실행된 뒤에 탭 전환 (TDZ 크래시 방지)
     setTimeout(function(){{
       switchTab(h, document.querySelector('.nav a[data-tab="' + h + '"]'));
     }}, 0);
   }} else if (h.indexOf('cat-') === 0) {{
-    // GNB '광종별 현황' 딥링크: #cat-nf / #cat-rare / #cat-ree / #cat-energy / #cat-etc
     var c = h.slice(4);
     setTimeout(function(){{
       if (typeof switchCategory === 'function') {{
@@ -3257,7 +3324,9 @@ function switchTab(name, el) {{
       }}
     }}, 0);
   }}
-}})();
+}}
+_applyHashNav();
+window.addEventListener('hashchange', _applyHashNav);
 
 // ── 실시간 시스템 시계 ───────────────────────────────────────
 setInterval(() => {{
@@ -4117,6 +4186,7 @@ function selectMineral(mineral, btn) {{
 
 </script>
 {BACKDROP}
+{V2_CHROME_FOOTER}
 </body>
 </html>"""
 
