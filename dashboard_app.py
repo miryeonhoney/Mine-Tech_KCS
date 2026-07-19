@@ -3243,7 +3243,10 @@ function switchTab(name, el) {{
   var h = (location.hash || '').replace('#','');
   var valid = ['supply','mindex','forecast','map','news','subscribe','risk','mines'];
   if (valid.indexOf(h) >= 0) {{
-    switchTab(h, document.querySelector('.nav a[data-tab="' + h + '"]'));
+    // 스크립트 하단의 let 선언(_map 등)이 모두 실행된 뒤에 탭 전환 (TDZ 크래시 방지)
+    setTimeout(function(){{
+      switchTab(h, document.querySelector('.nav a[data-tab="' + h + '"]'));
+    }}, 0);
   }}
 }})();
 
