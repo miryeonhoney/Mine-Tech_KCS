@@ -3336,7 +3336,7 @@ tr:hover td{{background:var(--bg3);}}
     데이터: 광해광업공단 수급안정화지수·국가별 광종 수출입·파생지수 + USGS MCS — 갱신 시 자동 재계산.
     시장위험지수·비축 항목은 공개 데이터 확보 시 가중 반영 예정(현재 잔여 항목 재배분).
   </div>
-  <div class="page-title" style="margin-top:22px;font-size:15px;">구성 원지표 — 수급안정화지수 <span style="color:var(--muted2);font-weight:400;font-size:12px">· 한국광해광업공단 · 지수 높을수록 수급 안정</span></div>
+  <div class="page-title" id="ssi" style="margin-top:22px;font-size:15px;scroll-margin-top:120px;">구성 원지표 — 수급안정화지수 <span style="color:var(--muted2);font-weight:400;font-size:12px">· 한국광해광업공단 · 지수 높을수록 수급 안정</span></div>
   <div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:12px 16px;margin-bottom:14px;font-size:13px;color:var(--muted);">💡 {risk_summary} <span style="color:var(--muted2)">— K-RISK 수급불안정 요소의 원자료.</span></div>
   <div class="risk-grid">{risk_cards}</div>
   <div class="section" style="padding:14px 16px;margin-top:14px;">
@@ -3449,6 +3449,16 @@ function switchTab(name, el) {{
 // 다른 페이지(회의실 등)에서 #map / #news 등으로 들어오면 해당 탭으로 이동
 function _applyHashNav(){{
   var h = (location.hash || '').replace('#','');
+  if (h === 'ssi') {{
+    setTimeout(function(){{
+      switchTab('risk', document.querySelector('.nav a[data-tab="risk"]'));
+      setTimeout(function(){{
+        var el = document.getElementById('ssi');
+        if (el) el.scrollIntoView({{behavior:'smooth', block:'start'}});
+      }}, 200);
+    }}, 0);
+    return;
+  }}
   var valid = ['supply','mindex','forecast','map','news','subscribe','risk','mines'];
   if (valid.indexOf(h) >= 0) {{
     setTimeout(function(){{
@@ -7748,7 +7758,7 @@ def render_home_v2():
   </div>
 
   <div class="mod3">
-    <div class="card"><div class="mh"><b>수급안정화지수</b><a href="/dashboard#risk">더보기 +</a></div>
+    <div class="card"><div class="mh"><b>수급안정화지수</b><a href="/dashboard#ssi">더보기 +</a></div>
       <div style="height:215px"><canvas id="cRisk"></canvas></div>
       <div class="srcline">출처: KOMIR 수급안정화지수(핵심 6광종·월간)</div></div>
     <div class="card"><div class="mh"><b>오늘의 금속 시세</b><a href="/dashboard#supply">더보기 +</a></div>
