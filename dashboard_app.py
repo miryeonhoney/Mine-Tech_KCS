@@ -8025,6 +8025,11 @@ V2_BRF_CSS = r"""
 .brf-ai{background:var(--gl);border-radius:18px;padding:18px 20px;margin:14px 0 18px;font-size:14.5px;line-height:1.65;color:var(--gd)}
 .brf-ai .bl{font-size:12.5px;font-weight:800;margin-bottom:6px}
 .bgrid{display:grid;grid-template-columns:1.65fr 1fr;gap:16px;align-items:start}
+.audtabs{display:flex;gap:7px;margin-bottom:12px}
+.audtab{border:1.5px solid var(--line2);background:var(--card);color:var(--ink2);border-radius:100px;
+padding:7px 20px;font:700 13.5px/1.5 inherit;font-family:inherit;cursor:pointer}
+.audtab:hover{border-color:var(--blue);color:var(--blue)}
+.audtab.on{background:var(--navy);border-color:var(--navy);color:#fff}
 .ncard a{display:block;padding:13px 18px;border-bottom:1px solid var(--line)}
 .ncard a:last-child{border-bottom:0}
 .ncard .nt{font-size:14.5px;font-weight:700;line-height:1.45}
@@ -8054,6 +8059,17 @@ def render_briefing_v2():
         f'<button type="button" class="subchip{" ext" if m in _rest else ""}" data-m="{m}">{m}</button>'
         for m in _pop + _rest)
     news = [n for n in dedup_news(fetch_news() or []) if mineral_relevant(n)][:14]
+    aud_news = fetch_audience_news() or []
+
+    def _aud_items(aud):
+        its = [n for n in aud_news if n.get("aud") == aud][:10]
+        return "".join(
+            f'<a href="{n.get("언론사링크", "#")}" target="_blank" rel="noopener">'
+            f'<div class="nt">{n.get("제목", "")}</div>'
+            f'<div class="ns">{n.get("요약", "")}</div>'
+            f'<div class="nd">#{n.get("검색키워드", "")} · {n.get("발행일시", "")}</div></a>'
+            for n in its) or '<div style="padding:18px;color:var(--mut)">뉴스가 없어요.</div>'
+
     items = "".join(
         f'<a href="{n.get("링크", "#")}" target="_blank" rel="noopener">'
         f'<div class="nt">{n.get("제목", "")}</div>'
@@ -8066,7 +8082,18 @@ def render_briefing_v2():
   <div class="bh"><h1>오늘의 브리핑</h1></div>
   <div class="brf-ai"><div class="bl">AI 애널리스트 3문장 요약</div><div id="aiBrief">불러오는 중…</div></div>
   <div class="bgrid">
-    <div class="card ncard" style="padding:4px 0">{items}</div>
+    <div>
+      <div class="audtabs">
+        <button class="audtab on" data-a="all">전체</button>
+        <button class="audtab" data-a="inv">투자자</button>
+        <button class="audtab" data-a="biz">기업</button>
+        <button class="audtab" data-a="con">소비자</button>
+      </div>
+      <div class="card ncard aud-list" id="aud-all" style="padding:4px 0">{items}</div>
+      <div class="card ncard aud-list" id="aud-inv" style="padding:4px 0;display:none">{_aud_items("투자자")}</div>
+      <div class="card ncard aud-list" id="aud-biz" style="padding:4px 0;display:none">{_aud_items("기업")}</div>
+      <div class="card ncard aud-list" id="aud-con" style="padding:4px 0;display:none">{_aud_items("소비자")}</div>
+    </div>
     <div class="rail" style="position:sticky;top:78px">
       <div class="card sub-card" id="sub">
         <div class="sec-t" style="margin-bottom:2px">매일 아침 메일로 받기</div>
@@ -8092,6 +8119,15 @@ def render_briefing_v2():
     var ev=(d&&d.events&&d.events[0])||null;
     document.getElementById('railGeo').textContent=ev?((ev.loc?ev.loc+' — ':'')+(ev.why||ev['제목']||'')):'특별한 이슈가 없어요.';
   }).catch(function(){});
+  [].slice.call(document.querySelectorAll('.audtab')).forEach(function(t){
+    t.addEventListener('click', function(){
+      document.querySelectorAll('.audtab').forEach(function(x){x.classList.remove('on')});
+      t.classList.add('on');
+      document.querySelectorAll('.aud-list').forEach(function(l){l.style.display='none'});
+      var el=document.getElementById('aud-'+t.dataset.a);
+      if(el) el.style.display='';
+    });
+  });
   var sel=[];
   document.querySelectorAll('.subchip[data-m]').forEach(function(c){
     c.addEventListener('click',function(){
