@@ -1415,7 +1415,7 @@ def build_newsletter(to=None, minerals=None):
     return (
         f'<div style="max-width:620px;margin:0 auto;font-family:\'Apple SD Gothic Neo\',\'Malgun Gothic\',sans-serif;background:#F5F7FA;padding:18px 12px;">'
         # 헤더
-        f'<div style="background:{GD};background-image:linear-gradient(120deg,#9E1B30 0%,#2E2F72 40%,#16305C 70%,#155BB8 100%);border-radius:16px 16px 0 0;padding:22px 26px;">'
+        f'<div style="background:{GD};background-image:linear-gradient(120deg,#8C3242 0%,#2E2F72 40%,#16305C 70%,#155BB8 100%);border-radius:16px 16px 0 0;padding:22px 26px;">'
         f'<div style="color:#fff;font-size:19px;font-weight:800;">● K Mineral Risk — 오늘의 광물 날씨</div>'
         f'<div style="color:#B9CCEA;font-size:12.5px;margin-top:4px;">{now.year}년 {now.month}월 {now.day}일 {wd}요일</div></div>'
         # 본문
@@ -1471,17 +1471,17 @@ V2_CHROME_CSS = r"""
 .v2ubar a{color:#555;text-decoration:none}.v2ubar a:hover{color:#155BB8;text-decoration:underline}
 .v2ubar .l{color:#888}
 .v2ubar .r a{padding:0 11px}
-.v2tbar{border-bottom:2px solid;border-image:linear-gradient(100deg,#CD2E3A 0%,#CD2E3A 34%,#0047A0 66%,#0047A0 100%) 1;background:#fff;font-family:'Noto Sans KR','Pretendard',sans-serif;position:relative;z-index:80}
-.v2tbar::before{content:'';display:block;height:4px;background:linear-gradient(100deg,#CD2E3A 0%,#CD2E3A 44%,#0047A0 56%,#0047A0 100%)}
+.v2tbar{border-bottom:2px solid;border-image:linear-gradient(100deg,#C24E59 0%,#C24E59 34%,#0047A0 66%,#0047A0 100%) 1;background:#fff;font-family:'Noto Sans KR','Pretendard',sans-serif;position:relative;z-index:80}
+.v2tbar::before{content:'';display:block;height:4px;background:linear-gradient(100deg,#C24E59 0%,#C24E59 44%,#0047A0 56%,#0047A0 100%)}
 .v2tbar .v2wrap{display:flex;align-items:center;height:86px;gap:18px}
 .v2logo{display:flex;align-items:center;gap:11px;flex:none;text-decoration:none}
-.v2logo .dot{width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg,#CD2E3A,#0047A0);box-shadow:inset 0 0 0 3px rgba(255,255,255,.22)}
+.v2logo .dot{width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg,#C24E59,#0047A0);box-shadow:inset 0 0 0 3px rgba(255,255,255,.22)}
 .v2logo b{font-size:21px;font-weight:900;letter-spacing:-.5px;color:#16305C;display:block;line-height:1.25}
-.v2logo b em{font-style:normal;background:linear-gradient(135deg,#CD2E3A 15%,#8B2B60 50%,#0047A0 85%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:#0047A0}
+.v2logo b em{font-style:normal;background:linear-gradient(135deg,#C24E59 15%,#7E4468 50%,#0047A0 85%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:#0047A0}
 .v2logo i{display:block;font-style:normal;font-size:11px;color:#888;letter-spacing:.4px;font-weight:500}
 .v2gnb{display:flex;flex:1}
 .v2gnb>a,.v2drop>a{display:flex;align-items:center;height:86px;padding:0 16px;font-size:15.5px;font-weight:700;color:#222;position:relative;white-space:nowrap;text-decoration:none}
-.v2gnb>a::after,.v2drop>a::after{content:'';position:absolute;left:16px;right:16px;bottom:0;height:3px;background:linear-gradient(100deg,#CD2E3A,#0047A0);transform:scaleX(0);transition:transform .2s}
+.v2gnb>a::after,.v2drop>a::after{content:'';position:absolute;left:16px;right:16px;bottom:0;height:3px;background:linear-gradient(100deg,#C24E59,#0047A0);transform:scaleX(0);transition:transform .2s}
 .v2gnb>a:hover,.v2drop:hover>a{color:#155BB8}
 .v2gnb>a:hover::after,.v2drop:hover>a::after{transform:scaleX(1)}
 .v2drop{position:relative;display:flex}
@@ -1493,7 +1493,7 @@ V2_CHROME_CSS = r"""
 .v2drop:hover .v2menu-w{display:flex!important;gap:4px}
 .v2menu-w .vcol{min-width:172px}
 .v2menu-w .vt{font-size:11.5px;font-weight:800;color:#888;letter-spacing:.06em;padding:0 20px 7px}
-.v2foot{background:#16305C;color:#B9CCEA;font-size:13px;font-family:'Noto Sans KR','Pretendard',sans-serif;margin-top:40px;position:relative;z-index:5;border-top:3px solid;border-image:linear-gradient(90deg,#CD2E3A,#0047A0) 1}
+.v2foot{background:#16305C;color:#B9CCEA;font-size:13px;font-family:'Noto Sans KR','Pretendard',sans-serif;margin-top:40px;position:relative;z-index:5;border-top:3px solid;border-image:linear-gradient(90deg,#C24E59,#0047A0) 1}
 .v2foot .fin{max-width:1200px;margin:0 auto;padding:24px}
 .v2foot a{color:#B9CCEA;text-decoration:none}.v2foot a:hover{color:#fff}
 .v2foot .fb{border-top:1px solid rgba(255,255,255,.14);text-align:center;padding:12px;font-size:11.5px;color:#8FA6C6}
@@ -1524,7 +1524,7 @@ V2_CHROME_HEADER = """
 <div class="v2tbar"><div class="v2wrap">
   <a class="v2logo" href="/"><svg width="36" height="36" viewBox="0 0 40 40" aria-hidden="true"><defs>
 <linearGradient id="kmrg" x1="0" y1="0" x2="0.85" y2="1">
-<stop offset="0" stop-color="#DA3A4E"/><stop offset=".42" stop-color="#C42B45"/><stop offset=".58" stop-color="#2A3F8F"/><stop offset="1" stop-color="#0047A0"/></linearGradient></defs>
+<stop offset="0" stop-color="#D66671"/><stop offset=".42" stop-color="#B84C59"/><stop offset=".58" stop-color="#2A3F8F"/><stop offset="1" stop-color="#0047A0"/></linearGradient></defs>
 <polygon points="20,2 36,11 36,29 20,38 4,29 4,11" fill="url(#kmrg)"/>
 <polygon points="20,2 36,11 20,20 4,11" fill="#ffffff" opacity=".14"/>
 <polygon points="20,20 36,11 36,29 20,38" fill="#000000" opacity=".12"/>
@@ -5130,7 +5130,7 @@ body{background:#eef2f8;color:#16233c;font-family:Pretendard,'Apple SD Gothic Ne
 </head>
 <body>
 <div style="position:fixed;top:0;left:0;right:0;z-index:80;display:flex;align-items:center;gap:18px;height:54px;padding:0 20px;background:rgba(10,25,48,.74);backdrop-filter:blur(10px);border-bottom:1px solid rgba(255,255,255,.08);font-family:'Pretendard Variable',Pretendard,-apple-system,sans-serif">
-  <a href="/" style="color:#fff;font-weight:800;font-size:16px;text-decoration:none;display:flex;align-items:center;gap:7px"><span style="width:9px;height:9px;border-radius:50%;background:linear-gradient(135deg,#E24A5C,#4A7DD6);box-shadow:0 0 0 4px rgba(92,143,214,.18)"></span>K Mineral Risk</a>
+  <a href="/" style="color:#fff;font-weight:800;font-size:16px;text-decoration:none;display:flex;align-items:center;gap:7px"><span style="width:9px;height:9px;border-radius:50%;background:linear-gradient(135deg,#D97680,#4A7DD6);box-shadow:0 0 0 4px rgba(92,143,214,.18)"></span>K Mineral Risk</a>
   <nav style="display:flex;gap:4px">
     <a href="/" style="padding:6px 13px;border-radius:999px;color:#cfd8d2;font-size:13.5px;font-weight:650;text-decoration:none">홈</a>
     <a href="/globe" style="padding:6px 13px;border-radius:999px;background:rgba(92,143,214,.18);color:#B9CCEA;font-size:13.5px;font-weight:650;text-decoration:none">핵심광물지도</a>
@@ -6218,7 +6218,7 @@ tailwind.config = {
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 </head>
 <body class="flex min-h-screen bg-background">
-<a href="/" style="position:fixed;bottom:16px;left:16px;z-index:95;display:flex;align-items:center;gap:6px;padding:8px 15px;border-radius:999px;background:rgba(10,25,48,.72);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.14);color:#dbe6f5;font-size:12.5px;font-weight:700;text-decoration:none;font-family:'Pretendard Variable',Pretendard,sans-serif;box-shadow:0 6px 16px rgba(0,0,0,.25)"><span style="width:7px;height:7px;border-radius:50%;background:linear-gradient(135deg,#E24A5C,#4A7DD6)"></span>K Mineral Risk 홈</a>
+<a href="/" style="position:fixed;bottom:16px;left:16px;z-index:95;display:flex;align-items:center;gap:6px;padding:8px 15px;border-radius:999px;background:rgba(10,25,48,.72);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.14);color:#dbe6f5;font-size:12.5px;font-weight:700;text-decoration:none;font-family:'Pretendard Variable',Pretendard,sans-serif;box-shadow:0 6px 16px rgba(0,0,0,.25)"><span style="width:7px;height:7px;border-radius:50%;background:linear-gradient(135deg,#D97680,#4A7DD6)"></span>K Mineral Risk 홈</a>
 
 <!-- Main (사이드바 없음 — 회의에 집중) -->
 <main class="flex-1 h-screen flex flex-col bg-background overflow-hidden">
@@ -7443,7 +7443,7 @@ V2_SHELL = r"""<!DOCTYPE html>
 <style>
 :root{
   --blue:#155BB8;--blue2:#0E4A99;--navy:#16305C;--sky:#EAF2FC;--sky2:#D6E6F9;
-  --kred:#CD2E3A;--kredl:#FBE9EC;--kblue:#0047A0;--taeg:linear-gradient(100deg,#CD2E3A 0%,#CD2E3A 44%,#0047A0 56%,#0047A0 100%);
+  --kred:#C24E59;--kredl:#FBE9EC;--kblue:#0047A0;--taeg:linear-gradient(100deg,#C24E59 0%,#C24E59 44%,#0047A0 56%,#0047A0 100%);
   --ink:#222;--ink2:#555;--ink3:#888;--line:#DDE3EA;--line2:#C9D2DD;
   --bg:#F5F7FA;--card:#fff;
   --dgr:#D0342C;--dgl:#FCEBEA;--wrn:#B8720A;--wrl:#FCF3E2;--okc:#1E7B45;--okl:#E7F4EC;
@@ -7466,19 +7466,19 @@ button{font-family:inherit;cursor:pointer}
 .ubar .u-r a+a::before{content:'';position:absolute;left:0;top:50%;transform:translateY(-50%);width:1px;height:10px;background:var(--line2)}
 .ubar .u-r span{display:none}
 /* ── 헤더 + GNB (한 줄, 86px) ── */
-.tbar{border-bottom:2px solid;border-image:linear-gradient(100deg,#CD2E3A 0%,#CD2E3A 34%,#0047A0 66%,#0047A0 100%) 1;background:#fff;position:sticky;top:0;z-index:60}
+.tbar{border-bottom:2px solid;border-image:linear-gradient(100deg,#C24E59 0%,#C24E59 34%,#0047A0 66%,#0047A0 100%) 1;background:#fff;position:sticky;top:0;z-index:60}
 .tbar::before{content:'';display:block;height:4px;background:var(--taeg)}
 .tbar .wrap{display:flex;align-items:center;height:86px;gap:18px}
 .logo{display:flex;align-items:center;gap:11px;flex:none}
 .logo .dot{width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg,var(--kred),var(--kblue));flex:none;
 box-shadow:inset 0 0 0 3px rgba(255,255,255,.22)}
 .logo b{font-size:21px;font-weight:900;letter-spacing:-.5px;color:var(--navy);display:block;line-height:1.25}
-.logo b em{font-style:normal;background:linear-gradient(135deg,#CD2E3A 15%,#8B2B60 50%,#0047A0 85%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:var(--kblue)}
+.logo b em{font-style:normal;background:linear-gradient(135deg,#C24E59 15%,#7E4468 50%,#0047A0 85%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:var(--kblue)}
 .logo i{display:block;font-style:normal;font-size:11px;color:var(--ink3);letter-spacing:.4px;font-weight:500}
 .gnbbar{display:flex;flex:1;height:86px}
 .gnbbar .wrap{display:contents}
 .gnbbar a,.gdrop>a{display:flex;align-items:center;height:86px;padding:0 16px;font-size:15.5px;font-weight:700;color:var(--ink);position:relative;white-space:nowrap}
-.gnbbar a::after,.gdrop>a::after{content:'';position:absolute;left:16px;right:16px;bottom:0;height:3px;background:linear-gradient(100deg,#CD2E3A,#0047A0);transform:scaleX(0);transition:transform .2s}
+.gnbbar a::after,.gdrop>a::after{content:'';position:absolute;left:16px;right:16px;bottom:0;height:3px;background:linear-gradient(100deg,#C24E59,#0047A0);transform:scaleX(0);transition:transform .2s}
 .gnbbar a:hover,.gdrop:hover>a{color:var(--blue)}
 .gnbbar a:hover::after,.gdrop:hover>a::after,.gnbbar a.on::after{transform:scaleX(1)}
 .gnbbar a.on{color:var(--blue)}
@@ -7525,11 +7525,11 @@ h1{font-size:24px;font-weight:900;letter-spacing:-.5px}
 .relsites b{font-size:13.5px}
 .relsites select{border:1px solid var(--line2);border-radius:4px;padding:9px 12px;font:inherit;font-size:13px;min-width:230px;background:#fff;color:var(--ink)}
 /* ── 푸터 (네이비) ── */
-footer{margin:0;background:var(--navy);color:#B9CCEA;font-size:13px;border-top:3px solid;border-image:linear-gradient(90deg,#CD2E3A,#0047A0) 1}
+footer{margin:0;background:var(--navy);color:#B9CCEA;font-size:13px;border-top:3px solid;border-image:linear-gradient(90deg,#C24E59,#0047A0) 1}
 footer .f-wrap{max-width:1200px;margin:0 auto;padding:34px 24px 26px;display:grid;grid-template-columns:1.3fr 1fr 1fr;gap:28px}
 footer h4{color:#fff;font-size:13.5px;font-weight:700;margin-bottom:10px}
 footer .f-brand{font-size:16px;font-weight:900;color:#fff;display:flex;align-items:center;gap:8px;margin-bottom:8px}
-footer .f-brand .dot{width:9px;height:9px;border-radius:50%;background:linear-gradient(135deg,#E24A5C,#4A7DD6)}
+footer .f-brand .dot{width:9px;height:9px;border-radius:50%;background:linear-gradient(135deg,#D97680,#4A7DD6)}
 footer p{line-height:1.65;font-size:12.5px}
 footer ul{list-style:none} footer li{margin:5px 0;font-size:12.5px}
 footer a{color:#B9CCEA} footer a:hover{color:#fff;text-decoration:underline}
@@ -7544,7 +7544,7 @@ __EXTRA_CSS__
 <div class="tbar"><div class="wrap">
   <a class="logo" href="/"><svg width="36" height="36" viewBox="0 0 40 40" aria-hidden="true"><defs>
 <linearGradient id="kmrg" x1="0" y1="0" x2="0.85" y2="1">
-<stop offset="0" stop-color="#DA3A4E"/><stop offset=".42" stop-color="#C42B45"/><stop offset=".58" stop-color="#2A3F8F"/><stop offset="1" stop-color="#0047A0"/></linearGradient></defs>
+<stop offset="0" stop-color="#D66671"/><stop offset=".42" stop-color="#B84C59"/><stop offset=".58" stop-color="#2A3F8F"/><stop offset="1" stop-color="#0047A0"/></linearGradient></defs>
 <polygon points="20,2 36,11 36,29 20,38 4,29 4,11" fill="url(#kmrg)"/>
 <polygon points="20,2 36,11 20,20 4,11" fill="#ffffff" opacity=".14"/>
 <polygon points="20,20 36,11 36,29 20,38" fill="#000000" opacity=".12"/>
@@ -7657,7 +7657,7 @@ def _v2_shell(active, title, content, extra_css="", js="", q=""):
 
 V2_HOME_CSS = r"""
 .sbox{display:none}
-.hero{position:relative;background:linear-gradient(150deg,#A81E33 0%,#7A2352 24%,#2E2F72 48%,#123C7E 66%,#1E74D8 100%);color:#fff;overflow:hidden}
+.hero{position:relative;background:linear-gradient(150deg,#96323F 0%,#6E3160 24%,#2E2F72 48%,#123C7E 66%,#1E74D8 100%);color:#fff;overflow:hidden}
 .hero::before{content:'';position:absolute;right:-120px;top:-140px;width:520px;height:520px;border-radius:50%;border:70px solid rgba(255,255,255,.05)}
 .hero::after{content:'';position:absolute;right:120px;bottom:-200px;width:420px;height:420px;border-radius:50%;border:54px solid rgba(255,255,255,.05)}
 .hero .wrap{position:relative;z-index:2;padding-top:60px;padding-bottom:92px}
