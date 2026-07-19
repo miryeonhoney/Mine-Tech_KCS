@@ -1392,6 +1392,7 @@ V2_CHROME_CSS = r"""
 .v2foot .fb{border-top:1px solid rgba(255,255,255,.14);text-align:center;padding:12px;font-size:11.5px;color:#8FA6C6}
 .cat-bar .brand-lock{display:none!important}
 .cat-bar .cb-right{display:none!important}
+.megapanel{display:none!important}
 @media(max-width:900px){.v2ubar{display:none}.v2gnb{display:none}.v2tbar .v2wrap{height:64px}}
 """
 
