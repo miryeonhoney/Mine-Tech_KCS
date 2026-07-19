@@ -7849,7 +7849,7 @@ def render_home_v2():
 <div class="hero">
   <div class="wrap">
     <span class="h-badge">핵심광물 48종 · 5개 분류 실시간 관측</span>
-    <div class="h-tt">흩어진 공공데이터를 융합해<br>공급망 위험을 하나의 지수로 진단합니다</div>
+    <div class="h-tt">흩어진 광물 데이터를 융합해<br>공급망 위험을 하나의 지수로 진단합니다</div>
     <div class="h-sub">{now.month}월 {now.day}일 {wd}요일 · KOMIR·관세청·조달청·USGS 공개 지표 교차 계산 — 오늘의 광물 날씨</div>
     <a class="h-cta" href="#mlist">전체 광종 현황 바로가기</a>
   </div>
