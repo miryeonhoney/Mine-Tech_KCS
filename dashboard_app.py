@@ -7157,7 +7157,7 @@ __EXTRA_CSS__
 </div></div>
 <nav class="gnbbar"><div class="wrap">
   <a href="/" class="__A_HOME__">홈</a>
-  <div class="gdrop"><a href="/#pcat">광종별 현황 ▾</a><div class="gmenu">
+  <div class="gdrop"><a href="#" onclick="return false" style="cursor:default">광종별 현황 ▾</a><div class="gmenu">
     <a href="/#pcat-비철금속">비철금속 (6종)</a>
     <a href="/#pcat-희소금속">희소금속 (20종)</a>
     <a href="/#pcat-희토류">희토류 (14종)</a>
@@ -7165,7 +7165,7 @@ __EXTRA_CSS__
     <a href="/#pcat-기타">기타 (6종)</a>
   </div></div>
   <a href="/globe" class="__A_MAP__">핵심광물지도</a>
-  <div class="gdrop"><a href="/dashboard">통계 ▾</a><div class="gmenu">
+  <div class="gdrop"><a href="#" onclick="return false" style="cursor:default">통계 ▾</a><div class="gmenu">
     <a href="/dashboard#supply">수급 현황</a>
     <a href="/dashboard#mindex">가격지수</a>
     <a href="/dashboard#forecast">가격 전망</a>
@@ -7549,12 +7549,15 @@ def render_home_v2():
   fetch('/api/news-brief?cat=minerals').then(function(r){return r.json()}).then(function(d){
     document.getElementById('railBrief').textContent=(d&&d.brief)?d.brief:'오늘은 새 브리핑이 없어요.';
   }).catch(function(){document.getElementById('railBrief').textContent='브리핑을 불러오지 못했어요.';});
-  var ph=(location.hash||'').replace('#','');
-  if(ph.indexOf('pcat-')===0){
+  function applyPcatHash(){
+    var ph=(location.hash||'').replace('#','');
+    if(ph.indexOf('pcat-')!==0) return;
     var pc=decodeURIComponent(ph.slice(5));
     var pb=document.querySelector('.chip[data-c="p:'+pc+'"]');
     if(pb){ pb.click(); var ml=document.getElementById('mlist'); if(ml) ml.scrollIntoView({behavior:'smooth'}); }
   }
+  applyPcatHash();
+  window.addEventListener('hashchange', applyPcatHash);
   function drawRisk(){
     if(!window.Chart) return setTimeout(drawRisk, 150);
     var R=__RISKJS__;
