@@ -4772,6 +4772,27 @@ def _newsletter_scheduler():
 if os.environ.get("NEWSLETTER_AUTO", "1") == "1" and SMTP_USER and SMTP_PASS:
     threading.Thread(target=_newsletter_scheduler, daemon=True).start()
 
+
+# ── 캐시 워머 — 무거운 수집(뉴스 24회 호출 + AI 검열)을 요청 밖에서 미리 실행 ──
+# 캐시 TTL(30분)보다 짧은 25분 주기로 갱신 → 사용자는 항상 데워진 캐시만 만난다.
+def _cache_warmer():
+    time.sleep(3)                      # 부팅 직후 서버 기동을 막지 않도록
+    while True:
+        try:
+            t0 = time.time()
+            fetch_news(); fetch_audience_news()
+            render_dashboard()
+            try: render_home_v2()
+            except Exception: pass
+            print(f"[warmer] 캐시 갱신 완료 ({time.time()-t0:.1f}s)")
+        except Exception as e:
+            print("[warmer] 오류:", e)
+        time.sleep(1500)
+
+
+if os.environ.get("CACHE_WARMER", "1") == "1":
+    threading.Thread(target=_cache_warmer, daemon=True).start()
+
 @app.route("/favicon.ico")
 def favicon():
     from flask import send_file
