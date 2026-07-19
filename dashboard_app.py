@@ -233,7 +233,7 @@ USGS_DATA = {
     "망간":   {"매장량_만톤": 150000,"생산량_만톤": 2000, "1위국": "남아프리카공화국", "출처": "USGS MCS 2025"},
 }
 
-# ── 확대 대상 광종 분류 (마인테크 커버리지) ─────────────────────
+# ── 확대 대상 광종 분류 (K Mineral Risk 커버리지) ─────────────────────
 MINERAL_TAXONOMY = {
     "비철금속": ["니켈", "동(구리)", "알루미늄", "주석", "연(납)", "아연"],
     "희소금속": ["리튬", "코발트", "망간", "니오븀", "규소", "마그네슘", "몰리브덴", "바나듐",
@@ -1283,7 +1283,7 @@ def _send_daily_all():
     """구독자 전원에게 오늘의 광물 날씨 발송."""
     subs = load_subs_full()
     now = _kst_now()
-    subj = f"[마인테크] {now.month}월 {now.day}일 광물 날씨"
+    subj = f"[K Mineral Risk] {now.month}월 {now.day}일 광물 날씨"
     sent = failed = 0
     for su in subs:
         e = su["email"]
@@ -1416,7 +1416,7 @@ def build_newsletter(to=None, minerals=None):
         f'<div style="max-width:620px;margin:0 auto;font-family:\'Apple SD Gothic Neo\',\'Malgun Gothic\',sans-serif;background:#F5F7FA;padding:18px 12px;">'
         # 헤더
         f'<div style="background:{GD};border-radius:16px 16px 0 0;padding:22px 26px;">'
-        f'<div style="color:#fff;font-size:19px;font-weight:800;">● 마인테크 — 오늘의 광물 날씨</div>'
+        f'<div style="color:#fff;font-size:19px;font-weight:800;">● K Mineral Risk — 오늘의 광물 날씨</div>'
         f'<div style="color:#B9CCEA;font-size:12.5px;margin-top:4px;">{now.year}년 {now.month}월 {now.day}일 {wd}요일</div></div>'
         # 본문
         f'<div style="background:#ffffff;border:1px solid {LINE};border-top:0;border-radius:0 0 16px 16px;padding:22px 26px;">'
@@ -1441,7 +1441,7 @@ def build_newsletter(to=None, minerals=None):
         f'</div>'
         # 푸터
         f'<div style="padding:16px 8px;text-align:center;color:#9aa39d;font-size:11.5px;">'
-        f'마인테크 · 데이터: KOMIR·관세청·조달청·산업부·USGS·World Bank{_unsub}</div></div>'
+        f'K Mineral Risk · 데이터: KOMIR·관세청·조달청·산업부·USGS·World Bank{_unsub}</div></div>'
     )
 
 
@@ -1525,7 +1525,14 @@ V2_CHROME_HEADER = """
   <div class="r"><a href="/briefing">리포트 구독</a><a href="/pro">전문가용</a></div>
 </div></div>
 <div class="v2tbar"><div class="v2wrap">
-  <a class="v2logo" href="/"><span class="dot"></span><span><b>마인<em>테크</em></b><i>MINE-TECH CRITICAL MINERALS SERVICE</i></span></a>
+  <a class="v2logo" href="/"><svg width="36" height="36" viewBox="0 0 40 40" aria-hidden="true"><defs>
+<linearGradient id="kmrg" x1="0" y1="0" x2="1" y2="1">
+<stop offset="0" stop-color="#1E74D8"/><stop offset="1" stop-color="#123C7E"/></linearGradient></defs>
+<polygon points="20,2 36,11 36,29 20,38 4,29 4,11" fill="url(#kmrg)"/>
+<polygon points="20,2 36,11 20,20 4,11" fill="#ffffff" opacity=".14"/>
+<polygon points="20,20 36,11 36,29 20,38" fill="#000000" opacity=".12"/>
+<polyline points="8,22 14,22 17,13 22,29 25,20 32,20" fill="none" stroke="#ffffff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="32" cy="20" r="2.6" fill="#FF5A4E"/></svg><span><b><em>K</em> Mineral Risk</b><i>핵심광물 공급망 위험 진단 · KOREA CMR INTELLIGENCE</i></span></a>
   <nav class="v2gnb">
     <a href="/">홈</a>
     <a href="/globe">핵심광물지도</a>
@@ -1550,9 +1557,9 @@ V2_CHROME_HEADER = """
 
 V2_CHROME_FOOTER = """
 <div class="v2foot"><div class="fin">
-  <b style="color:#fff">마인테크 Mine-Tech</b> — 흩어진 광물 공공데이터를 융합해 공급망 위험을 하나의 지수로 진단합니다 ·
+  <b style="color:#fff">K Mineral Risk</b> — 흩어진 광물 공공데이터를 융합해 공급망 위험을 하나의 지수로 진단합니다 ·
   <a href="/globe">핵심광물지도</a> · <a href="/briefing">브리핑</a> · <a href="/conference">AI 회의실</a> · <a href="/minerals.csv">데이터(CSV)</a>
-</div><div class="fb">본 서비스는 산업통상자원부·산하기관 공공데이터를 활용합니다 · 팀 SMART-X © 2026 Mine-Tech</div></div>
+</div><div class="fb">본 서비스는 산업통상자원부·산하기관 공공데이터를 활용합니다 · 팀 SMART-X © 2026 K Mineral Risk</div></div>
 """
 
 
@@ -2899,7 +2906,7 @@ window._applyScenes('minerals');
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>마인테크 — 핵심광물 인텔리전스</title>
+<title>K Mineral Risk — 핵심광물 인텔리전스</title>
 <link rel="icon" type="image/png" href="/static/logo_favicon.png">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Archivo:wght@700;800;900&family=Noto+Sans+KR:wght@400;500;700;900&family=IBM+Plex+Mono:wght@400;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Noto+Serif+KR:wght@300;500;700&display=swap" rel="stylesheet">
@@ -3133,7 +3140,7 @@ tr:hover td{{background:var(--bg3);}}
 
 <!-- 상단 카테고리 전환 -->
 <div class="cat-bar">
-  <a href="/" class="brand-lock" title="허브 홈"><span class="brand-txt">MINE<em>TECH</em><small>MINERAL INTELLIGENCE</small></span></a>
+  <a href="/" class="brand-lock" title="허브 홈"><span class="brand-txt">K<em>MR</em><small>MINERAL INTELLIGENCE</small></span></a>
   <div class="cat-menu">
     <button class="cat-btn active" data-cat="minerals" onclick="switchCategory('minerals',this)">핵심광물</button>
     <div class="megapanel"><div class="mp-grid mp-c4">
@@ -3168,7 +3175,7 @@ tr:hover td{{background:var(--bg3);}}
 
 <!-- NAV (사이드바, 카테고리별 하위 탭) -->
 <nav class="nav">
-  <span class="nav-brand"><span class="sys-dot"></span>MINETECH MONITOR</span>
+  <span class="nav-brand"><span class="sys-dot"></span>K MINERAL RISK MONITOR</span>
   <div id="subnav-minerals">
     <a href="#" class="active" data-tab="supply"    onclick="switchTab('supply',this);return false;">수급 현황</a>
     <a href="#" data-tab="mindex"    onclick="switchTab('mindex',this);return false;">가격지수</a>
@@ -3309,7 +3316,7 @@ tr:hover td{{background:var(--bg3);}}
 
     <!-- 확대 광종 커버리지 -->
     <div class="wpanel" style="margin-top:2px">
-      <div class="wp-head">마인테크 커버리지 — 확대 대상 광종 <span class="wp-sub">{taxo_total}종 · 5개 분류</span></div>
+      <div class="wp-head">K Mineral Risk 커버리지 — 확대 대상 광종 <span class="wp-sub">{taxo_total}종 · 5개 분류</span></div>
       <div class="wp-body" style="padding:12px 16px 14px">{taxo_html}</div>
     </div>
   </div>
@@ -4660,7 +4667,7 @@ def subscribe():
     if SMTP_USER and SMTP_PASS:
         def _welcome(e=email, mi=minerals):
             try:
-                ok, info = send_mail(e, "[마인테크] 구독 완료 — 매일 아침 광물 날씨를 보내드려요", build_welcome(e, mi))
+                ok, info = send_mail(e, "[K Mineral Risk] 구독 완료 — 매일 아침 광물 날씨를 보내드려요", build_welcome(e, mi))
                 print("[welcome]", e, ok, info if not ok else "")
             except Exception as ex:
                 print("[welcome] 오류:", ex)
@@ -5070,7 +5077,7 @@ def render_globe():
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>핵심광물지도 — 마인테크</title>
+<title>핵심광물지도 — K Mineral Risk</title>
 <link rel="icon" type="image/png" href="/static/logo_favicon.png">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
 <script src="https://unpkg.com/globe.gl@2.34.4/dist/globe.gl.min.js"></script>
@@ -5127,7 +5134,7 @@ body{background:#eef2f8;color:#16233c;font-family:Pretendard,'Apple SD Gothic Ne
 </head>
 <body>
 <div style="position:fixed;top:0;left:0;right:0;z-index:80;display:flex;align-items:center;gap:18px;height:54px;padding:0 20px;background:rgba(10,25,48,.74);backdrop-filter:blur(10px);border-bottom:1px solid rgba(255,255,255,.08);font-family:'Pretendard Variable',Pretendard,-apple-system,sans-serif">
-  <a href="/" style="color:#fff;font-weight:800;font-size:16px;text-decoration:none;display:flex;align-items:center;gap:7px"><span style="width:9px;height:9px;border-radius:50%;background:#5C8FD6;box-shadow:0 0 0 4px rgba(92,143,214,.18)"></span>마인테크</a>
+  <a href="/" style="color:#fff;font-weight:800;font-size:16px;text-decoration:none;display:flex;align-items:center;gap:7px"><span style="width:9px;height:9px;border-radius:50%;background:#5C8FD6;box-shadow:0 0 0 4px rgba(92,143,214,.18)"></span>K Mineral Risk</a>
   <nav style="display:flex;gap:4px">
     <a href="/" style="padding:6px 13px;border-radius:999px;color:#cfd8d2;font-size:13.5px;font-weight:650;text-decoration:none">홈</a>
     <a href="/globe" style="padding:6px 13px;border-radius:999px;background:rgba(92,143,214,.18);color:#B9CCEA;font-size:13.5px;font-weight:650;text-decoration:none">핵심광물지도</a>
@@ -5431,7 +5438,7 @@ def render_search(q):
         news_html = '<div class="empty">' + ('검색 결과가 없습니다. 다른 키워드로 시도해보세요.' if qq else '검색어를 입력하세요.') + '</div>'
     PAGE = r"""<!DOCTYPE html><html lang="ko"><head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>__Q__ 검색 — 마인테크</title>
+<title>__Q__ 검색 — K Mineral Risk</title>
 <link rel="icon" type="image/png" href="/static/logo_favicon.png">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=Noto+Sans+KR:wght@400;500;700;900&family=Noto+Serif+KR:wght@500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
@@ -5504,7 +5511,7 @@ def render_showcase():
     return r"""<!DOCTYPE html>
 <html lang="ko"><head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>마인테크 — 핵심광물</title>
+<title>K Mineral Risk — 핵심광물</title>
 <link rel="icon" type="image/png" href="/static/logo_favicon.png">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,400&family=Noto+Serif+KR:wght@300;500;700&family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
@@ -5886,7 +5893,7 @@ def render_conference():
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>마인테크 — AI 전문가 회의실</title>
+<title>K Mineral Risk — AI 전문가 회의실</title>
 <link rel="icon" type="image/png" href="/static/logo_favicon.png">
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
@@ -6205,7 +6212,7 @@ tailwind.config = {
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 </head>
 <body class="flex min-h-screen bg-background">
-<a href="/" style="position:fixed;top:14px;left:16px;z-index:95;display:flex;align-items:center;gap:6px;padding:7px 14px;border-radius:999px;background:rgba(10,25,48,.55);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.12);color:#cfd8d2;font-size:12.5px;font-weight:700;text-decoration:none;font-family:'Pretendard Variable',Pretendard,sans-serif"><span style="width:7px;height:7px;border-radius:50%;background:#5C8FD6"></span>마인테크 홈</a>
+<a href="/" style="position:fixed;top:14px;left:16px;z-index:95;display:flex;align-items:center;gap:6px;padding:7px 14px;border-radius:999px;background:rgba(10,25,48,.55);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.12);color:#cfd8d2;font-size:12.5px;font-weight:700;text-decoration:none;font-family:'Pretendard Variable',Pretendard,sans-serif"><span style="width:7px;height:7px;border-radius:50%;background:#5C8FD6"></span>K Mineral Risk 홈</a>
 
 <!-- Main (사이드바 없음 — 회의에 집중) -->
 <main class="flex-1 h-screen flex flex-col bg-background overflow-hidden">
@@ -7501,7 +7508,14 @@ __EXTRA_CSS__
   <div class="u-r"><a href="/briefing">리포트 구독</a><a href="/pro">전문가용</a></div>
 </div></div>
 <div class="tbar"><div class="wrap">
-  <a class="logo" href="/"><span class="dot"></span><span><b>마인<em>테크</em></b><i>MINE-TECH CRITICAL MINERALS SERVICE</i></span></a>
+  <a class="logo" href="/"><svg width="36" height="36" viewBox="0 0 40 40" aria-hidden="true"><defs>
+<linearGradient id="kmrg" x1="0" y1="0" x2="1" y2="1">
+<stop offset="0" stop-color="#1E74D8"/><stop offset="1" stop-color="#123C7E"/></linearGradient></defs>
+<polygon points="20,2 36,11 36,29 20,38 4,29 4,11" fill="url(#kmrg)"/>
+<polygon points="20,2 36,11 20,20 4,11" fill="#ffffff" opacity=".14"/>
+<polygon points="20,20 36,11 36,29 20,38" fill="#000000" opacity=".12"/>
+<polyline points="8,22 14,22 17,13 22,29 25,20 32,20" fill="none" stroke="#ffffff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="32" cy="20" r="2.6" fill="#FF5A4E"/></svg><span><b><em>K</em> Mineral Risk</b><i>핵심광물 공급망 위험 진단 · KOREA CMR INTELLIGENCE</i></span></a>
   <nav class="gnbbar">
   <a href="/" class="__A_HOME__">홈</a>
   <a href="/globe" class="__A_MAP__">핵심광물지도</a>
@@ -7540,7 +7554,7 @@ __CONTENT__
     <option value="https://www.worldbank.org/en/research/commodity-markets">World Bank 원자재 시장</option>
   </select>
   <select onchange="if(this.value){location=this.value;this.value=''}">
-    <option value="">마인테크 서비스 바로가기</option>
+    <option value="">K Mineral Risk 서비스 바로가기</option>
     <option value="/globe">핵심광물지도</option>
     <option value="/briefing">브리핑 · 리포트 구독</option>
     <option value="/conference">AI 전문가 회의실</option>
@@ -7550,7 +7564,7 @@ __CONTENT__
 <footer>
 <div class="f-wrap">
   <div>
-    <div class="f-brand"><span class="dot"></span>마인테크 Mine-Tech</div>
+    <div class="f-brand"><span class="dot"></span>K Mineral Risk</div>
     <p>흩어진 광물 공공데이터를 융합해 공급망 위험을 하나의 지수로 진단하는
     핵심광물 인텔리전스 서비스입니다. 모든 수치에 출처가 표기됩니다.</p>
     <div class="f-status"><span class="ok"></span>정상 운영 · 데이터 기준 __ASOF__</div>
@@ -7575,7 +7589,7 @@ __CONTENT__
     </ul>
   </div>
 </div>
-<div class="f-bot">본 서비스는 산업통상자원부·산하기관 공공데이터를 활용합니다 · 팀 SMART-X, 세종대학교 에너지자원공학과 © 2026 Mine-Tech</div>
+<div class="f-bot">본 서비스는 산업통상자원부·산하기관 공공데이터를 활용합니다 · 팀 SMART-X, 세종대학교 에너지자원공학과 · © 2026 K Mineral Risk</div>
 </footer>
 <nav class="mtab">
  <a href="/" class="__A_HOME__"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M3 11 12 3l9 8v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/></svg>홈</a>
@@ -7940,7 +7954,7 @@ def render_home_v2():
   }).catch(function(){document.getElementById('railGeo').textContent='이슈를 불러오지 못했어요.';});
 })();
 """
-    return _v2_shell("home", "마인테크 — 오늘의 광물 날씨",
+    return _v2_shell("home", "K Mineral Risk — 오늘의 광물 날씨",
                      content, V2_HOME_CSS, js.replace("__RISKJS__", risk_js), q=q0)
 
 
@@ -7973,7 +7987,7 @@ def render_mineral_v2(name):
     rows = {r["name"]: r for r in _v2_rows()}
     r = rows.get(name) or _v2_lookup(rows, name)
     if not r:
-        return _v2_shell("home", "마인테크", f'<div class="wrap"><div class="bk">← <a href="/">홈으로</a></div>'
+        return _v2_shell("home", "K Mineral Risk", f'<div class="wrap"><div class="bk">← <a href="/">홈으로</a></div>'
                                           f'<h1>{name}</h1><p style="margin-top:10px">아직 준비되지 않은 광물이에요.</p></div>')
     name = r["name"]
     krisk = _v2_lookup(compute_k_risk() or {}, name) or {}
@@ -8095,7 +8109,7 @@ def render_mineral_v2(name):
                 y:{{grid:{{color:'#EEF1F5'}},ticks:{{font:{{size:11}}}}}}}}}}}});
   }}
 }})();"""
-    return _v2_shell("home", f"{name} — 마인테크", content, V2_DETAIL_CSS, js)
+    return _v2_shell("home", f"{name} — K Mineral Risk", content, V2_DETAIL_CSS, js)
 
 
 V2_BRF_CSS = r"""
@@ -8246,7 +8260,7 @@ def render_briefing_v2():
   });
 })();
 """
-    return _v2_shell("brf", "브리핑 — 마인테크",
+    return _v2_shell("brf", "브리핑 — K Mineral Risk",
                      content.replace("__SUBCHIPS__", _chips), V2_BRF_CSS, js)
 
 
