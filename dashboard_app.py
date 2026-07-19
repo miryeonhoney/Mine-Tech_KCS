@@ -7107,7 +7107,7 @@ h1{font-size:24px;font-weight:800;letter-spacing:-.02em}
 .ubar a{color:var(--mut)} .ubar a:hover{color:var(--gd)}
 .ubar .u-r a{font-weight:650} .ubar .u-r span{margin:0 8px;color:var(--line)}
 .logo i{display:block;font-style:normal;font-size:9.5px;font-weight:500;color:var(--mut);letter-spacing:.02em;margin-top:1px}
-footer{margin:56px 0 0;background:var(--gd);color:#cfe6da;font-size:13px}
+footer{margin:0;background:var(--gd);color:#cfe6da;font-size:13px}
 footer .f-wrap{max-width:1060px;margin:0 auto;padding:34px 20px 26px;display:grid;grid-template-columns:1.3fr 1fr 1fr;gap:28px}
 footer h4{color:#fff;font-size:13.5px;font-weight:800;margin-bottom:10px}
 footer .f-brand{font-size:16px;font-weight:800;color:#fff;display:flex;align-items:center;gap:7px;margin-bottom:8px}
@@ -7118,7 +7118,20 @@ footer a{color:#cfe6da} footer a:hover{color:#fff}
 footer .f-status{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.08);border-radius:999px;padding:5px 13px;font-size:12px;margin-top:10px}
 footer .f-status .ok{width:7px;height:7px;border-radius:50%;background:#7ee2b8}
 footer .f-bot{border-top:1px solid rgba(255,255,255,.12);text-align:center;padding:14px;font-size:11.5px;color:#9fc7b3}
-@media(max-width:860px){.ubar{display:none}footer .f-wrap{grid-template-columns:1fr;gap:18px}}
+.gnbbar{background:#fff;border-bottom:2px solid var(--gd)}
+.gnbbar .wrap{display:flex;align-items:stretch;gap:2px;height:52px}
+.gnbbar a{display:flex;align-items:center;padding:0 26px;font-size:16px;font-weight:750;color:var(--ink)}
+.gnbbar a:hover{color:var(--gd);box-shadow:inset 0 -3px 0 var(--g)}
+.gnbbar a.on{color:var(--gd);box-shadow:inset 0 -3px 0 var(--gd)}
+.card{border-radius:8px}
+.modt{display:flex;justify-content:space-between;align-items:flex-end;border-bottom:2px solid var(--ink);padding-bottom:9px;margin:26px 0 0}
+.modt b{font-size:19px;font-weight:800}
+.modt a{font-size:12.5px;color:var(--mut);font-weight:650}
+.relsites{border-top:1px solid var(--line);background:#fff;padding:15px 0;margin-top:56px}
+.relsites .wrap{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.relsites b{font-size:13.5px}
+.relsites select{border:1px solid #c9d2cc;border-radius:4px;padding:9px 12px;font:inherit;font-size:13px;min-width:230px;background:#fff;color:var(--ink)}
+@media(max-width:860px){.ubar{display:none}.gnbbar{display:none}footer .f-wrap{grid-template-columns:1fr;gap:18px}}
 __EXTRA_CSS__
 </style>
 </head>
@@ -7133,15 +7146,35 @@ __EXTRA_CSS__
 </div></div>
 <div class="tbar"><div class="wrap">
   <a class="logo" href="/"><span class="dot"></span><span><b>마인테크</b><i>Mine-Tech Critical Minerals Intelligence</i></span></a>
-  <nav class="gnav">
-    <a href="/" class="__A_HOME__">홈</a>
-    <a href="/globe" class="__A_MAP__">핵심광물지도</a>
-    <a href="/briefing" class="__A_BRF__">브리핑</a>
-    <a href="/conference" class="__A_AI__">AI 회의</a>
-  </nav>
+  <div style="flex:1"></div>
   <div class="sbox"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input id="gq" placeholder="광물·용도 검색 (리튬, 배터리…)" value="__Q__"></div>
 </div></div>
+<nav class="gnbbar"><div class="wrap">
+  <a href="/" class="__A_HOME__">홈</a>
+  <a href="/globe" class="__A_MAP__">핵심광물지도</a>
+  <a href="/briefing" class="__A_BRF__">브리핑</a>
+  <a href="/conference" class="__A_AI__">AI 회의</a>
+  <a href="/dashboard">통계</a>
+  <a href="/pro">전문가용</a>
+</div></nav>
 __CONTENT__
+<div class="relsites"><div class="wrap"><b>관련 사이트</b>
+  <select onchange="if(this.value){window.open(this.value);this.value=''}">
+    <option value="">데이터 출처 바로가기</option>
+    <option value="https://www.komis.or.kr">KOMIS 한국자원정보서비스</option>
+    <option value="https://www.data.go.kr">공공데이터포털</option>
+    <option value="https://tradedata.go.kr">관세청 수출입무역통계</option>
+    <option value="https://www.usgs.gov">USGS</option>
+    <option value="https://www.worldbank.org/en/research/commodity-markets">World Bank 원자재 시장</option>
+  </select>
+  <select onchange="if(this.value){location=this.value;this.value=''}">
+    <option value="">마인테크 서비스 바로가기</option>
+    <option value="/globe">핵심광물지도</option>
+    <option value="/briefing">브리핑 · 리포트 구독</option>
+    <option value="/conference">AI 전문가 회의실</option>
+    <option value="/minerals.csv">데이터 내려받기(CSV)</option>
+  </select>
+</div></div>
 <footer>
 <div class="f-wrap">
   <div>
@@ -7205,10 +7238,19 @@ def _v2_shell(active, title, content, extra_css="", js="", q=""):
 
 
 V2_HOME_CSS = r"""
-.hero-date{font-size:13px;color:var(--mut);margin-top:26px}
-.hero-h{font-size:26px;font-weight:800;letter-spacing:-.02em;margin:2px 0 16px}
-.hgrid{display:grid;grid-template-columns:2fr 1fr 1fr;gap:12px;margin-bottom:20px}
-.alert{border-radius:18px;padding:18px 20px}
+.sbox{display:none}
+.hero{background:linear-gradient(130deg,#0a5c3c 0%,#0e7a4f 55%,#128a5c 100%);color:#fff;padding:44px 0 58px}
+.h-badge{display:inline-block;border:1px solid rgba(255,255,255,.45);border-radius:999px;padding:4px 14px;font-size:12px;font-weight:700;color:#d7efe3;margin-bottom:14px}
+.h-tt{font-size:34px;font-weight:800;letter-spacing:-.02em}
+.h-sub{font-size:14px;color:#cfe9db;margin:8px 0 22px}
+.h-search{display:flex;align-items:center;background:#fff;border-radius:999px;padding:5px 5px 5px 24px;max-width:660px;box-shadow:0 10px 26px rgba(0,40,20,.22)}
+.h-search input{flex:1;border:0;outline:0;font:inherit;font-size:15.5px;color:var(--ink);background:none}
+.h-search button{border:0;background:var(--gd);color:#fff;border-radius:999px;width:46px;height:46px;font-size:16px;cursor:pointer;flex:none}
+.h-pop{margin-top:14px;font-size:12.5px;color:#cfe9db;font-weight:700;display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.h-pop button{border:1px solid rgba(255,255,255,.4);background:rgba(255,255,255,.12);color:#fff;border-radius:999px;padding:3px 12px;font:650 12px/1.5 inherit;font-family:inherit;cursor:pointer}
+.h-pop button:hover{background:rgba(255,255,255,.24)}
+.hgrid{display:grid;grid-template-columns:2fr 1fr 1fr;gap:12px;margin-bottom:6px}
+.alert{border-radius:8px;padding:18px 20px}
 .alert.a-dg{background:var(--dgl)} .alert.a-wr{background:var(--wrl)} .alert.a-ok{background:var(--okl)}
 .alert .a-t{font-size:17px;font-weight:800;display:flex;align-items:center;gap:8px}
 .alert.a-dg .a-t,.alert.a-dg .a-b,.alert.a-dg a{color:var(--dgr)}
@@ -7216,7 +7258,7 @@ V2_HOME_CSS = r"""
 .alert.a-ok .a-t,.alert.a-ok .a-b,.alert.a-ok a{color:var(--gd)}
 .alert .a-b{font-size:13.5px;margin-top:5px;line-height:1.55}
 .alert a{font-size:13px;font-weight:750;display:inline-block;margin-top:9px}
-.stat{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px 18px}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:16px 18px}
 .stat .s-l{font-size:12.5px;color:var(--mut)}
 .stat .s-v{font-size:26px;font-weight:800;margin-top:2px}
 .chips{display:flex;gap:7px;flex-wrap:wrap;margin:2px 0 16px}
@@ -7224,7 +7266,7 @@ V2_HOME_CSS = r"""
 font-size:13.5px;font-weight:650;color:var(--mut);cursor:pointer;transition:.15s}
 .chip.on{background:var(--gd);border-color:var(--gd);color:#fff}
 .hgrid2{display:grid;grid-template-columns:1.65fr 1fr;gap:16px;align-items:start}
-.mlist{background:var(--card);border:1px solid var(--line);border-radius:18px;overflow:hidden}
+.mlist{background:var(--card);border:1px solid var(--line);border-radius:8px;overflow:hidden}
 .mrow{display:flex;align-items:center;gap:13px;padding:13px 18px;border-bottom:1px solid var(--line);transition:.12s}
 .mrow:last-child{border-bottom:0}
 .mrow:hover{background:var(--bg)}
@@ -7244,9 +7286,10 @@ font:inherit;font-size:13.5px;font-weight:700;color:var(--gd);cursor:pointer}
 .rail .ai-card .r-q{font-size:12.5px;opacity:.85;margin-top:4px}
 .rail .ai-card a{display:inline-block;margin-top:10px;background:rgba(255,255,255,.16);border-radius:999px;
 padding:6px 14px;font-size:12.5px;font-weight:700;color:#fff}
-.qmenu{display:grid;grid-template-columns:repeat(8,1fr);gap:8px;margin:0 0 18px}
+.qmenu{display:grid;grid-template-columns:repeat(8,1fr);gap:8px;margin:-34px 0 22px;position:relative;z-index:5}
 .qmenu a{display:flex;flex-direction:column;align-items:center;gap:7px;background:var(--card);
-border:1px solid var(--line);border-radius:14px;padding:13px 4px 11px;font-size:12px;font-weight:650;color:var(--ink);transition:.12s}
+border:1px solid var(--line);border-radius:8px;padding:13px 4px 11px;font-size:12px;font-weight:650;color:var(--ink);transition:.12s;
+box-shadow:0 4px 12px rgba(20,40,30,.08)}
 .qmenu a:hover{border-color:var(--g);color:var(--gd)}
 .qmenu .qi{width:34px;height:34px;border-radius:50%;background:var(--gl);display:flex;align-items:center;justify-content:center;font-size:16px}
 .popq{font-size:12.5px;color:var(--mut);font-weight:700;margin:0 0 10px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
@@ -7311,9 +7354,29 @@ def render_home_v2():
         )
 
     content = f"""
+<div class="hero">
+  <div class="wrap">
+    <span class="h-badge">핵심광물 48종 · 5개 분류 실시간 관측</span>
+    <div class="h-tt">오늘의 광물 날씨</div>
+    <div class="h-sub">{now.month}월 {now.day}일 {wd}요일 — 흩어진 광물 공공데이터를 융합해 공급망 위험을 하나의 지수로 진단합니다</div>
+    <div class="h-search"><input id="heroq" placeholder="광종명·용도를 입력하세요 (예: 리튬, 배터리, 자석)"><button aria-label="검색">🔍</button></div>
+    <div class="h-pop">인기 검색어
+      <button data-q="리튬">#리튬</button><button data-q="텅스텐">#텅스텐</button>
+      <button data-q="흑연">#흑연</button><button data-q="네오디뮴">#네오디뮴</button>
+      <button data-q="갈륨">#갈륨</button><button data-q="배터리">#배터리</button></div>
+  </div>
+</div>
 <div class="wrap">
-  <div class="hero-date">{now.month}월 {now.day}일 {wd}요일</div>
-  <div class="hero-h">오늘의 광물 날씨</div>
+  <div class="qmenu">
+    <a href="#mlist"><span class="qi">◉</span>전체 광종</a>
+    <a href="/globe"><span class="qi">🌍</span>광물 지도</a>
+    <a href="/briefing"><span class="qi">📰</span>브리핑</a>
+    <a href="/conference"><span class="qi">🎙</span>AI 회의</a>
+    <a href="/briefing"><span class="qi">✉️</span>리포트 구독</a>
+    <a href="/minerals.csv"><span class="qi">⬇</span>데이터 받기</a>
+    <a href="/dashboard"><span class="qi">📊</span>통계 대시보드</a>
+    <a href="/pro"><span class="qi">🛠</span>전문가용</a>
+  </div>
   <div class="hgrid">
     <div class="alert {acls}">
       <div class="a-t">{icon} {at}</div>
@@ -7326,28 +7389,13 @@ def render_home_v2():
       <div class="s-v" style="color:var(--wrn)">{n_wr}<span style="font-size:13px;color:var(--mut);font-weight:600"> / 48</span></div></div>
   </div>
 
-  <div class="qmenu">
-    <a href="#mlist"><span class="qi">◉</span>전체 광종</a>
-    <a href="/globe"><span class="qi">🌍</span>광물 지도</a>
-    <a href="/briefing"><span class="qi">📰</span>브리핑</a>
-    <a href="/conference"><span class="qi">🎙</span>AI 회의</a>
-    <a href="/briefing"><span class="qi">✉️</span>리포트 구독</a>
-    <a href="/minerals.csv"><span class="qi">⬇</span>데이터 받기</a>
-    <a href="/dashboard"><span class="qi">📊</span>통계 대시보드</a>
-    <a href="/pro"><span class="qi">🛠</span>전문가용</a>
-  </div>
-
-  <div class="popq">인기 검색어
-    <button data-q="리튬">#리튬</button><button data-q="텅스텐">#텅스텐</button>
-    <button data-q="흑연">#흑연</button><button data-q="네오디뮴">#네오디뮴</button>
-    <button data-q="갈륨">#갈륨</button><button data-q="배터리">#배터리</button>
-  </div>
-  <div class="chips">{''.join(chips)}</div>
+  <div class="modt"><b>광물 종합 현황</b><a href="/minerals.csv">CSV 내려받기 ↓</a></div>
+  <div class="chips" style="margin-top:14px">{''.join(chips)}</div>
 
   <div class="hgrid2">
     <div>
       <div class="mlist" id="mlist">{''.join(row_html)}</div>
-      <button class="more-btn" id="moreBtn" style="border-radius:0 0 18px 18px;margin-top:-1px">광물 더 보기</button>
+      <button class="more-btn" id="moreBtn" style="border-radius:0 0 8px 8px;margin-top:-1px">광물 더 보기</button>
     </div>
     <div class="rail">
       <div class="card"><div class="r-l">📰 오늘의 브리핑</div><div class="r-b" id="railBrief">불러오는 중…</div></div>
@@ -7370,7 +7418,7 @@ def render_home_v2():
   var LIMIT=12, rows=[].slice.call(document.querySelectorAll('.mrow')),
       chips=[].slice.call(document.querySelectorAll('.chip')),
       more=document.getElementById('moreBtn'), cat='all', expanded=false,
-      q=document.getElementById('gq');
+      q=document.getElementById('heroq')||document.getElementById('gq');
   function apply(){
     var kw=((q&&q.value)||'').trim().toLowerCase(), shown=0;
     var limitOn=(cat==='all'&&!kw&&!expanded);
@@ -7388,7 +7436,7 @@ def render_home_v2():
     cat=c.dataset.c; apply();
   });});
   more.addEventListener('click',function(){expanded=true;apply();});
-  [].slice.call(document.querySelectorAll('.popq button')).forEach(function(b){
+  [].slice.call(document.querySelectorAll('.h-pop button')).forEach(function(b){
     b.addEventListener('click',function(){ if(q){ q.value=b.dataset.q; apply(); q.focus(); } });
   });
   if(q){q.addEventListener('input',apply); if(q.value) apply(); else apply();}
