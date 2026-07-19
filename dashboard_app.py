@@ -6401,7 +6401,8 @@ tailwind.config = {
       <div id="turnControls" class="px-6 py-3 border-t border-outline-variant/20 bg-surface-container-low/40 flex items-center gap-3 flex-wrap shrink-0" style="display:none">
         <span class="text-[10px] uppercase tracking-widest text-outline font-data-tabular shrink-0">다음 발언자 ▶</span>
         <div id="tcExperts" class="flex flex-wrap gap-2"></div>
-        <button id="summaryBtn" onclick="makeSummary()" class="ml-auto shrink-0 text-xs font-bold border border-secondary/50 text-secondary rounded-lg px-3 py-1.5 hover:bg-secondary hover:text-on-secondary-fixed transition">📝 회의록 요약</button>
+        <button id="endBtn" onclick="endMeeting()" class="ml-auto shrink-0 text-xs font-bold border border-error/60 text-error rounded-lg px-3 py-1.5 hover:bg-error hover:text-on-error transition">🏁 회의 종료</button>
+        <button id="summaryBtn" onclick="makeSummary()" class="shrink-0 text-xs font-bold border border-secondary/50 text-secondary rounded-lg px-3 py-1.5 hover:bg-secondary hover:text-on-secondary-fixed transition">📝 회의록 요약</button>
       </div>
       <div id="consoleBar" class="px-6 py-4 border-t border-outline-variant/20 bg-surface-container-low/60 flex gap-3 shrink-0 items-center">
         <button id="micBtn" onclick="toggleMic()" title="음성 발언 (Jarvis STT)"
@@ -6591,7 +6592,7 @@ function renderSummaryDoc(raw, doc){
     + '<button onclick="downloadMinutes(window._lastSummary||\'\')">⬇ 회의록 저장</button>'
     + '<button onclick="closeSummary()">✕ 닫기</button></div>';
   html += '<div class="sum-cover"><div class="sum-cover-grid"><div>'
-    + '<div class="sum-brand">◆ K-RESOURCE · AI 전문가 회의실</div>'
+    + '<div class="sum-brand">◆ K MINERAL RISK · AI 전문가 회의실</div>'
     + '<div class="sum-doc-title">회의 결과 보고서</div>'
     + '<div class="sum-agenda">안건 — ' + _escH(topicMsg) + '</div>'
     + '<div class="sum-cover-meta"><span>일시 <b>' + new Date().toLocaleString('ko-KR') + '</b></span>'
@@ -6629,7 +6630,7 @@ function renderSummaryDoc(raw, doc){
   html += '<div class="sum-h">📊 근거 데이터</div><div id="sumVizBox"></div>';
   if(quotes) html += '<div class="sum-h">🗣 패널 한마디</div>' + quotes;
   html += '</div></div>';
-  html += '<div class="sum-foot"><span>산업통상부·산하기관 공공데이터 기반 · 모든 수치는 [데이터셋] 출처칩을 따릅니다</span><span>K-RESOURCE 자동 생성 보고서</span></div></div>';
+  html += '<div class="sum-foot"><span>산업통상부·산하기관 공공데이터 기반 · 모든 수치는 [데이터셋] 출처칩을 따릅니다</span><span>K MINERAL RISK 자동 생성 보고서</span></div></div>';
   doc.innerHTML = html;
   var box = document.getElementById('sumVizBox');
   if(box){ vizKeys.forEach(function(k){ renderVizCard(VIZ[k], box, '#e9c349'); }); }
@@ -6637,14 +6638,14 @@ function renderSummaryDoc(raw, doc){
 }
 
 function downloadMinutes(summary){
-  var lines = ['K-RESOURCE AI 전문가 회의록', '일시: ' + new Date().toLocaleString('ko-KR'), '', '[요약]', summary, '', '[전체 회의록]'];
+  var lines = ['K MINERAL RISK AI 전문가 회의록', '일시: ' + new Date().toLocaleString('ko-KR'), '', '[요약]', summary, '', '[전체 회의록]'];
   chatHistory.forEach(function(h){
     lines.push((h.role === 'user' ? '[진행자] ' : '[' + (h.name || '전문가') + '] ') + h.content);
   });
   var blob = new Blob([lines.join('\n')], {type: 'text/plain;charset=utf-8'});
   var a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
-  a.download = 'K-RESOURCE_회의록_' + new Date().toISOString().slice(0,10) + '.txt';
+  a.download = 'K MINERAL RISK_회의록_' + new Date().toISOString().slice(0,10) + '.txt';
   a.click(); URL.revokeObjectURL(a.href);
 }
 
@@ -6699,6 +6700,8 @@ function startSession() {
   }).join('');
   document.getElementById('chatArea').innerHTML = '';
   recentViz = [];
+  appendMainAI('지금부터 K Mineral Risk 전문가 회의를 시작합니다. 오늘의 안건 — "' + q + '". '
+    + '참여 전문가는 ' + turnOrder.length + '인입니다. 진행자께서는 첫 발언자를 지정하거나 직접 질문해주세요.');
   appendUserMsg(q);
   busy = false;
   renderTurnControls(true);   // 첫 발언자 직접 선택
@@ -6711,6 +6714,30 @@ function backToLobby() {
   chatHistory = [];
   recentViz = [];
   busy = false;
+}
+
+function appendMainAI(text) {
+  const chatArea = document.getElementById('chatArea');
+  const div = document.createElement('div');
+  div.className = 'flex justify-center';
+  div.innerHTML = '<div class="max-w-[92%] w-full"><div class="flex items-center justify-center gap-2 mb-1">'
+    + '<span class="text-[11px] font-black tracking-widest" style="color:#e9c667">◆ MAIN AI · 진행</span></div>'
+    + '<div class="msg-bubble rounded-xl px-4 py-3 text-sm leading-relaxed text-center" '
+    + 'style="background:rgba(233,198,103,.08);border:1px solid rgba(233,198,103,.35);color:#f2e6b8"></div></div>';
+  div.querySelector('.msg-bubble').textContent = text;
+  chatArea.appendChild(div);
+  chatArea.scrollTop = chatArea.scrollHeight;
+  chatHistory.push({role:'assistant', name:'Main AI(진행)', content:text});
+  if (voiceMode) voiceSpeak(text, null);
+}
+
+function endMeeting() {
+  if (busy) return;
+  document.getElementById('turnControls').style.display = 'none';
+  const n = chatHistory.filter(h => h.role === 'assistant').length;
+  appendMainAI('이상으로 회의를 마치겠습니다. 오늘 전문가 ' + turnOrder.length + '인이 나눈 '
+    + n + '건의 발언을 바탕으로 회의 요약서를 작성합니다. 잠시만 기다려주세요.');
+  setTimeout(makeSummary, voiceMode ? 3200 : 900);
 }
 
 function appendUserMsg(text) {
