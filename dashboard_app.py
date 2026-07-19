@@ -257,9 +257,16 @@ CAT_DEFS = [
     ("etc",    "기타",     "⛏️", "철·흑연·귀금속(금·은·백금·팔라듐)"),
 ]
 
+_TAXO_LOOKUP = {}
+for _c, _ns in MINERAL_TAXONOMY.items():
+    for _x in _ns:
+        _TAXO_LOOKUP[_x] = _c
+        _TAXO_LOOKUP[re.sub(r"[\(\)/].*$", "", _x)] = _c   # "동(구리)"→"동", "창연/비스무트"→"창연"
+
 def mineral_category(name):
-    """수출입/데이터 광물명 → 분류. 에너지·복합명 우선 처리."""
+    """수출입/데이터 광물명 → 분류. 공식 분류표 정확 매칭 우선, 이후 휴리스틱."""
     n = str(name).strip()
+    if n in _TAXO_LOOKUP: return _TAXO_LOOKUP[n]
     if any(k in n for k in ("유연탄", "무연탄", "우라늄", "석탄", "갈탄", "토탄")): return "에너지"
     if "희토" in n: return "희토류"
     NF = ("니켈", "동", "구리", "알루미늄", "보크사이트", "주석", "아연")
@@ -2502,6 +2509,7 @@ function switchCategory(cat, el){
     }
     document.querySelectorAll('#tab-risk .risk-card').forEach(function(c){c.style.display='';});
     if(note) note.textContent='';
+    return;
   }
   // 국내 광산·뉴스: 전국/전체 단위 데이터 — 카테고리와 무관, 페이지 유지
   if((window._curTab==='mines'||window._curTab==='news') && cat!=='minerals'){
