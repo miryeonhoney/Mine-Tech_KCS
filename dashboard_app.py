@@ -6971,7 +6971,26 @@ function sendMessage() {
   if (!msg) return;
   input.value = '';
   appendUserMsg(msg);
+  // 호명 자동 지목 — "리튬 전문가 생각은 어떠세요?" → 선택 없이 리튬 전문가가 바로 발언
+  const called = _detectCalledExpert(msg);
+  if (called) {
+    setTimeout(function(){ speakExpert(called); }, 400);
+    return;
+  }
   renderTurnControls();
+}
+
+function _detectCalledExpert(msg) {
+  const m = msg.replace(/\s+/g, '');
+  let hit = null;
+  turnOrder.forEach(function(k){
+    const ex = EXPERTS[k]; if (!ex) return;
+    const nm = (ex.name || '').replace(/\s+/g, '');       // "리튬 전문가" → "리튬전문가"
+    const base = nm.replace(/전문가$/, '');                 // → "리튬"
+    if (!base) return;
+    if (m.includes(nm) || m.includes(base + '전문가') || m.includes(base + '님')) hit = k;
+  });
+  return hit;
 }
 
 /* ═══ Jarvis 음성 회의 — STT(마이크) + TTS(낭독) ═══ */
