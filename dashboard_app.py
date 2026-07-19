@@ -4784,6 +4784,13 @@ def _cache_warmer():
             render_dashboard()
             try: render_home_v2()
             except Exception: pass
+            # 브리핑 5개 탭 AI 분석 선생성 (콜드 시 탭당 14~33초 → 0초)
+            try:
+                with app.test_client() as _tc:
+                    for _c in ("minerals", "inv", "biz", "con", "pol"):
+                        _tc.get(f"/api/news-brief?cat={_c}")
+            except Exception as _e:
+                print("[warmer] brief:", _e)
             print(f"[warmer] 캐시 갱신 완료 ({time.time()-t0:.1f}s)")
         except Exception as e:
             print("[warmer] 오류:", e)
