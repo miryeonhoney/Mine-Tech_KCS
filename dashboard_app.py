@@ -358,7 +358,8 @@ HS_CODES = {
     "2846":"희토류화합물","8105":"코발트가공품","7501":"니켈가공품",
 }
 
-NEWS_KEYWORDS = ["핵심광물","리튬 광물","코발트 광물","니켈 광물","희토류","광물 공급망"]
+NEWS_KEYWORDS = ["핵심광물", "리튬 광물", "코발트 광물", "니켈 광물", "희토류", "광물 공급망",
+                 "텅스텐", "흑연 음극재", "광물 수출통제", "구리 제련", "희소금속"]
 
 app    = Flask(__name__)
 app.secret_key = SECRET_KEY
@@ -716,7 +717,7 @@ def fetch_news():
     for kw in NEWS_KEYWORDS:
         try:
             r = requests.get("https://openapi.naver.com/v1/search/news.json",
-                headers=hdrs, params={"query":kw,"display":5,"sort":"date"}, timeout=8)
+                headers=hdrs, params={"query":kw,"display":6,"sort":"date"}, timeout=8)
             if r.status_code != 200: continue
             for it in r.json().get("items",[]):
                 lnk = it.get("originallink","")
@@ -727,13 +728,15 @@ def fetch_news():
                 all_news.append({
                     "제목": clean(it.get("title","")),
                     "요약": clean(it.get("description",""))[:80],
-                    "언론사링크": lnk,
-                    "발행일시": dt,
+                    "언론사링크": lnk, "링크": lnk,
+                    "발행일시": dt, "발행일": dt,
                     "검색키워드": kw,
                 })
         except: continue
         time.sleep(0.15)
     result = all_news if all_news else local_news()
+    result = [n for n in result if news_relevant(n, MINERAL_NEWS_TERMS)]
+    result = ai_relevance_gate(result, "핵심광물·금속 자원과 공급망, 소재 산업")
     cache_set("news", result)
     return result
 
@@ -869,10 +872,14 @@ def compute_k_risk():
 
 # 대상별 뉴스 — 같은 자원 이슈도 누구에게 보여줄지에 따라 다른 키워드
 NEWS_AUDIENCE = {
-    "투자자": ["2차전지 테마주", "핵심광물 수혜주", "희토류 관련주"],
-    "기업":   ["핵심광물 공급망", "핵심광물 수출규제", "광물 수급"],
-    "소비자": ["전기차 배터리 원자재", "리튬 가격", "니켈 가격"],
-    "정책":   ["핵심광물 확보전략", "자원안보", "광물 비축"],
+    "투자자": ["2차전지 테마주", "핵심광물 수혜주", "희토류 관련주",
+              "배터리 소재주", "리튬 관련주", "희소금속 투자"],
+    "기업":   ["핵심광물 공급망", "핵심광물 수출규제", "광물 수급",
+              "원자재 조달", "소재 국산화", "공급망 다변화"],
+    "소비자": ["전기차 배터리 원자재", "리튬 가격", "니켈 가격",
+              "배터리 가격", "전기차 가격 인상", "원자재 물가"],
+    "정책":   ["핵심광물 확보전략", "자원안보", "광물 비축",
+              "핵심광물 정책", "공급망 안정화", "자원 외교"],
 }
 
 # 광물 뉴스 관련성 필터 — 제목·요약에 아래 단어가 하나도 없으면 광물 뉴스로 보지 않는다
@@ -935,7 +942,7 @@ def _fetch_audience_news(cache_key, aud_map):
             for kw in kws:
                 try:
                     r = requests.get("https://openapi.naver.com/v1/search/news.json",
-                        headers=hdrs, params={"query": kw, "display": 4, "sort": "date"}, timeout=8)
+                        headers=hdrs, params={"query": kw, "display": 6, "sort": "date"}, timeout=8)
                     if r.status_code != 200: continue
                     for it in r.json().get("items", []):
                         lnk = it.get("originallink", "")
