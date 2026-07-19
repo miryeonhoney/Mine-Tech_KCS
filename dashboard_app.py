@@ -1199,8 +1199,8 @@ def build_newsletter(to=None, minerals=None):
         try: minerals = get_sub_minerals(to)
         except Exception: minerals = []
     minerals = minerals or []
-    G, GD, GL = "#0e7a4f", "#0a5c3c", "#e5f3ec"
-    INKC, MUTC, LINE = "#1b211e", "#68726c", "#e3e8e5"
+    G, GD, GL = "#155BB8", "#16305C", "#EAF2FC"
+    INKC, MUTC, LINE = "#222222", "#555555", "#DDE3EA"
     DGR, DGL, WRN, WRL = "#d8453c", "#fdecea", "#c97a00", "#fdf3e2"
     base = APP_BASE_URL or "http://127.0.0.1:8081"
     now = _kst_now()
@@ -1292,7 +1292,7 @@ def build_newsletter(to=None, minerals=None):
     geo_html = ""
     if isinstance(geo, dict) and (geo.get("why") or geo.get("title")):
         geo_html = (
-            f'<div style="background:#f5f7f6;border-radius:12px;padding:13px 18px;margin:0 0 18px;">'
+            f'<div style="background:#F5F7FA;border-radius:12px;padding:13px 18px;margin:0 0 18px;">'
             f'<div style="font-size:11.5px;font-weight:800;color:{MUTC};margin-bottom:4px;">🌍 지금 세계에선</div>'
             f'<div style="font-size:13px;color:{INKC};line-height:1.6;">'
             f'{(geo.get("loc") + " — ") if geo.get("loc") else ""}{geo.get("why") or geo.get("title")}</div></div>'
@@ -1311,11 +1311,11 @@ def build_newsletter(to=None, minerals=None):
     _unsub = f' · <a href="{_link}" style="color:#9aa39d;">수신거부</a>' if _link else ""
 
     return (
-        f'<div style="max-width:620px;margin:0 auto;font-family:\'Apple SD Gothic Neo\',\'Malgun Gothic\',sans-serif;background:#f5f7f6;padding:18px 12px;">'
+        f'<div style="max-width:620px;margin:0 auto;font-family:\'Apple SD Gothic Neo\',\'Malgun Gothic\',sans-serif;background:#F5F7FA;padding:18px 12px;">'
         # 헤더
         f'<div style="background:{GD};border-radius:16px 16px 0 0;padding:22px 26px;">'
         f'<div style="color:#fff;font-size:19px;font-weight:800;">● 마인테크 — 오늘의 광물 날씨</div>'
-        f'<div style="color:#9fd4bc;font-size:12.5px;margin-top:4px;">{now.year}년 {now.month}월 {now.day}일 {wd}요일</div></div>'
+        f'<div style="color:#B9CCEA;font-size:12.5px;margin-top:4px;">{now.year}년 {now.month}월 {now.day}일 {wd}요일</div></div>'
         # 본문
         f'<div style="background:#ffffff;border:1px solid {LINE};border-top:0;border-radius:0 0 16px 16px;padding:22px 26px;">'
         # 히어로
@@ -1347,9 +1347,9 @@ def build_welcome(to=None, minerals=None):
     """구독 직후 보내는 환영 메일 — 배너 + 오늘자 리포트(관심 광물 반영)."""
     banner = (
         '<div style="max-width:620px;margin:0 auto;font-family:\'Apple SD Gothic Neo\',\'Malgun Gothic\',sans-serif;padding:18px 12px 0;">'
-        '<div style="background:#e5f3ec;border-radius:16px;padding:20px 24px;margin-bottom:6px;">'
-        '<div style="font-size:17px;font-weight:800;color:#0a5c3c;">구독을 환영해요 🎉</div>'
-        '<div style="font-size:13.5px;color:#1b211e;margin-top:7px;line-height:1.65;">'
+        '<div style="background:#EAF2FC;border-radius:16px;padding:20px 24px;margin-bottom:6px;">'
+        '<div style="font-size:17px;font-weight:800;color:#16305C;">구독을 환영해요 🎉</div>'
+        '<div style="font-size:13.5px;color:#222222;margin-top:7px;line-height:1.65;">'
         '이제 매일 아침 <b>오늘의 광물 날씨</b>가 이 주소로 도착해요.<br>'
         '위험해진 광물, 수입선 변화, 꼭 봐야 할 소식만 골라 보내드릴게요.<br>'
         '아래는 오늘자 리포트 미리보기예요.</div></div></div>'
@@ -1468,7 +1468,7 @@ def render_dashboard(home=False):
     midx_cards = "".join([
         _midx_card("종합", "광물종합지수", "#c98500"),
         _midx_card("에너지광물", "에너지광물 (연료탄·우라늄)", "#eb6834"),
-        _midx_card("희소금속", "희소금속 (리튬·희토류)", "#0e7a4f"),
+        _midx_card("희소금속", "희소금속 (리튬·희토류)", "#155BB8"),
         _midx_card("메이저금속", "메이저금속 (철·동·니켈)", "#4a3aa7"),
     ]) or '<div class="empty">지수 데이터 없음</div>'
 
@@ -1495,7 +1495,7 @@ def render_dashboard(home=False):
     ppa_rows = "".join(
         f'<div class="pp-row"><span class="pp-nm">{i["name"]}</span>'
         f'<span class="pp-val">${(i["close"] or 0):,.0f}</span>'
-        f'<span class="pp-chg" style="color:{"#d64545" if (i["chg"] or 0)>0 else ("#1e8e5a" if (i["chg"] or 0)<0 else "#8a948e")}">'
+        f'<span class="pp-chg" style="color:{"#d64545" if (i["chg"] or 0)>0 else ("#1e8e5a" if (i["chg"] or 0)<0 else "#888888")}">'
         f'{"▲" if (i["chg"] or 0)>0 else ("▼" if (i["chg"] or 0)<0 else "·")} {abs(i["chg"] or 0):.2f}%</span></div>'
         for i in _pp) or '<div class="empty">시세 데이터 없음</div>'
     _lme = ppa.get("lme") or {}
@@ -1506,7 +1506,7 @@ def render_dashboard(home=False):
     home_metal_html = ("".join(
         f'<div class="hm-card"><span class="hm-nm">{i["name"]}</span>'
         f'<b class="hm-val">${(i["close"] or 0):,.0f}</b>'
-        f'<span class="hm-chg" style="color:{"#d64545" if (i["chg"] or 0)>0 else ("#1e8e5a" if (i["chg"] or 0)<0 else "#8a948e")}">'
+        f'<span class="hm-chg" style="color:{"#d64545" if (i["chg"] or 0)>0 else ("#1e8e5a" if (i["chg"] or 0)<0 else "#888888")}">'
         f'{"▲" if (i["chg"] or 0)>0 else ("▼" if (i["chg"] or 0)<0 else "·")}{abs(i["chg"] or 0):.2f}%</span></div>'
         for i in _pp)) if _pp else ""
 
@@ -1605,7 +1605,7 @@ def render_dashboard(home=False):
             rtxt = f"×{ratio:,.2f}"
             rcol = "#1e8e5a" if 0.5 <= ratio <= 2 else "#b58a12"
         else:
-            rtxt, rcol = "미집계", "#8a948e"
+            rtxt, rcol = "미집계", "#888888"
         cross_rows += (
             f'<tr><td class="t-nm" style="padding:7px 4px;font-weight:600">{m}</td>'
             f'<td class="t-num" style="padding:7px 4px">${v["total"]/1e6:,.0f}M</td>'
@@ -1747,7 +1747,7 @@ def render_dashboard(home=False):
         _rmax = _rk[0]["total"] if _rk else 1
         usgs_rank_html = "".join(
             f'<div class="rk-item"><span class="rk-no">{i+1:02d}</span>'
-            f'<div class="rk-mid"><div class="rk-nm">{x["name"]} <i class="rk-cat" style="color:{TAXO_COLOR.get(x["cat"], "#8a948e")}">{x["cat"]}</i></div>'
+            f'<div class="rk-mid"><div class="rk-nm">{x["name"]} <i class="rk-cat" style="color:{TAXO_COLOR.get(x["cat"], "#888888")}">{x["cat"]}</i></div>'
             f'<div class="rk-bar"><div class="rk-fill" style="width:{max(x["total"]/_rmax*100, 2):.0f}%"></div></div></div>'
             f'<span class="rk-vl">{_tons(x["total"])}</span></div>'
             for i, x in enumerate(_rk))
@@ -1804,14 +1804,14 @@ def render_dashboard(home=False):
     DASH_OVERRIDE = r"""
 /* === MINETECH 라이트 디자인 시스템 (화이트 × 네이비 × 앰버골드) === */
 :root{
-  --bg:#f5f7f6;--bg2:#ffffff;--bg3:#eef2ef;
-  --border:#e3e8e5;--border2:#c9d2cc;
-  --text:#1b211e;--muted:#4c5850;--muted2:#8a948e;
+  --bg:#F5F7FA;--bg2:#ffffff;--bg3:#EEF1F5;
+  --border:#DDE3EA;--border2:#C9D2DD;
+  --text:#222222;--muted:#555555;--muted2:#888888;
   --red:#d64545;--red-dim:#fdeeee;--red-bright:#c03535;
-  --accent:#0a5c3c;--accent2:#0a5c3c;
-  --navy:#0a5c3c;--navy2:#0e7a4f;
-  --blue:#0e7a4f;--cyan:#0e7a4f;--green:#1e8e5a;
-  --gold:#0e7a4f;--gold-soft:#faf3dd;
+  --accent:#16305C;--accent2:#16305C;
+  --navy:#16305C;--navy2:#155BB8;
+  --blue:#155BB8;--cyan:#155BB8;--green:#1e8e5a;
+  --gold:#155BB8;--gold-soft:#faf3dd;
   --shadow:0 1px 2px rgba(20,35,60,.04),0 8px 24px rgba(20,35,60,.07);
   --mono:'JetBrains Mono','IBM Plex Mono',monospace;
   --sans:'Inter','Noto Sans KR',sans-serif;
@@ -1831,7 +1831,7 @@ body{background:var(--bg);padding-left:256px;color:var(--text);}
 #subnav-minerals{counter-reset:nav;position:relative;}
 #subnav-minerals::before{
   content:'';position:absolute;left:22px;top:16px;bottom:16px;width:1px;
-  background:linear-gradient(180deg,transparent,rgba(14,122,79,.35),transparent);}
+  background:linear-gradient(180deg,transparent,rgba(21,91,184,.35),transparent);}
 .nav a[data-tab]{position:relative;display:flex!important;align-items:center;gap:12px;width:100%;
   padding:11px 12px 11px 46px!important;border-radius:11px!important;font-size:13.5px!important;font-weight:600;
   color:var(--muted)!important;border:0!important;transition:.24s cubic-bezier(.2,.7,.3,1);overflow:hidden;}
@@ -1842,9 +1842,9 @@ body{background:var(--bg);padding-left:256px;color:var(--text);}
   background:var(--bg3);border:1px solid var(--border);border-radius:7px;transition:.24s;z-index:1;}
 .nav a[data-tab]:hover{background:var(--gold-soft)!important;color:var(--text)!important;padding-left:50px!important;}
 .nav a[data-tab]:hover::before{border-color:var(--gold);color:var(--accent);}
-.nav a[data-tab].active{background:linear-gradient(90deg,rgba(14,122,79,.16),rgba(14,122,79,.02))!important;
+.nav a[data-tab].active{background:linear-gradient(90deg,rgba(21,91,184,.16),rgba(21,91,184,.02))!important;
   color:var(--navy)!important;font-weight:800;box-shadow:inset 3px 0 0 var(--gold);}
-.nav a[data-tab].active::before{background:linear-gradient(135deg,#7ee2b8,#0e7a4f);color:#fff;
+.nav a[data-tab].active::before{background:linear-gradient(135deg,#B9CCEA,#155BB8);color:#fff;
   border-color:var(--gold);}
 .nav-right{margin-top:auto!important;margin-left:0!important;flex-direction:column;align-items:stretch;gap:10px;padding-top:14px;border-top:1px solid var(--border);}
 .nav-time{color:var(--muted)!important;font-size:10px!important;text-align:center;}
@@ -1900,20 +1900,20 @@ body{background:var(--bg);padding-left:256px;color:var(--text);}
 .nh-ti{font-size:22px;font-weight:800;color:var(--text);line-height:1.35;margin-bottom:9px;}
 .nh-sm{font-size:14px;color:var(--muted);line-height:1.65;margin-bottom:12px;}
 .nh-meta{font-size:11px;color:var(--muted2);font-family:'IBM Plex Mono',monospace;}
-.ai-brief{background:linear-gradient(135deg,#eef4ef,#ffffff 60%);border:1px solid #d2e6da;border-left:4px solid var(--navy2);border-radius:12px;padding:14px 18px;margin-bottom:14px;font-size:14px;line-height:1.6;color:#0d3b27;}
+.ai-brief{background:linear-gradient(135deg,#EAF2FC,#ffffff 60%);border:1px solid #D6E6F9;border-left:4px solid var(--navy2);border-radius:12px;padding:14px 18px;margin-bottom:14px;font-size:14px;line-height:1.6;color:#0E2A55;}
 
 /* ============================================================
    ★ 라이트 배경 레이어
    ============================================================ */
-html{background:#f5f7f6;}
+html{background:#F5F7FA;}
 body{background:transparent!important;}
-body[data-cat="minerals"]{--catglow:#0e7a4f;--catglow2:#0e7a4f;}
+body[data-cat="minerals"]{--catglow:#155BB8;--catglow2:#155BB8;}
 
 /* 밝은 페이지 배경 (은은한 네이비 그라데이션) */
 #cosmos{position:fixed;inset:0;z-index:-2;background:
-  radial-gradient(900px 480px at 82% -8%, rgba(14,122,79,.08), transparent 60%),
-  radial-gradient(700px 420px at 8% 4%, rgba(14,122,79,.07), transparent 55%),
-  linear-gradient(180deg,#f6f8f6 0%,#f2f6f2 100%);}
+  radial-gradient(900px 480px at 82% -8%, rgba(21,91,184,.08), transparent 60%),
+  radial-gradient(700px 420px at 8% 4%, rgba(21,91,184,.07), transparent 55%),
+  linear-gradient(180deg,#F8FAFD 0%,#F2F4F7 100%);}
 
 /* 화이트 카드 패널 */
 .stat-card,.chart-box,.section,.sub-box,.uc,.sidebar,.risk-card{
@@ -1944,7 +1944,7 @@ body{padding-left:0!important;}
   font-size:15px!important;font-weight:700!important;letter-spacing:-.01em;position:relative;}
 .cat-btn:first-of-type{margin-left:24px!important;}
 .cat-btn::after{content:'';position:absolute;left:0;right:0;bottom:-5px;height:2px;border-radius:2px;
-  background:linear-gradient(90deg,#7ee2b8,#0e7a4f);transform:scaleX(0);transform-origin:center;
+  background:linear-gradient(90deg,#B9CCEA,#155BB8);transform:scaleX(0);transform-origin:center;
   transition:.24s cubic-bezier(.2,.7,.3,1);}
 .cat-btn:hover{color:var(--navy)!important;}
 .cat-btn.active{background:transparent!important;color:var(--navy)!important;box-shadow:none!important;}
@@ -1993,16 +1993,16 @@ body{padding-left:0!important;}
 .hs-ai{background-image:linear-gradient(90deg,rgba(14,36,68,.92) 0%,rgba(14,36,68,.72) 40%,rgba(14,36,68,.3) 72%,rgba(14,36,68,.12) 100%),url('/static/hero/ai.png');}
 .hero-nav{position:absolute;top:44%;transform:translateY(-50%);z-index:5;width:40px;height:40px;border-radius:50%;
   background:rgba(255,255,255,.22);border:1px solid rgba(255,255,255,.4);color:#fff;font-size:22px;line-height:1;cursor:pointer;transition:.18s;}
-.hero-nav:hover{background:rgba(14,122,79,.6);border-color:#0e7a4f;}
+.hero-nav:hover{background:rgba(21,91,184,.6);border-color:#155BB8;}
 .hero-nav.prev{left:18px;}.hero-nav.next{right:18px;}
 .hero-dots{position:absolute;bottom:98px;left:50%;transform:translateX(-50%);z-index:5;display:flex;gap:8px;}
 .hero-dots button{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.45);border:0;cursor:pointer;padding:0;transition:.25s;}
 .hero-dots button.on{background:#f0c95c;width:22px;border-radius:4px;}
 .hero-search{position:absolute;left:50%;bottom:26px;transform:translateX(-50%);z-index:6;width:min(640px,82%);
   display:flex;align-items:center;gap:12px;background:#fff;border-radius:15px;padding:9px 11px 9px 20px;box-shadow:0 18px 44px rgba(14,36,68,.35);}
-.hsr-cat{font-size:13px;font-weight:800;color:#0a5c3c;white-space:nowrap;border-right:1px solid #e0e0e0;padding-right:14px;}
+.hsr-cat{font-size:13px;font-weight:800;color:#16305C;white-space:nowrap;border-right:1px solid #e0e0e0;padding-right:14px;}
 .hero-search input{flex:1;border:0;outline:0;font-size:14px;color:#222;background:transparent;}
-.hsr-btn{width:40px;height:40px;border-radius:11px;border:0;background:linear-gradient(135deg,#7ee2b8,#0e7a4f);color:#fff;font-size:16px;cursor:pointer;flex-shrink:0;}
+.hsr-btn{width:40px;height:40px;border-radius:11px;border:0;background:linear-gradient(135deg,#B9CCEA,#155BB8);color:#fff;font-size:16px;cursor:pointer;flex-shrink:0;}
 
 /* ===== 페이지 스크롤 ===== */
 body{height:auto!important;min-height:100vh;overflow-y:auto!important;overflow-x:hidden;}
@@ -2034,7 +2034,7 @@ body.is-home #home-landing{display:block;padding:44px 6vw 64px;}
 .hl-card{position:relative;overflow:hidden;display:block;text-decoration:none;padding:32px 28px;border-radius:20px;
   background:#fff;border:1px solid var(--border);box-shadow:var(--shadow);transition:.26s cubic-bezier(.2,.7,.3,1);}
 .hl-card::after{content:'';position:absolute;inset:0;background:radial-gradient(125% 130% at 82% 0%,var(--g),transparent 60%);opacity:.7;pointer-events:none;}
-.hl-min{--g:rgba(14,122,79,.14);}
+.hl-min{--g:rgba(21,91,184,.14);}
 .hl-ic{font-size:42px;line-height:1;position:relative;}
 .hl-nm{font-size:23px;font-weight:800;color:var(--navy);margin-top:16px;position:relative;}
 .hl-dc{font-size:13px;color:var(--muted);margin-top:7px;position:relative;}
@@ -2049,7 +2049,7 @@ body.is-home #home-landing{display:block;padding:44px 6vw 64px;}
 .hl-rk-cat{font-size:11px;color:var(--muted2);font-weight:700;}
 .hl-rk b{font-size:17px;letter-spacing:-.01em;}
 .hl-rk-gr{font-size:11px;font-weight:700;}
-.hl-rk.cta{justify-content:center;align-items:center;text-align:center;font-weight:800;color:var(--navy);font-size:13px;border-color:rgba(14,122,79,.45);background:var(--gold-soft);}
+.hl-rk.cta{justify-content:center;align-items:center;text-align:center;font-weight:800;color:var(--navy);font-size:13px;border-color:rgba(21,91,184,.45);background:var(--gold-soft);}
 @media(max-width:900px){.hl-risk-row{grid-template-columns:1fr 1fr;}}
 .hl-stats{display:flex;justify-content:center;gap:46px;flex-wrap:wrap;padding:24px;border-top:1px solid var(--border);}
 .hl-stat{text-align:center;}
@@ -2057,17 +2057,17 @@ body.is-home #home-landing{display:block;padding:44px 6vw 64px;}
 .hl-stat b{font-size:23px;font-weight:800;color:var(--navy);font-family:var(--mono);}
 
 /* 진입 연출 */
-#arrival{position:fixed;inset:0;z-index:9999;pointer-events:none;background:#f6f8f6;
+#arrival{position:fixed;inset:0;z-index:9999;pointer-events:none;background:#F8FAFD;
   display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;
   opacity:1;transition:opacity 1.1s ease;}
 #arrival.gone{opacity:0;}
 #arrival .a-eyebrow{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:clamp(15px,2vw,22px);
-  letter-spacing:.36em;color:#0a5c3c;text-transform:uppercase;opacity:0;transform:translateY(14px);transition:opacity .9s .15s,transform .9s .15s;}
-#arrival .a-line{width:0;height:1px;background:linear-gradient(90deg,transparent,#0e7a4f,transparent);margin:24px 0;transition:width 1.1s .35s;}
+  letter-spacing:.36em;color:#16305C;text-transform:uppercase;opacity:0;transform:translateY(14px);transition:opacity .9s .15s,transform .9s .15s;}
+#arrival .a-line{width:0;height:1px;background:linear-gradient(90deg,transparent,#155BB8,transparent);margin:24px 0;transition:width 1.1s .35s;}
 #arrival .a-title{font-family:'Noto Serif KR',serif;font-weight:700;font-size:clamp(40px,7.5vw,94px);line-height:1.05;color:var(--navy);
   opacity:0;transform:translateY(20px);transition:opacity 1s .3s,transform 1s .3s;}
-#arrival .a-title .gold{background:linear-gradient(118deg,#2fb37f,#128a5c 58%,#0a5c3c);-webkit-background-clip:text;background-clip:text;color:transparent;}
-#arrival .a-name{margin-top:20px;font-size:12px;letter-spacing:.42em;color:#8a948e;text-transform:uppercase;opacity:0;transition:opacity .9s .5s;}
+#arrival .a-title .gold{background:linear-gradient(118deg,#5C8FD6,#1E74D8 58%,#16305C);-webkit-background-clip:text;background-clip:text;color:transparent;}
+#arrival .a-name{margin-top:20px;font-size:12px;letter-spacing:.42em;color:#888888;text-transform:uppercase;opacity:0;transition:opacity .9s .5s;}
 #arrival.show .a-eyebrow,#arrival.show .a-title,#arrival.show .a-name{opacity:1;transform:none;}
 #arrival.show .a-line{width:200px;}
 @keyframes landIn{from{opacity:0;transform:translateY(26px) scale(.992)}to{opacity:1;transform:none}}
@@ -2113,8 +2113,8 @@ body.scenes #scene-rail{display:flex;}
 .stat-card.red::after{background:var(--red)}
 .stat-card .sc-label{font-size:10px!important;letter-spacing:.18em;text-transform:uppercase;color:var(--muted2)!important;margin-bottom:9px;font-family:var(--mono)}
 .stat-card .sc-val{font-size:clamp(19px,2.1vw,28px)!important;font-weight:800!important;font-family:var(--mono);letter-spacing:-.02em;line-height:1.1;white-space:nowrap;color:var(--navy);text-shadow:none!important}
-.stat-card:first-child{background:linear-gradient(135deg,#0a5c3c,#0e5c3b)!important;border-color:#0a5c3c!important}
-.stat-card:first-child::after{background:#7ee2b8}
+.stat-card:first-child{background:linear-gradient(135deg,#16305C,#155BB8)!important;border-color:#16305C!important}
+.stat-card:first-child::after{background:#B9CCEA}
 .stat-card:first-child .sc-label{color:#b9cbe4!important}
 .stat-card:first-child .sc-val{font-size:clamp(20px,2.7vw,36px)!important;
   color:#f4e3ad!important;-webkit-text-fill-color:#f4e3ad!important;background:none!important}
@@ -2154,7 +2154,7 @@ body.scenes #scene-rail{display:flex;}
 .rk-mid{flex:1;min-width:0}
 .rk-nm{font-size:13px;font-weight:600;color:var(--text);margin-bottom:6px}
 .rk-bar{height:5px;background:var(--bg3);border-radius:3px;overflow:hidden}
-.rk-fill{height:100%;background:linear-gradient(90deg,#0e7a4f,#7ee2b8);border-radius:3px}
+.rk-fill{height:100%;background:linear-gradient(90deg,#155BB8,#B9CCEA);border-radius:3px}
 .rk-vl{font-family:var(--mono);font-size:13px;font-weight:700;color:var(--accent);white-space:nowrap}
 .rk-vl small{font-size:9px;color:var(--muted2);margin-left:2px;font-weight:500}
 .pr-item{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);font-size:12.5px}
@@ -2201,24 +2201,24 @@ html body .hl-stat b, html body .rk-val, html body .rk-no{
 
 /* GNB — 골드 헤어라인 + 여백 */
 .cat-bar{padding:15px 34px!important;border-bottom:none!important;
-  box-shadow:inset 0 -1px 0 rgba(10,92,60,.08),0 8px 28px rgba(10,92,60,.05);}
+  box-shadow:inset 0 -1px 0 rgba(22,48,92,.08),0 8px 28px rgba(22,48,92,.05);}
 .cat-bar::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;
-  background:linear-gradient(90deg,#0e7a4f,#7ee2b8 30%,#0a5c3c 75%);}
+  background:linear-gradient(90deg,#155BB8,#B9CCEA 30%,#16305C 75%);}
 .brand-txt{font-size:22px;font-family:'Archivo','Pretendard',sans-serif;}
 .cat-btn{font-size:15.5px!important;margin:0 22px!important;}
 .cat-btn::after{height:3px;bottom:-7px;}
-.ticker{background:linear-gradient(90deg,#07281b,#16386b 55%,#07281b)!important;border-bottom:none!important;}
-.ticker-inner{color:#7ee2b8!important;}
+.ticker{background:linear-gradient(90deg,#0A1F3E,#16386b 55%,#0A1F3E)!important;border-bottom:none!important;}
+.ticker-inner{color:#B9CCEA!important;}
 
 /* KPI — 네이비 카드 밴드 (전 카드) */
-.stat-card{background:linear-gradient(160deg,#0b4a30,#07281b 90%)!important;
+.stat-card{background:linear-gradient(160deg,#123C7E,#0A1F3E 90%)!important;
   border:1px solid rgba(255,255,255,.07)!important;
   box-shadow:0 14px 34px rgba(14,38,71,.22)!important;}
 .stat-card .sc-label{color:#8fb8a4!important;}
 .stat-card .sc-val{color:#fff!important;}
 .stat-card .sc-sub{color:#7e95b5!important;}
-.stat-card::after{background:linear-gradient(180deg,#7ee2b8,#0e7a4f);opacity:1;width:4px;}
-.stat-card:first-child{background:linear-gradient(150deg,#0e5c3b,#0a5c3c 70%)!important;}
+.stat-card::after{background:linear-gradient(180deg,#B9CCEA,#155BB8);opacity:1;width:4px;}
+.stat-card:first-child{background:linear-gradient(150deg,#155BB8,#16305C 70%)!important;}
 .stat-card:first-child .sc-val{color:#f0c95c!important;-webkit-text-fill-color:#f0c95c!important;}
 .stat-card:hover{transform:translateY(-3px);border-color:rgba(233,198,103,.45)!important;
   box-shadow:0 22px 46px rgba(14,38,71,.32)!important;}
@@ -2227,31 +2227,31 @@ html body .hl-stat b, html body .rk-val, html body .rk-no{
 .section,.chart-box,.wpanel,.uc,.sub-box,.risk-card,.hl-card,.hl-risk,.hl-metal,.dcard{
   border:none!important;border-radius:18px!important;
   box-shadow:0 1px 2px rgba(20,35,60,.04),0 12px 36px rgba(20,35,60,.08)!important;}
-.wpanel .wp-head{border-bottom:1px dashed #e6ebe7;padding:15px 18px;font-size:12.5px;}
+.wpanel .wp-head{border-bottom:1px dashed #E8ECF1;padding:15px 18px;font-size:12.5px;}
 .wp-head::before{content:'';display:inline-block;width:7px;height:7px;flex-shrink:0;
-  background:linear-gradient(135deg,#7ee2b8,#0e7a4f);border-radius:2px;transform:rotate(45deg);}
+  background:linear-gradient(135deg,#B9CCEA,#155BB8);border-radius:2px;transform:rotate(45deg);}
 .page-title{display:flex;align-items:center;gap:9px;font-size:14px!important;}
 .page-title::before{content:'';display:inline-block;width:8px;height:8px;flex-shrink:0;
-  background:linear-gradient(135deg,#7ee2b8,#0e7a4f);border-radius:2px;transform:rotate(45deg);}
+  background:linear-gradient(135deg,#B9CCEA,#155BB8);border-radius:2px;transform:rotate(45deg);}
 .chart-title{color:var(--navy);font-weight:800;}
 
 /* 순위 바 — 네이비→골드 시그니처 그라데이션 */
 .rk-bar{height:7px;border-radius:4px;}
-.rk-fill{background:linear-gradient(90deg,#0e7a4f 0%,#3a72b8 55%,#0e7a4f 100%)!important;}
-.rk-no{color:#0e7a4f;font-weight:800;font-size:12px;}
-.bf{background:linear-gradient(90deg,#0e7a4f,#0e7a4f)!important;}
+.rk-fill{background:linear-gradient(90deg,#155BB8 0%,#3a72b8 55%,#155BB8 100%)!important;}
+.rk-no{color:#155BB8;font-weight:800;font-size:12px;}
+.bf{background:linear-gradient(90deg,#155BB8,#155BB8)!important;}
 
 /* 버튼·필 */
 .mineral-btn{border-radius:10px;font-weight:600;}
-.mineral-btn.active{box-shadow:0 6px 16px rgba(10,92,60,.28)!important;}
+.mineral-btn.active{box-shadow:0 6px 16px rgba(22,48,92,.28)!important;}
 .megapanel{border-radius:0 0 22px 22px;overflow:hidden;}
 
 /* 테이블 line 완화 */
 .wp-table td{border-bottom:1px solid #eef1f6;}
-tr:hover td{background:#f6f8f6;}
+tr:hover td{background:#F8FAFD;}
 
 /* 홈 — 통계 밴드 */
-.hl-stats{background:linear-gradient(160deg,#0b4a30,#07281b);border-radius:20px;border-top:none;
+.hl-stats{background:linear-gradient(160deg,#123C7E,#0A1F3E);border-radius:20px;border-top:none;
   box-shadow:0 16px 40px rgba(14,38,71,.25);padding:28px 24px;}
 .hl-stat span{color:#8fb8a4;}
 .hl-stat b{color:#f0c95c;font-size:26px;}
@@ -2301,11 +2301,11 @@ function drawCoreTrade(m){
   if(_coreChart) _coreChart.destroy();
   _coreChart=new Chart(document.getElementById('coreChart'),{type:'line',
     data:{labels:months,datasets:[{label:m+' 월별 수입($)',data:months.map(function(k){return d.monthly[k];}),
-      borderColor:'#0e7a4f',backgroundColor:'rgba(14,122,79,.08)',fill:true,borderWidth:2,tension:.25,pointRadius:2}]},
+      borderColor:'#155BB8',backgroundColor:'rgba(21,91,184,.08)',fill:true,borderWidth:2,tension:.25,pointRadius:2}]},
     options:{responsive:true,maintainAspectRatio:false,
       plugins:{legend:{display:false},tooltip:{callbacks:{label:function(c){return ' $'+c.raw.toLocaleString();}}}},
-      scales:{x:{ticks:{color:'#6b7570',maxTicksLimit:12},grid:{color:'#e6ebe7'}},
-        y:{ticks:{color:'#6b7570',callback:function(v){return '$'+(v/1e6).toFixed(0)+'M';}},grid:{color:'#e6ebe7'}}}}});
+      scales:{x:{ticks:{color:'#555555',maxTicksLimit:12},grid:{color:'#E8ECF1'}},
+        y:{ticks:{color:'#555555',callback:function(v){return '$'+(v/1e6).toFixed(0)+'M';}},grid:{color:'#E8ECF1'}}}}});
 }
 buildCoreTrade();
 
@@ -2317,8 +2317,8 @@ function drawReeChart(){
     data:{labels:keys,datasets:[{label:'수입액($)',data:keys.map(function(k){return REETRADE[k];}),backgroundColor:'#4a3aa7',borderRadius:3}]},
     options:{responsive:true,maintainAspectRatio:false,
       plugins:{legend:{display:false},tooltip:{callbacks:{label:function(c){return ' $'+c.raw.toLocaleString();}}}},
-      scales:{x:{ticks:{color:'#6b7570',maxTicksLimit:12},grid:{color:'#e6ebe7'}},
-        y:{ticks:{color:'#6b7570',callback:function(v){return '$'+(v/1e6).toFixed(0)+'M';}},grid:{color:'#e6ebe7'}}}}});
+      scales:{x:{ticks:{color:'#555555',maxTicksLimit:12},grid:{color:'#E8ECF1'}},
+        y:{ticks:{color:'#555555',callback:function(v){return '$'+(v/1e6).toFixed(0)+'M';}},grid:{color:'#E8ECF1'}}}}});
 }
 function initCatForecast(cat){
   if(cat==='ree') drawReeChart();
@@ -2344,12 +2344,12 @@ function drawCatForecast(cat,m){
   if(_catFc[cat] && _catFc[cat].chart) _catFc[cat].chart.destroy();
   _catFc[cat]={chart:new Chart(document.getElementById('fcCatChart_'+cat),{type:'line',
     data:{labels:d.dates,datasets:[
-      {label:'실측',data:actual,borderColor:'#0e7a4f',backgroundColor:'rgba(14,122,79,.08)',fill:true,borderWidth:2,tension:.25,pointRadius:0},
+      {label:'실측',data:actual,borderColor:'#155BB8',backgroundColor:'rgba(21,91,184,.08)',fill:true,borderWidth:2,tension:.25,pointRadius:0},
       {label:'예측',data:fut,borderColor:'#c98500',borderDash:[7,5],backgroundColor:'transparent',borderWidth:2,tension:.25,pointRadius:0}]},
     options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},
-      plugins:{legend:{labels:{color:'#4c5850',font:{size:10},boxWidth:10}}},
-      scales:{x:{ticks:{color:'#6b7570',maxTicksLimit:10},grid:{color:'#e6ebe7'}},
-        y:{ticks:{color:'#6b7570'},grid:{color:'#e6ebe7'}}}}})};
+      plugins:{legend:{labels:{color:'#555555',font:{size:10},boxWidth:10}}},
+      scales:{x:{ticks:{color:'#555555',maxTicksLimit:10},grid:{color:'#E8ECF1'}},
+        y:{ticks:{color:'#555555'},grid:{color:'#E8ECF1'}}}}})};
 }
 // 메가메뉴 → 해당 섹션 선택
 function goSec(cat, sec){
@@ -2466,14 +2466,14 @@ fetchNewsBrief('', 'aiBrief');   // 핵심광물(기본)
 var _riskChart=null;
 function drawRiskChart(){
   if(_riskChart || typeof RISK==='undefined' || !RISK.length) return;
-  var pal=['#0e7a4f','#c98500','#1baf7a','#e34948','#4a3aa7','#e87ba4'];
+  var pal=['#155BB8','#c98500','#1baf7a','#e34948','#4a3aa7','#e87ba4'];
   var labels=RISK[0].months;
   var ds=RISK.map(function(r,i){return {label:r.name,data:r.vals,borderColor:pal[i%pal.length],backgroundColor:'transparent',tension:.25,pointRadius:0};});
   _riskChart=new Chart(document.getElementById('riskChart'),{type:'line',data:{labels:labels,datasets:ds},
     options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},
-      plugins:{legend:{labels:{color:'#4c5850',font:{size:10},boxWidth:10}}},
-      scales:{x:{ticks:{color:'#6b7570',maxTicksLimit:12},grid:{color:'#e6ebe7'}},
-        y:{min:0,max:100,ticks:{color:'#6b7570'},grid:{color:'#e6ebe7'}}}}});
+      plugins:{legend:{labels:{color:'#555555',font:{size:10},boxWidth:10}}},
+      scales:{x:{ticks:{color:'#555555',maxTicksLimit:12},grid:{color:'#E8ECF1'}},
+        y:{min:0,max:100,ticks:{color:'#555555'},grid:{color:'#E8ECF1'}}}}});
 }
 var _mindexChart=null;
 // ── 가격 전망 (실측 실선 + 예측 점선) ──
@@ -2497,11 +2497,11 @@ function drawWb(m){
   if(t) t.innerHTML='국제 원자재 시세 — '+m+' ('+(WBP.units[m]||'')+') <span style="color:var(--muted2)">· World Bank Pink Sheet · 월별</span>';
   if(_wbChart) _wbChart.destroy();
   _wbChart=new Chart(document.getElementById('wbChart'),{type:'line',
-    data:{labels:WBP.months,datasets:[{label:m,data:vals,borderColor:'#0e7a4f',backgroundColor:'rgba(14,122,79,.07)',fill:true,borderWidth:2,tension:.25,pointRadius:0}]},
+    data:{labels:WBP.months,datasets:[{label:m,data:vals,borderColor:'#155BB8',backgroundColor:'rgba(21,91,184,.07)',fill:true,borderWidth:2,tension:.25,pointRadius:0}]},
     options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},
       plugins:{legend:{display:false},tooltip:{callbacks:{label:function(c){return ' '+(c.raw||0).toLocaleString()+' '+(WBP.units[m]||'');}}}},
-      scales:{x:{ticks:{color:'#6b7570',maxTicksLimit:14},grid:{color:'#e6ebe7'}},
-        y:{ticks:{color:'#6b7570'},grid:{color:'#e6ebe7'}}}}});
+      scales:{x:{ticks:{color:'#555555',maxTicksLimit:14},grid:{color:'#E8ECF1'}},
+        y:{ticks:{color:'#555555'},grid:{color:'#E8ECF1'}}}}});
 }
 function initForecast(){
   if(_fcInit){ return; } _fcInit=true;
@@ -2527,36 +2527,36 @@ function drawForecast(m){
   if(_fcChart) _fcChart.destroy();
   _fcChart=new Chart(document.getElementById('fcChart'),{type:'line',
     data:{labels:d.dates,datasets:[
-      {label:'실측',data:actual,borderColor:'#0e7a4f',backgroundColor:'rgba(14,122,79,.08)',fill:true,borderWidth:2,tension:.25,pointRadius:0},
+      {label:'실측',data:actual,borderColor:'#155BB8',backgroundColor:'rgba(21,91,184,.08)',fill:true,borderWidth:2,tension:.25,pointRadius:0},
       {label:'예측',data:fut,borderColor:'#c98500',borderDash:[7,5],backgroundColor:'transparent',borderWidth:2,tension:.25,pointRadius:0}]},
     options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},
-      plugins:{legend:{labels:{color:'#4c5850',font:{size:11},boxWidth:12}}},
-      scales:{x:{ticks:{color:'#6b7570',maxTicksLimit:14},grid:{color:'#e6ebe7'}},
-        y:{ticks:{color:'#6b7570'},grid:{color:'#e6ebe7'}}}}});
+      plugins:{legend:{labels:{color:'#555555',font:{size:11},boxWidth:12}}},
+      scales:{x:{ticks:{color:'#555555',maxTicksLimit:14},grid:{color:'#E8ECF1'}},
+        y:{ticks:{color:'#555555'},grid:{color:'#E8ECF1'}}}}});
 }
 var _olChart=null,_stChart=null,_stChart2=null;
 function drawOutlookChart(){
   if(_olChart || !OUTLOOK) return;
-  var pal={'동':'#0e7a4f','아연':'#c98500'};
+  var pal={'동':'#155BB8','아연':'#c98500'};
   var keys=Object.keys(OUTLOOK); if(!keys.length) return;
   var labels=OUTLOOK[keys[0]].months;
-  var ds=keys.map(function(k){ return {label:k,data:OUTLOOK[k].values,borderColor:pal[k]||'#8a948e',backgroundColor:'transparent',borderWidth:2,tension:.25,pointRadius:0}; });
+  var ds=keys.map(function(k){ return {label:k,data:OUTLOOK[k].values,borderColor:pal[k]||'#888888',backgroundColor:'transparent',borderWidth:2,tension:.25,pointRadius:0}; });
   _olChart=new Chart(document.getElementById('olChart'),{type:'line',data:{labels:labels,datasets:ds},
     options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},
-      plugins:{legend:{labels:{color:'#4c5850',font:{size:10},boxWidth:10}}},
-      scales:{x:{ticks:{color:'#6b7570',maxTicksLimit:10},grid:{color:'#e6ebe7'}},y:{ticks:{color:'#6b7570'},grid:{color:'#e6ebe7'}}}}});
+      plugins:{legend:{labels:{color:'#555555',font:{size:10},boxWidth:10}}},
+      scales:{x:{ticks:{color:'#555555',maxTicksLimit:10},grid:{color:'#E8ECF1'}},y:{ticks:{color:'#555555'},grid:{color:'#E8ECF1'}}}}});
 }
 function drawSteelCharts(){
   if(_stChart || !STEEL || !STEEL.months) return;
-  var conf1=[['철광석(달러_톤)','#0e7a4f'],['유연탄(달러_톤)','#c98500'],['철스크랩(달러_톤)','#1baf7a']];
-  var conf2=[['철근(천원_톤)','#0e7a4f'],['열연(천원_톤)','#c98500'],['후판(천원_톤)','#1baf7a'],['냉연(천원_톤)','#e34948']];
+  var conf1=[['철광석(달러_톤)','#155BB8'],['유연탄(달러_톤)','#c98500'],['철스크랩(달러_톤)','#1baf7a']];
+  var conf2=[['철근(천원_톤)','#155BB8'],['열연(천원_톤)','#c98500'],['후판(천원_톤)','#1baf7a'],['냉연(천원_톤)','#e34948']];
   function mk(id,conf){
     var ds=conf.filter(function(c){return STEEL.series[c[0]];}).map(function(c){
       return {label:c[0].split('(')[0],data:STEEL.series[c[0]],borderColor:c[1],backgroundColor:'transparent',borderWidth:2,tension:.25,pointRadius:0};});
     return new Chart(document.getElementById(id),{type:'line',data:{labels:STEEL.months,datasets:ds},
       options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},
-        plugins:{legend:{labels:{color:'#4c5850',font:{size:10},boxWidth:10}}},
-        scales:{x:{ticks:{color:'#6b7570',maxTicksLimit:12},grid:{color:'#e6ebe7'}},y:{ticks:{color:'#6b7570'},grid:{color:'#e6ebe7'}}}}});
+        plugins:{legend:{labels:{color:'#555555',font:{size:10},boxWidth:10}}},
+        scales:{x:{ticks:{color:'#555555',maxTicksLimit:12},grid:{color:'#E8ECF1'}},y:{ticks:{color:'#555555'},grid:{color:'#E8ECF1'}}}}});
   }
   _stChart=mk('stChart',conf1); _stChart2=mk('stChart2',conf2);
 }
@@ -2569,21 +2569,21 @@ function drawMines(){
     {label:'가행 광산',data:t['가행'],borderColor:'#1e8e5a',backgroundColor:'rgba(30,142,90,.08)',fill:true,borderWidth:2,tension:.25,pointRadius:3},
     {label:'폐광 (누적)',data:t['폐광'],borderColor:'#d64545',backgroundColor:'transparent',borderWidth:2,tension:.25,pointRadius:3}]},
     options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},
-      plugins:{legend:{labels:{color:'#4c5850',font:{size:11},boxWidth:12}}},
-      scales:{x:{ticks:{color:'#6b7570'},grid:{color:'#e6ebe7'}},y:{ticks:{color:'#6b7570'},grid:{color:'#e6ebe7'}}}}});
+      plugins:{legend:{labels:{color:'#555555',font:{size:11},boxWidth:12}}},
+      scales:{x:{ticks:{color:'#555555'},grid:{color:'#E8ECF1'}},y:{ticks:{color:'#555555'},grid:{color:'#E8ECF1'}}}}});
 }
 function drawMineralIndex(){
   if(_mindexChart || typeof MIDX==='undefined' || !MIDX.series) return;
-  var conf=[['종합','#c98500'],['에너지광물','#eb6834'],['희소금속','#0e7a4f'],['메이저금속','#4a3aa7']];
+  var conf=[['종합','#c98500'],['에너지광물','#eb6834'],['희소금속','#155BB8'],['메이저금속','#4a3aa7']];
   var base=MIDX.series['종합']||{}; var labels=base.months||[];
   var ds=conf.filter(function(c){return MIDX.series[c[0]];}).map(function(c){
     return {label:c[0],data:MIDX.series[c[0]].values,borderColor:c[1],backgroundColor:'transparent',borderWidth:2,tension:.25,pointRadius:0};
   });
   _mindexChart=new Chart(document.getElementById('mindexChart'),{type:'line',data:{labels:labels,datasets:ds},
     options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},
-      plugins:{legend:{labels:{color:'#4c5850',font:{size:11},boxWidth:12}}},
-      scales:{x:{ticks:{color:'#6b7570',maxTicksLimit:12},grid:{color:'#e6ebe7'}},
-        y:{ticks:{color:'#6b7570'},grid:{color:'#e6ebe7'}}}}});
+      plugins:{legend:{labels:{color:'#555555',font:{size:11},boxWidth:12}}},
+      scales:{x:{ticks:{color:'#555555',maxTicksLimit:12},grid:{color:'#E8ECF1'}},
+        y:{ticks:{color:'#555555'},grid:{color:'#E8ECF1'}}}}});
 }
 
 """
@@ -2649,12 +2649,12 @@ body{{font-variant-numeric:tabular-nums;}}
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <style>
 :root{{
-  --bg:#f5f7f6;--bg2:#ffffff;--bg3:#eef2ef;
-  --border:#e3e8e5;--border2:#c9d2cc;
-  --text:#1b211e;--muted:#4c5850;--muted2:#8a948e;
+  --bg:#F5F7FA;--bg2:#ffffff;--bg3:#EEF1F5;
+  --border:#DDE3EA;--border2:#C9D2DD;
+  --text:#222222;--muted:#555555;--muted2:#888888;
   --red:#d64545;--red-dim:#fdeeee;--red-bright:#c03535;
-  --accent:#0a5c3c;--accent2:#0a5c3c;
-  --blue:#0e7a4f;--cyan:#0e7a4f;--green:#1e8e5a;
+  --accent:#16305C;--accent2:#16305C;
+  --blue:#155BB8;--cyan:#155BB8;--green:#1e8e5a;
   --sans:'Inter','Noto Sans KR',sans-serif;
   --mono:'IBM Plex Mono',monospace;
 }}
@@ -2673,11 +2673,11 @@ body{{background:var(--bg);color:var(--text);font-family:var(--sans);line-height
 @keyframes sys-blink{{to{{opacity:.25}}}}
 .nav a{{color:var(--muted);text-decoration:none;font-size:12px;font-weight:500;padding:6px 12px;border-radius:3px;transition:.2s;cursor:pointer;border:1px solid transparent;}}
 .nav a:hover{{color:var(--blue);background:var(--bg3);}}
-.nav a.active{{color:var(--blue);background:var(--bg3);border-color:rgba(14,122,79,.35);}}
+.nav a.active{{color:var(--blue);background:var(--bg3);border-color:rgba(21,91,184,.35);}}
 .nav-right{{margin-left:auto;display:flex;align-items:center;gap:12px;}}
 .nav-time{{font-size:11px;color:var(--muted);font-family:var(--mono);letter-spacing:.08em;opacity:.85;}}
-.nav-conf{{font-size:11px;color:var(--accent);text-decoration:none;font-weight:600;border:1px solid rgba(10,92,60,.4);padding:4px 10px;border-radius:3px;}}
-.nav-conf:hover{{background:rgba(14,122,79,.1);}}
+.nav-conf{{font-size:11px;color:var(--accent);text-decoration:none;font-weight:600;border:1px solid rgba(22,48,92,.4);padding:4px 10px;border-radius:3px;}}
+.nav-conf:hover{{background:rgba(21,91,184,.1);}}
 
 /* TAB PANELS */
 .tab-panel{{display:none;flex:1;overflow:hidden;}}
@@ -2737,7 +2737,7 @@ tr:hover td{{background:var(--bg3);}}
 .map-body{{display:flex;overflow:hidden;align-items:flex-start;}}
 #mineral-map{{flex:1;min-width:0;aspect-ratio:16/9;}}
 .leaflet-container{{outline:0 !important;}}
-.choke-tip{{background:#fff;border:1px solid #d64545;color:#1b211e;font-size:11px;padding:4px 7px;border-radius:4px;box-shadow:0 4px 14px rgba(20,35,60,.18);}}
+.choke-tip{{background:#fff;border:1px solid #d64545;color:#222222;font-size:11px;padding:4px 7px;border-radius:4px;box-shadow:0 4px 14px rgba(20,35,60,.18);}}
 .leaflet-interactive{{outline:0 !important;}}
 .leaflet-grab{{outline:0 !important;}}
 .route-line {{ stroke-linecap: round; stroke-linejoin: round; }}
@@ -2750,10 +2750,10 @@ tr:hover td{{background:var(--bg3);}}
 /* 지도 격자 오버레이 (위경도 눈금 느낌) */
 .map-grid{{position:absolute;inset:0;z-index:450;pointer-events:none;
   background:
-    repeating-linear-gradient(0deg,  transparent 0 79px, rgba(14,122,79,.045) 79px 80px),
-    repeating-linear-gradient(90deg, transparent 0 79px, rgba(14,122,79,.045) 79px 80px);}}
+    repeating-linear-gradient(0deg,  transparent 0 79px, rgba(21,91,184,.045) 79px 80px),
+    repeating-linear-gradient(90deg, transparent 0 79px, rgba(21,91,184,.045) 79px 80px);}}
 .map-grid::after{{content:'';position:absolute;inset:0;
-  background:linear-gradient(180deg,transparent 0%,rgba(14,122,79,.02) 50%,transparent 100%);
+  background:linear-gradient(180deg,transparent 0%,rgba(21,91,184,.02) 50%,transparent 100%);
   background-size:100% 240px;animation:grid-scan 7s linear infinite;}}
 @keyframes grid-scan{{from{{background-position:0 -240px}}to{{background-position:0 100vh}}}}
 
@@ -2782,7 +2782,7 @@ tr:hover td{{background:var(--bg3);}}
 .kp-amount{{font-size:11px;font-family:var(--mono);color:var(--accent);}}
 .kp-bar{{margin-top:4px;height:4px;background:var(--bg3);border-radius:2px;overflow:hidden;}}
 .kp-bar i{{display:block;height:100%;background:linear-gradient(90deg,#6da7ec,var(--blue));border-radius:2px;}}
-.kp-bar.warn i{{background:linear-gradient(90deg,#7ee2b8,var(--accent));}}
+.kp-bar.warn i{{background:linear-gradient(90deg,#B9CCEA,var(--accent));}}
 .kp-bar.crit i{{background:linear-gradient(90deg,#e88a8a,var(--red));}}
 
 /* RISK 배지 */
@@ -2791,7 +2791,7 @@ tr:hover td{{background:var(--bg3);}}
 .risk-badge .rb-dot{{width:7px;height:7px;border-radius:50%;background:currentColor;box-shadow:0 0 7px currentColor;}}
 .risk-badge.high{{color:var(--red-bright);border-color:rgba(214,69,69,.5);background:rgba(214,69,69,.07);}}
 .risk-badge.high .rb-dot{{animation:cp-blink .8s steps(2,start) infinite;}}
-.risk-badge.medium{{color:var(--accent);border-color:rgba(10,92,60,.5);background:rgba(14,122,79,.08);}}
+.risk-badge.medium{{color:var(--accent);border-color:rgba(22,48,92,.5);background:rgba(21,91,184,.08);}}
 .risk-badge.low{{color:var(--green);border-color:rgba(30,142,90,.5);background:rgba(30,142,90,.07);}}
 .map-legend{{position:absolute;bottom:20px;left:20px;background:rgba(255,255,255,.95);border:1px solid var(--border);border-radius:8px;padding:10px 14px;z-index:1000;font-size:11px;box-shadow:0 6px 20px rgba(20,35,60,.12);}}
 .legend-title{{color:var(--muted);font-family:var(--mono);font-size:9px;text-transform:uppercase;letter-spacing:.1em;margin-bottom:6px;}}
@@ -2844,20 +2844,20 @@ tr:hover td{{background:var(--bg3);}}
 <style>
 /* ══ V2 딥그린 스킨 — 신규 홈과 디자인 통일 ══ */
 :root{{
-  --bg:#f5f7f6;--bg2:#ffffff;--bg3:#eef2ef;
-  --border:#e3e8e5;--border2:#c9d2cc;
-  --text:#1b211e;--muted:#4c5850;--muted2:#8a948e;
+  --bg:#F5F7FA;--bg2:#ffffff;--bg3:#EEF1F5;
+  --border:#DDE3EA;--border2:#C9D2DD;
+  --text:#222222;--muted:#555555;--muted2:#888888;
   --red:#d8453c;--red-dim:#fdecea;--red-bright:#c0392b;
-  --accent:#0e7a4f;--accent2:#0a5c3c;
-  --navy:#0a5c3c;--navy2:#0e7a4f;
-  --blue:#0e7a4f;--cyan:#128a5c;--green:#1e8e5a;
+  --accent:#155BB8;--accent2:#16305C;
+  --navy:#16305C;--navy2:#155BB8;
+  --blue:#155BB8;--cyan:#1E74D8;--green:#1e8e5a;
 }}
 </style>
 </head>
 <body class="{body_cls}">
-<a href="/" style="position:fixed;left:16px;bottom:16px;z-index:99;background:#0a5c3c;color:#fff;
+<a href="/" style="position:fixed;left:16px;bottom:16px;z-index:99;background:#16305C;color:#fff;
 font:700 12.5px 'Pretendard','Noto Sans KR',sans-serif;padding:9px 16px;border-radius:999px;text-decoration:none;
-box-shadow:0 6px 16px rgba(0,40,20,.28)">◂ 마인테크 새 홈</a>
+box-shadow:0 6px 16px rgba(10,31,62,.28)">◂ 마인테크 새 홈</a>
 <div id="cosmos"></div>
 <div id="arrival">
   <div class="a-eyebrow" id="a-eyebrow"></div>
@@ -3076,9 +3076,9 @@ box-shadow:0 6px 16px rgba(0,40,20,.28)">◂ 마인테크 새 홈</a>
           <div class="legend-item"><div class="legend-color" style="background:#ff2200"></div> 초대형 (30%+)</div>
           <div class="legend-item"><div class="legend-color" style="background:#ff6600"></div> 대형 (15-30%)</div>
           <div class="legend-item"><div class="legend-color" style="background:#ffaa00"></div> 중형 (5-15%)</div>
-          <div class="legend-item"><div class="legend-color" style="background:#8fe9c3"></div> 소형 (1-5%)</div>
+          <div class="legend-item"><div class="legend-color" style="background:#CBDDF6"></div> 소형 (1-5%)</div>
           <div class="legend-item"><div class="legend-color" style="background:#88bb44"></div> 미량 (&lt;1%)</div>
-          <div class="legend-item"><div class="legend-color" style="background:#0e7a4f"></div> 🇰🇷 한국 (수입의존)</div>
+          <div class="legend-item"><div class="legend-color" style="background:#155BB8"></div> 🇰🇷 한국 (수입의존)</div>
         </div>
         <!-- 초크포인트 뉴스 패널 -->
         <div id="choke-panel" style="
@@ -3087,7 +3087,7 @@ box-shadow:0 6px 16px rgba(0,40,20,.28)">◂ 마인테크 새 홈</a>
           background:rgba(255,255,255,0.97);border:1px solid #dbe2ec;
           border-radius:8px;padding:14px;
           box-shadow:0 10px 30px rgba(20,35,60,0.16);
-          scrollbar-width:thin;scrollbar-color:#c9d2cc transparent;
+          scrollbar-width:thin;scrollbar-color:#C9D2DD transparent;
         "></div>
       </div><!-- /#mineral-map -->
       <div class="map-korea-panel">
@@ -3273,8 +3273,8 @@ const CHART_OPTS = {{
   responsive: true, maintainAspectRatio: false,
   plugins: {{ legend: {{ display: false }}, tooltip: {{ callbacks: {{ label: ctx => ' $' + ctx.raw.toLocaleString() }} }} }},
   scales: {{
-    x: {{ ticks: {{ color: '#6b7570', font: {{ size: 10 }} }}, grid: {{ color: '#e6ebe7' }} }},
-    y: {{ ticks: {{ color: '#6b7570', font: {{ size: 10 }}, callback: v => '$' + (v/1e6).toFixed(1)+'M' }}, grid: {{ color: '#e6ebe7' }} }}
+    x: {{ ticks: {{ color: '#555555', font: {{ size: 10 }} }}, grid: {{ color: '#E8ECF1' }} }},
+    y: {{ ticks: {{ color: '#555555', font: {{ size: 10 }}, callback: v => '$' + (v/1e6).toFixed(1)+'M' }}, grid: {{ color: '#E8ECF1' }} }}
   }}
 }};
 const isCntTon = {imports_unit_js} === '톤';
@@ -3282,13 +3282,13 @@ const CHART_CNT_OPTS = {{
   responsive: true, maintainAspectRatio: false,
   plugins: {{ legend: {{ display: false }}, tooltip: {{ callbacks: {{ label: ctx => ' ' + ctx.raw.toLocaleString() + (isCntTon ? ' 톤' : '') }} }} }},
   scales: {{
-    x: {{ ticks: {{ color: '#6b7570', font: {{ size: 10 }} }}, grid: {{ color: '#e6ebe7' }} }},
-    y: {{ ticks: {{ color: '#6b7570', font: {{ size: 10 }}, callback: v => isCntTon ? (v/1e3).toFixed(0)+'K톤' : '$'+(v/1e6).toFixed(1)+'M' }}, grid: {{ color: '#e6ebe7' }} }}
+    x: {{ ticks: {{ color: '#555555', font: {{ size: 10 }} }}, grid: {{ color: '#E8ECF1' }} }},
+    y: {{ ticks: {{ color: '#555555', font: {{ size: 10 }}, callback: v => isCntTon ? (v/1e3).toFixed(0)+'K톤' : '$'+(v/1e6).toFixed(1)+'M' }}, grid: {{ color: '#E8ECF1' }} }}
   }}
 }};
 new Chart(document.getElementById('chartMin'), {{
   type: 'bar',
-  data: {{ labels: {cl}, datasets: [{{ data: {cd}, backgroundColor: '#0e7a4f', borderRadius: 3 }}] }},
+  data: {{ labels: {cl}, datasets: [{{ data: {cd}, backgroundColor: '#155BB8', borderRadius: 3 }}] }},
   options: CHART_OPTS
 }});
 new Chart(document.getElementById('chartCnt'), {{
@@ -3418,7 +3418,7 @@ function getColor(share) {{
   if (share >= 30) return '#ff2200';
   if (share >= 15) return '#ff6600';
   if (share >=  5) return '#ffaa00';
-  if (share >=  1) return '#8fe9c3';
+  if (share >=  1) return '#CBDDF6';
   return '#88bb44';
 }}
 
@@ -3434,7 +3434,7 @@ function renderMineralLayer(mineral) {{
     style: feature => {{
       const p = feature.properties;
       const iso = p['ISO3166-1-Alpha-3'] || p.ISO_A3 || p.ADM0_A3 || p.iso_a3 || '';
-      if (iso === 'KOR') return {{ fillColor:'#0e7a4f', fillOpacity:.9, color:'#fff', weight:2 }};
+      if (iso === 'KOR') return {{ fillColor:'#155BB8', fillOpacity:.9, color:'#fff', weight:2 }};
       const d = isoMap[iso];
       if (d) return {{ fillColor: getColor(d.share), fillOpacity:.85, color:'#222', weight:.5 }};
       return {{ fillColor:'#2a2a2a', fillOpacity:.5, color:'#333', weight:.3 }};
@@ -3647,11 +3647,11 @@ const CHOKEPOINTS = [
      reason:'수에즈 봉쇄 대안 경로. 우회 시 운항 기간 10~14일 추가. 강풍·高파도 위험' }},
   {{ key:'PANAMA_P', name:'파나마 운하',   pos:WP.PANAMA_P,  color:'#ffaa00', risk:'medium',
      reason:'2023~24년 엘니뇨 가뭄으로 통항 40% 감소. 기후변화로 반복 위험. 미국 영향력 확대 논란' }},
-  {{ key:'LOMBOK',   name:'롬복 해협',     pos:WP.LOMBOK,    color:'#7ee2b8', risk:'low',
+  {{ key:'LOMBOK',   name:'롬복 해협',     pos:WP.LOMBOK,    color:'#B9CCEA', risk:'low',
      reason:'말라카 우회 대안. 수심 깊어 대형 선박 통과 가능. 인도네시아 정세에 의존' }},
-  {{ key:'TORRES',   name:'토레스 해협',   pos:WP.TORRES,    color:'#7ee2b8', risk:'low',
+  {{ key:'TORRES',   name:'토레스 해협',   pos:WP.TORRES,    color:'#B9CCEA', risk:'low',
      reason:'호주 동부~아시아 경로. 수심 얕고 암초 많아 항법 주의. 호주산 니켈·코발트 수입에 활용' }},
-  {{ key:'CAPE_HORN',name:'케이프혼',      pos:WP.CAPE_HORN, color:'#7ee2b8', risk:'low',
+  {{ key:'CAPE_HORN',name:'케이프혼',      pos:WP.CAPE_HORN, color:'#B9CCEA', risk:'low',
      reason:'칠레산 리튬·구리의 아시아행 경로. 강풍·너울로 운항 위험. 파나마 막힐 경우 대안 경로' }},
 ];
 
@@ -3704,13 +3704,13 @@ function openChokeNews(cp) {{
   const RISK_KO = {{critical:'🔴 위험 (Critical)', high:'🟠 높음 (High)', medium:'🟡 보통 (Medium)', low:'🟢 낮음 (Low)'}};
   panel.innerHTML = `
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
-      <span style="font-size:15px;font-weight:bold;color:#0e7a4f;font-family:var(--mono);">⚓ ${{cp.name}}</span>
+      <span style="font-size:15px;font-weight:bold;color:#155BB8;font-family:var(--mono);">⚓ ${{cp.name}}</span>
       <button onclick="document.getElementById('choke-panel').style.display='none'"
-        style="background:none;border:none;color:#8a948e;font-size:18px;cursor:pointer;line-height:1;">✕</button>
+        style="background:none;border:none;color:#888888;font-size:18px;cursor:pointer;line-height:1;">✕</button>
     </div>
     <div style="font-size:11px;color:${{cp.color}};margin-bottom:6px;font-weight:bold;">${{RISK_KO[cp.risk] || cp.risk}}</div>
     <div style="font-size:11px;color:#42536e;margin-bottom:12px;line-height:1.5;">${{cp.reason}}</div>
-    <div id="choke-news-list" style="font-size:11px;color:#7f8f85;">뉴스 로딩 중...</div>
+    <div id="choke-news-list" style="font-size:11px;color:#7D8AA3;">뉴스 로딩 중...</div>
   `;
   panel.style.display = 'block';
 
@@ -3719,27 +3719,27 @@ function openChokeNews(cp) {{
     .then(data => {{
       const list = document.getElementById('choke-news-list');
       if (!data.articles || data.articles.length === 0) {{
-        list.innerHTML = '<div style="color:#8a948e;padding:8px 0;">관련 뉴스가 없습니다</div>';
+        list.innerHTML = '<div style="color:#888888;padding:8px 0;">관련 뉴스가 없습니다</div>';
         return;
       }}
-      list.innerHTML = '<div style="color:#7f8f85;margin-bottom:6px;border-bottom:1px solid #e3e8e5;padding-bottom:4px;">📰 관련 뉴스</div>' +
+      list.innerHTML = '<div style="color:#7D8AA3;margin-bottom:6px;border-bottom:1px solid #DDE3EA;padding-bottom:4px;">📰 관련 뉴스</div>' +
         data.articles.map(a => `
-          <div style="margin-bottom:8px;padding:6px;background:#f5f7f6;border-radius:4px;border-left:2px solid ${{cp.color}};">
+          <div style="margin-bottom:8px;padding:6px;background:#F5F7FA;border-radius:4px;border-left:2px solid ${{cp.color}};">
             <div style="margin-bottom:2px;">
               <a href="${{a.link}}" target="_blank"
-                style="color:#1b211e;text-decoration:none;font-size:11px;line-height:1.4;"
-                onmouseover="this.style.color='#0e7a4f'" onmouseout="this.style.color='#1b211e'">
+                style="color:#222222;text-decoration:none;font-size:11px;line-height:1.4;"
+                onmouseover="this.style.color='#155BB8'" onmouseout="this.style.color='#222222'">
                 ${{a.title}}
               </a>
             </div>
             ${{a.desc ? `<div style="color:#5d6b80;font-size:10px;margin-top:2px;line-height:1.3;">${{a.desc}}</div>` : ''}}
-            <div style="color:#8a948e;font-size:10px;margin-top:3px;">${{a.date}} · ${{a.kw}}</div>
+            <div style="color:#888888;font-size:10px;margin-top:3px;">${{a.date}} · ${{a.kw}}</div>
           </div>
         `).join('');
     }})
     .catch(() => {{
       const list = document.getElementById('choke-news-list');
-      list.innerHTML = '<div style="color:#8a948e;">뉴스를 불러올 수 없습니다</div>';
+      list.innerHTML = '<div style="color:#888888;">뉴스를 불러올 수 없습니다</div>';
     }});
 }}
 
@@ -4037,7 +4037,7 @@ function renderRoutes(mineral) {{
 
           // Glow line (thicker, transparent)
           const glow = L.polyline(pts, {{
-            color: '#0e7a4f',
+            color: '#155BB8',
             weight: width * 2.6,
             opacity: 0.10,
             smoothFactor: 1,
@@ -4046,7 +4046,7 @@ function renderRoutes(mineral) {{
 
           // Main route line — 점선 흐름 애니메이션 (CSS stroke-dashoffset)
           const line = L.polyline(pts, {{
-            color: '#0e7a4f',
+            color: '#155BB8',
             weight: width,
             opacity: opacity,
             smoothFactor: 1,
@@ -4074,7 +4074,7 @@ function renderRoutes(mineral) {{
       // Korea marker
       const korea = L.circleMarker(BUSAN, {{
         radius: 10,
-        fillColor: '#0e7a4f',
+        fillColor: '#155BB8',
         color: '#fff',
         weight: 2,
         fillOpacity: 1,
@@ -4832,11 +4832,11 @@ body{background:#eef2f8;color:#16233c;font-family:Pretendard,'Apple SD Gothic Ne
 </style>
 </head>
 <body>
-<div style="position:fixed;top:0;left:0;right:0;z-index:80;display:flex;align-items:center;gap:18px;height:54px;padding:0 20px;background:rgba(9,14,11,.74);backdrop-filter:blur(10px);border-bottom:1px solid rgba(255,255,255,.08);font-family:'Pretendard Variable',Pretendard,-apple-system,sans-serif">
-  <a href="/" style="color:#fff;font-weight:800;font-size:16px;text-decoration:none;display:flex;align-items:center;gap:7px"><span style="width:9px;height:9px;border-radius:50%;background:#2fb37f;box-shadow:0 0 0 4px rgba(47,179,127,.18)"></span>마인테크</a>
+<div style="position:fixed;top:0;left:0;right:0;z-index:80;display:flex;align-items:center;gap:18px;height:54px;padding:0 20px;background:rgba(10,25,48,.74);backdrop-filter:blur(10px);border-bottom:1px solid rgba(255,255,255,.08);font-family:'Pretendard Variable',Pretendard,-apple-system,sans-serif">
+  <a href="/" style="color:#fff;font-weight:800;font-size:16px;text-decoration:none;display:flex;align-items:center;gap:7px"><span style="width:9px;height:9px;border-radius:50%;background:#5C8FD6;box-shadow:0 0 0 4px rgba(92,143,214,.18)"></span>마인테크</a>
   <nav style="display:flex;gap:4px">
     <a href="/" style="padding:6px 13px;border-radius:999px;color:#cfd8d2;font-size:13.5px;font-weight:650;text-decoration:none">홈</a>
-    <a href="/globe" style="padding:6px 13px;border-radius:999px;background:rgba(47,179,127,.18);color:#7ee2b8;font-size:13.5px;font-weight:650;text-decoration:none">핵심광물지도</a>
+    <a href="/globe" style="padding:6px 13px;border-radius:999px;background:rgba(92,143,214,.18);color:#B9CCEA;font-size:13.5px;font-weight:650;text-decoration:none">핵심광물지도</a>
     <a href="/briefing" style="padding:6px 13px;border-radius:999px;color:#cfd8d2;font-size:13.5px;font-weight:650;text-decoration:none">브리핑</a>
     <a href="/conference" style="padding:6px 13px;border-radius:999px;color:#cfd8d2;font-size:13.5px;font-weight:650;text-decoration:none">AI 회의</a>
   </nav>
@@ -4856,24 +4856,24 @@ body{background:#eef2f8;color:#16233c;font-family:Pretendard,'Apple SD Gothic Ne
 
 <div class="krisk"><b>K-RISK</b> __KRSTRIP__</div>
 <div id="mchips">__MCHIPS__
-  <span class="mkey"><b style="color:#c8931d">●</b> 수입 루트 · <b style="color:#0e7a4f">●</b> 매장량</span>
+  <span class="mkey"><b style="color:#c8931d">●</b> 수입 루트 · <b style="color:#155BB8">●</b> 매장량</span>
 </div>
 <style>
 #mchips{position:fixed;left:16px;top:112px;z-index:9;display:flex;gap:6px;flex-wrap:wrap;align-items:center;
   max-width:calc(100vw - 460px);font-family:Pretendard,sans-serif}
-.mchip{border:1px solid #d8dfda;background:rgba(255,255,255,.93);color:#5f6b64;border-radius:999px;
+.mchip{border:1px solid #DDE3EA;background:rgba(255,255,255,.93);color:#555555;border-radius:999px;
   padding:6px 13px;font:650 12.5px Pretendard,sans-serif;cursor:pointer}
-.mchip.on{background:#0a5c3c;border-color:#0a5c3c;color:#fff}
-#mchips .mkey{font-size:11px;color:#5f6b64;background:rgba(255,255,255,.88);border-radius:999px;padding:4px 10px}
+.mchip.on{background:#16305C;border-color:#16305C;color:#fff}
+#mchips .mkey{font-size:11px;color:#555555;background:rgba(255,255,255,.88);border-radius:999px;padding:4px 10px}
 #chokeInfo{position:fixed;left:16px;top:196px;z-index:9;display:none;background:rgba(255,255,255,.94);
-  border:1px solid #e0e6e2;border-radius:14px;padding:12px 16px;width:250px;font-family:Pretendard,sans-serif;
-  box-shadow:0 8px 24px rgba(20,40,30,.08)}
-#chokeInfo .ct{font-size:12px;font-weight:800;color:#0a5c3c;margin-bottom:8px}
+  border:1px solid #DDE3EA;border-radius:14px;padding:12px 16px;width:250px;font-family:Pretendard,sans-serif;
+  box-shadow:0 8px 24px rgba(22,48,92,.08)}
+#chokeInfo .ct{font-size:12px;font-weight:800;color:#16305C;margin-bottom:8px}
 #chokeInfo .cr{margin:7px 0}
-#chokeInfo .cl{display:flex;justify-content:space-between;font-size:12px;color:#3a443e;font-weight:650;margin-bottom:3px}
-#chokeInfo .cb{height:6px;border-radius:999px;background:#eef1ef;overflow:hidden}
+#chokeInfo .cl{display:flex;justify-content:space-between;font-size:12px;color:#333B45;font-weight:650;margin-bottom:3px}
+#chokeInfo .cb{height:6px;border-radius:999px;background:#EEF1F5;overflow:hidden}
 #chokeInfo .cf{height:100%;border-radius:999px;background:#c8931d}
-#chokeInfo .cnone{font-size:12px;color:#68726c;line-height:1.5}
+#chokeInfo .cnone{font-size:12px;color:#555555;line-height:1.5}
 @media(max-width:760px){#mchips{display:none}#chokeInfo{display:none!important}}
 </style>
 <div id="chokeInfo"></div>
@@ -4924,7 +4924,7 @@ const globe = Globe()(document.getElementById('globeViz'))
   .htmlElementsData(CHOKES.concat([BUSAN]))
   .htmlLat('lat').htmlLng('lng').htmlAltitude(0.012)
   .htmlElement(function(d){
-    var col = d.risk==='hub' ? '#0f6b45' : (d.risk==='critical' ? '#c03535' : (d.risk==='high' ? '#c2611a' : '#a97a12'));
+    var col = d.risk==='hub' ? '#155BB8' : (d.risk==='critical' ? '#c03535' : (d.risk==='high' ? '#c2611a' : '#a97a12'));
     var el = document.createElement('div');
     el.innerHTML = (d.risk==='hub' ? '🇰🇷 ' : '⚓ ') + d.name
       + (d.badge ? '<br><span style="font-size:10px;background:rgba(255,255,255,.92);color:#8a6a10;border:1px solid #b5821088;border-radius:999px;padding:1px 8px;font-weight:800">'+d.badge+'</span>' : '');
@@ -4996,7 +4996,7 @@ function applyMineral(m, rs){
   (RSV[m]||[]).forEach(function(x){ pts.push({kind:'rsv', lat:x.lat, lng:x.lng, c:x.c, v:x.v}); });
   globe.pointsData(pts)
     .pointLat('lat').pointLng('lng')
-    .pointColor(function(p){ return p.kind==='imp' ? '#c8931d' : '#0e7a4f'; })
+    .pointColor(function(p){ return p.kind==='imp' ? '#c8931d' : '#155BB8'; })
     .pointAltitude(function(p){ return p.kind==='imp' ? 0.018 + (p.share||0)/100*0.05 : 0.012; })
     .pointRadius(function(p){ return p.kind==='imp' ? 0.4 + (p.share||0)/100*0.45 : 0.34; })
     .pointLabel(function(p){ return '<div style="font-size:11.5px;line-height:1.5"><b>'+p.c+'</b><br>'
@@ -5392,7 +5392,7 @@ def render_login(err=""):
 html body, html body *:not([class*="material-symbols"]){font-family:'Pretendard','Noto Sans KR',-apple-system,BlinkMacSystemFont,sans-serif !important;}
 body{font-variant-numeric:tabular-nums;}
 </style>
-<style>body{background:#f5f7f6;color:#1b211e;font-family:'Pretendard Variable',Pretendard,'Noto Sans KR',sans-serif;}</style>
+<style>body{background:#F5F7FA;color:#222222;font-family:'Pretendard Variable',Pretendard,'Noto Sans KR',sans-serif;}</style>
 </head>
 <body class="min-h-screen flex items-center justify-center p-6">
   <form method="POST" action="/conference/login" class="w-full max-w-sm bg-white border border-[#e3e8f0] rounded-2xl p-8" style="box-shadow:0 14px 40px rgba(20,35,60,.1)">
@@ -5911,7 +5911,7 @@ tailwind.config = {
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 </head>
 <body class="flex min-h-screen bg-background">
-<a href="/" style="position:fixed;top:14px;left:16px;z-index:95;display:flex;align-items:center;gap:6px;padding:7px 14px;border-radius:999px;background:rgba(9,14,11,.55);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.12);color:#cfd8d2;font-size:12.5px;font-weight:700;text-decoration:none;font-family:'Pretendard Variable',Pretendard,sans-serif"><span style="width:7px;height:7px;border-radius:50%;background:#2fb37f"></span>마인테크 홈</a>
+<a href="/" style="position:fixed;top:14px;left:16px;z-index:95;display:flex;align-items:center;gap:6px;padding:7px 14px;border-radius:999px;background:rgba(10,25,48,.55);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.12);color:#cfd8d2;font-size:12.5px;font-weight:700;text-decoration:none;font-family:'Pretendard Variable',Pretendard,sans-serif"><span style="width:7px;height:7px;border-radius:50%;background:#5C8FD6"></span>마인테크 홈</a>
 
 <!-- Main (사이드바 없음 — 회의에 집중) -->
 <main class="flex-1 h-screen flex flex-col bg-background overflow-hidden">
@@ -7091,100 +7091,116 @@ V2_SHELL = r"""<!DOCTYPE html>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>__TITLE__</title>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
 <style>
-:root{--g:#0e7a4f;--gd:#0a5c3c;--gl:#e5f3ec;--bg:#f5f7f6;--card:#ffffff;--ink:#1b211e;--mut:#68726c;
---line:#e3e8e5;--dgr:#d8453c;--dgl:#fdecea;--wrn:#c97a00;--wrl:#fdf3e2;--okl:#e5f3ec;}
+:root{
+  --blue:#155BB8;--blue2:#0E4A99;--navy:#16305C;--sky:#EAF2FC;--sky2:#D6E6F9;
+  --ink:#222;--ink2:#555;--ink3:#888;--line:#DDE3EA;--line2:#C9D2DD;
+  --bg:#F5F7FA;--card:#fff;
+  --dgr:#D0342C;--dgl:#FCEBEA;--wrn:#B8720A;--wrl:#FCF3E2;--okc:#1E7B45;--okl:#E7F4EC;
+  /* 기존 페이지 CSS 호환 별칭 */
+  --g:#155BB8;--gd:#16305C;--gl:#EAF2FC;--mut:#555;
+}
 *{margin:0;padding:0;box-sizing:border-box}
 html{scroll-behavior:smooth}
-body{font-family:'Pretendard Variable',Pretendard,-apple-system,'Malgun Gothic',sans-serif;background:var(--bg);
-color:var(--ink);font-size:15px;line-height:1.55;-webkit-font-smoothing:antialiased}
+body{font-family:'Noto Sans KR',-apple-system,'Malgun Gothic',sans-serif;background:#fff;color:var(--ink);
+font-size:15px;line-height:1.6;-webkit-font-smoothing:antialiased}
 a{color:inherit;text-decoration:none}
-.wrap{max-width:1060px;margin:0 auto;padding:0 20px}
-.tbar{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.93);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
-.tbar .wrap{display:flex;align-items:center;gap:22px;height:62px}
-.logo{font-size:19px;font-weight:800;letter-spacing:-.02em;color:var(--gd);display:flex;align-items:center;gap:8px}
-.logo .dot{width:11px;height:11px;border-radius:50%;background:var(--g);box-shadow:0 0 0 4px var(--gl)}
-.gnav{display:flex;gap:4px;flex:1}
-.gnav a{padding:8px 15px;border-radius:999px;font-weight:650;color:var(--mut);font-size:14.5px}
-.gnav a.on{background:var(--gl);color:var(--gd)}
-.gnav a:hover{color:var(--gd)}
-.sbox{display:flex;align-items:center;gap:8px;background:var(--bg);border:1px solid var(--line);border-radius:999px;padding:9px 15px;width:240px}
-.sbox svg{width:15px;height:15px;stroke:var(--mut);flex:none}
-.sbox input{border:0;outline:0;background:none;font:inherit;font-size:13.5px;width:100%;color:var(--ink)}
+button{font-family:inherit;cursor:pointer}
+.wrap{max-width:1200px;margin:0 auto;padding:0 24px}
+/* ── 유틸바 ── */
+.ubar{background:#F2F4F7;border-bottom:1px solid var(--line);font-size:12px}
+.ubar .wrap{display:flex;justify-content:space-between;align-items:center;height:36px}
+.ubar .u-l{color:var(--ink3);display:flex;gap:4px}
+.ubar a{color:var(--ink2)} .ubar a:hover{color:var(--blue);text-decoration:underline}
+.ubar .u-r a{padding:0 11px;position:relative}
+.ubar .u-r a+a::before{content:'';position:absolute;left:0;top:50%;transform:translateY(-50%);width:1px;height:10px;background:var(--line2)}
+.ubar .u-r span{display:none}
+/* ── 헤더 + GNB (한 줄, 86px) ── */
+.tbar{border-bottom:2px solid var(--blue);background:#fff;position:sticky;top:0;z-index:60}
+.tbar .wrap{display:flex;align-items:center;height:86px;gap:18px}
+.logo{display:flex;align-items:center;gap:11px;flex:none}
+.logo .dot{width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg,var(--blue),var(--navy));flex:none;
+box-shadow:inset 0 0 0 3px rgba(255,255,255,.22)}
+.logo b{font-size:21px;font-weight:900;letter-spacing:-.5px;color:var(--navy);display:block;line-height:1.25}
+.logo b em{font-style:normal;color:var(--blue)}
+.logo i{display:block;font-style:normal;font-size:11px;color:var(--ink3);letter-spacing:.4px;font-weight:500}
+.gnbbar{display:flex;flex:1;height:86px}
+.gnbbar .wrap{display:contents}
+.gnbbar a,.gdrop>a{display:flex;align-items:center;height:86px;padding:0 16px;font-size:15.5px;font-weight:700;color:var(--ink);position:relative;white-space:nowrap}
+.gnbbar a::after,.gdrop>a::after{content:'';position:absolute;left:16px;right:16px;bottom:-2px;height:3px;background:var(--blue);transform:scaleX(0);transition:transform .2s}
+.gnbbar a:hover,.gdrop:hover>a{color:var(--blue)}
+.gnbbar a:hover::after,.gdrop:hover>a::after,.gnbbar a.on::after{transform:scaleX(1)}
+.gnbbar a.on{color:var(--blue)}
+.gdrop{position:relative;display:flex}
+.gmenu{display:none;position:absolute;left:50%;transform:translateX(-50%);top:86px;background:#fff;border:1px solid var(--line);
+border-top:2px solid var(--blue);min-width:184px;padding:8px 0;box-shadow:0 10px 24px rgba(22,48,92,.12);z-index:70}
+.gdrop:hover .gmenu{display:block}
+.gmenu a{display:block;height:auto;padding:9px 20px;font-size:14px;font-weight:500;color:var(--ink2)}
+.gmenu a::after{display:none}
+.gmenu a:hover{background:var(--sky);color:var(--blue);font-weight:700}
+.sbox{display:flex;align-items:center;gap:8px;background:var(--bg);border:1px solid var(--line2);border-radius:100px;padding:9px 16px;width:185px;flex:none}
+.sbox svg{width:15px;height:15px;stroke:var(--ink3);flex:none}
+.sbox input{border:0;outline:0;background:none;font:inherit;font-size:13px;width:100%;color:var(--ink)}
 .mtab{display:none}
-@media(max-width:860px){
- .gnav{display:none}
- .sbox{margin-left:auto;width:160px}
- .mtab{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:60;background:#fff;border-top:1px solid var(--line);
+@media(max-width:900px){
+ .gnbbar{display:none}
+ .sbox{margin-left:auto;width:150px}
+ .tbar .wrap{height:64px}
+ .mtab{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:80;background:#fff;border-top:1px solid var(--line);
   justify-content:space-around;padding:8px 0 calc(8px + env(safe-area-inset-bottom))}
- .mtab a{display:flex;flex-direction:column;align-items:center;gap:3px;font-size:11px;color:var(--mut);font-weight:650}
- .mtab a.on{color:var(--gd)}
+ .mtab a{display:flex;flex-direction:column;align-items:center;gap:3px;font-size:11px;color:var(--ink3);font-weight:700}
+ .mtab a.on{color:var(--blue)}
  .mtab svg{width:22px;height:22px;stroke:currentColor}
  body{padding-bottom:74px}
 }
-.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px 20px}
-.pill{display:inline-flex;align-items:center;border-radius:999px;padding:3px 11px;font-size:12.5px;font-weight:750;white-space:nowrap}
+/* ── 공통 컴포넌트 ── */
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:20px 22px}
+.pill{display:inline-flex;align-items:center;border-radius:100px;padding:3px 11px;font-size:12.5px;font-weight:700;white-space:nowrap}
 .p-dg{background:var(--dgl);color:var(--dgr)}.p-wr{background:var(--wrl);color:var(--wrn)}
-.p-ok{background:var(--okl);color:var(--gd)}.p-mu{background:#eef1ef;color:var(--mut)}
-h1{font-size:24px;font-weight:800;letter-spacing:-.02em}
-.sec-t{font-size:16px;font-weight:800;margin:0 0 10px}
-.ubar{background:#eef2ef;border-bottom:1px solid var(--line);font-size:12px;color:var(--mut)}
-.ubar .wrap{display:flex;justify-content:space-between;align-items:center;height:34px}
-.ubar a{color:var(--mut)} .ubar a:hover{color:var(--gd)}
-.ubar .u-r a{font-weight:650} .ubar .u-r span{margin:0 8px;color:var(--line)}
-.logo i{display:block;font-style:normal;font-size:9.5px;font-weight:500;color:var(--mut);letter-spacing:.02em;margin-top:1px}
-footer{margin:0;background:var(--gd);color:#cfe6da;font-size:13px}
-footer .f-wrap{max-width:1060px;margin:0 auto;padding:34px 20px 26px;display:grid;grid-template-columns:1.3fr 1fr 1fr;gap:28px}
-footer h4{color:#fff;font-size:13.5px;font-weight:800;margin-bottom:10px}
-footer .f-brand{font-size:16px;font-weight:800;color:#fff;display:flex;align-items:center;gap:7px;margin-bottom:8px}
-footer .f-brand .dot{width:9px;height:9px;border-radius:50%;background:#7ee2b8}
-footer p{line-height:1.65;font-size:12.5px}
-footer ul{list-style:none} footer li{margin:5px 0;font-size:12.5px}
-footer a{color:#cfe6da} footer a:hover{color:#fff}
-footer .f-status{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.08);border-radius:999px;padding:5px 13px;font-size:12px;margin-top:10px}
-footer .f-status .ok{width:7px;height:7px;border-radius:50%;background:#7ee2b8}
-footer .f-bot{border-top:1px solid rgba(255,255,255,.12);text-align:center;padding:14px;font-size:11.5px;color:#9fc7b3}
-.gnbbar{background:#fff;border-bottom:2px solid var(--gd)}
-.gnbbar .wrap{display:flex;align-items:stretch;gap:2px;height:52px}
-.gnbbar a{display:flex;align-items:center;padding:0 26px;font-size:16px;font-weight:750;color:var(--ink)}
-.gnbbar a:hover{color:var(--gd);box-shadow:inset 0 -3px 0 var(--g)}
-.gnbbar a.on{color:var(--gd);box-shadow:inset 0 -3px 0 var(--gd)}
-.gdrop{position:relative;display:flex}
-.gmenu{display:none;position:absolute;top:52px;left:0;min-width:190px;background:#fff;border:1px solid var(--line);
-border-top:2px solid var(--gd);box-shadow:0 10px 24px rgba(20,40,30,.12);z-index:60;padding:6px 0}
-.gdrop:hover .gmenu{display:block}
-.gmenu a{display:block;padding:10px 18px;font-size:14px;font-weight:600;color:var(--ink);box-shadow:none!important}
-.gmenu a:hover{background:var(--gl);color:var(--gd)}
-.card{border-radius:8px}
-.modt{display:flex;justify-content:space-between;align-items:flex-end;border-bottom:2px solid var(--ink);padding-bottom:9px;margin:26px 0 0}
-.modt b{font-size:19px;font-weight:800}
-.modt a{font-size:12.5px;color:var(--mut);font-weight:650}
+.p-ok{background:var(--okl);color:var(--okc)}.p-mu{background:#EEF1F5;color:var(--ink3)}
+h1{font-size:24px;font-weight:900;letter-spacing:-.5px}
+.sec-t{font-size:16px;font-weight:900;margin:0 0 10px}
+.modt{display:flex;justify-content:space-between;align-items:flex-end;border-bottom:2px solid var(--navy);padding-bottom:9px;margin:30px 0 0}
+.modt b{font-size:19px;font-weight:900;letter-spacing:-.3px}
+.modt a{font-size:12.5px;color:var(--ink3);font-weight:700}
+.modt a:hover{color:var(--blue)}
+/* ── 관련 사이트 ── */
 .relsites{border-top:1px solid var(--line);background:#fff;padding:15px 0;margin-top:56px}
 .relsites .wrap{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
 .relsites b{font-size:13.5px}
-.relsites select{border:1px solid #c9d2cc;border-radius:4px;padding:9px 12px;font:inherit;font-size:13px;min-width:230px;background:#fff;color:var(--ink)}
-@media(max-width:860px){.ubar{display:none}.gnbbar{display:none}footer .f-wrap{grid-template-columns:1fr;gap:18px}}
+.relsites select{border:1px solid var(--line2);border-radius:4px;padding:9px 12px;font:inherit;font-size:13px;min-width:230px;background:#fff;color:var(--ink)}
+/* ── 푸터 (네이비) ── */
+footer{margin:0;background:var(--navy);color:#B9CCEA;font-size:13px}
+footer .f-wrap{max-width:1200px;margin:0 auto;padding:34px 24px 26px;display:grid;grid-template-columns:1.3fr 1fr 1fr;gap:28px}
+footer h4{color:#fff;font-size:13.5px;font-weight:700;margin-bottom:10px}
+footer .f-brand{font-size:16px;font-weight:900;color:#fff;display:flex;align-items:center;gap:8px;margin-bottom:8px}
+footer .f-brand .dot{width:9px;height:9px;border-radius:50%;background:#5C8FD6}
+footer p{line-height:1.65;font-size:12.5px}
+footer ul{list-style:none} footer li{margin:5px 0;font-size:12.5px}
+footer a{color:#B9CCEA} footer a:hover{color:#fff;text-decoration:underline}
+footer .f-status{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.08);border-radius:100px;padding:5px 13px;font-size:12px;margin-top:10px}
+footer .f-status .ok{width:7px;height:7px;border-radius:50%;background:#4CD68C}
+footer .f-bot{border-top:1px solid rgba(255,255,255,.14);text-align:center;padding:14px;font-size:11.5px;color:#8FA6C6}
+@media(max-width:900px){.ubar{display:none}footer .f-wrap{grid-template-columns:1fr;gap:18px}}
 __EXTRA_CSS__
 </style>
 </head>
 <body>
 <div class="ubar"><div class="wrap">
-  <div class="u-l">데이터 출처:
-    <a href="https://www.komis.or.kr" target="_blank" rel="noopener">KOMIS</a> ·
-    <a href="https://www.data.go.kr" target="_blank" rel="noopener">공공데이터포털</a> ·
-    <a href="https://tradedata.go.kr" target="_blank" rel="noopener">관세청</a> ·
+  <div class="u-l">데이터 출처:&nbsp;
+    <a href="https://www.komis.or.kr" target="_blank" rel="noopener">KOMIS</a>&nbsp;·&nbsp;
+    <a href="https://www.data.go.kr" target="_blank" rel="noopener">공공데이터포털</a>&nbsp;·&nbsp;
+    <a href="https://tradedata.go.kr" target="_blank" rel="noopener">관세청</a>&nbsp;·&nbsp;
     <a href="https://www.usgs.gov" target="_blank" rel="noopener">USGS</a></div>
-  <div class="u-r"><a href="/briefing">리포트 구독</a><span>|</span><a href="/pro">전문가용</a></div>
+  <div class="u-r"><a href="/briefing">리포트 구독</a><a href="/pro">전문가용</a></div>
 </div></div>
 <div class="tbar"><div class="wrap">
-  <a class="logo" href="/"><span class="dot"></span><span><b>마인테크</b><i>Mine-Tech Critical Minerals Intelligence</i></span></a>
-  <div style="flex:1"></div>
-  <div class="sbox"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input id="gq" placeholder="광물·용도 검색 (리튬, 배터리…)" value="__Q__"></div>
-</div></div>
-<nav class="gnbbar"><div class="wrap">
+  <a class="logo" href="/"><span class="dot"></span><span><b>마인<em>테크</em></b><i>MINE-TECH CRITICAL MINERALS SERVICE</i></span></a>
+  <nav class="gnbbar">
   <a href="/" class="__A_HOME__">홈</a>
-  <div class="gdrop"><a href="#" onclick="return false" style="cursor:default">광종별 현황 ▾</a><div class="gmenu">
+  <div class="gdrop"><a href="#" onclick="return false">광종별 현황</a><div class="gmenu">
     <a href="/dashboard#cat-minerals">핵심광물 종합</a>
     <a href="/dashboard#cat-nf">비철금속 (6종)</a>
     <a href="/dashboard#cat-rare">희소금속 (20종)</a>
@@ -7193,7 +7209,7 @@ __EXTRA_CSS__
     <a href="/dashboard#cat-etc">기타 (6종)</a>
   </div></div>
   <a href="/globe" class="__A_MAP__">핵심광물지도</a>
-  <div class="gdrop"><a href="#" onclick="return false" style="cursor:default">통계 ▾</a><div class="gmenu">
+  <div class="gdrop"><a href="#" onclick="return false">통계</a><div class="gmenu">
     <a href="/dashboard#supply">수급 현황</a>
     <a href="/dashboard#mindex">가격지수</a>
     <a href="/dashboard#forecast">가격 전망</a>
@@ -7204,7 +7220,9 @@ __EXTRA_CSS__
   <a href="/briefing" class="__A_BRF__">브리핑</a>
   <a href="/conference" class="__A_AI__">AI 회의</a>
   <a href="/pro">전문가용</a>
-</div></nav>
+  </nav>
+  <div class="sbox"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input id="gq" placeholder="광물·용도 검색" value="__Q__"></div>
+</div></div>
 __CONTENT__
 <div class="relsites"><div class="wrap"><b>관련 사이트</b>
   <select onchange="if(this.value){window.open(this.value);this.value=''}">
@@ -7287,16 +7305,23 @@ def _v2_shell(active, title, content, extra_css="", js="", q=""):
 
 V2_HOME_CSS = r"""
 .sbox{display:none}
-.hero{background:linear-gradient(130deg,#0a5c3c 0%,#0e7a4f 55%,#128a5c 100%);color:#fff;padding:44px 0 58px}
-.h-badge{display:inline-block;border:1px solid rgba(255,255,255,.45);border-radius:999px;padding:4px 14px;font-size:12px;font-weight:700;color:#d7efe3;margin-bottom:14px}
-.h-tt{font-size:34px;font-weight:800;letter-spacing:-.02em}
-.h-sub{font-size:14px;color:#cfe9db;margin:8px 0 22px}
-.h-search{display:flex;align-items:center;background:#fff;border-radius:999px;padding:5px 5px 5px 24px;max-width:660px;box-shadow:0 10px 26px rgba(0,40,20,.22)}
+.hero{position:relative;background:linear-gradient(120deg,#123C7E 0%,#155BB8 55%,#1E74D8 100%);color:#fff;overflow:hidden}
+.hero::before{content:'';position:absolute;right:-120px;top:-140px;width:520px;height:520px;border-radius:50%;border:70px solid rgba(255,255,255,.05)}
+.hero::after{content:'';position:absolute;right:120px;bottom:-200px;width:420px;height:420px;border-radius:50%;border:54px solid rgba(255,255,255,.05)}
+.hero .wrap{position:relative;z-index:2;padding-top:60px;padding-bottom:92px}
+.h-badge{display:inline-block;font-size:12.5px;font-weight:700;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.3);padding:5px 14px;border-radius:100px;margin-bottom:16px}
+.h-tt{font-size:38px;font-weight:900;letter-spacing:-1px;line-height:1.3}
+.h-sub{font-size:15.5px;color:#CBDDF6;margin-top:12px}
+.h-cta{display:inline-block;margin-top:22px;background:#fff;color:var(--blue2);font-size:14px;font-weight:700;padding:11px 26px;border-radius:4px}
+.h-cta:hover{background:var(--sky)}
+.gsearch{position:relative;z-index:5;margin-top:-34px}
+.h-search{display:flex;align-items:center;background:#fff;border:2px solid var(--blue);border-radius:100px;padding:5px 5px 5px 26px;max-width:760px;margin:0 auto;box-shadow:0 12px 30px rgba(22,48,92,.16)}
 .h-search input{flex:1;border:0;outline:0;font:inherit;font-size:15.5px;color:var(--ink);background:none}
-.h-search button{border:0;background:var(--gd);color:#fff;border-radius:999px;width:46px;height:46px;font-size:16px;cursor:pointer;flex:none}
-.h-pop{margin-top:14px;font-size:12.5px;color:#cfe9db;font-weight:700;display:flex;gap:6px;align-items:center;flex-wrap:wrap}
-.h-pop button{border:1px solid rgba(255,255,255,.4);background:rgba(255,255,255,.12);color:#fff;border-radius:999px;padding:3px 12px;font:650 12px/1.5 inherit;font-family:inherit;cursor:pointer}
-.h-pop button:hover{background:rgba(255,255,255,.24)}
+.h-search button{border:0;background:var(--blue);color:#fff;border-radius:100px;width:48px;height:48px;font-size:16px;cursor:pointer;flex:none}
+.h-search button:hover{background:var(--blue2)}
+.h-pop{margin-top:14px;font-size:12.5px;color:var(--ink3);font-weight:700;display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:center}
+.h-pop button{border:1px solid var(--line);background:var(--bg);color:var(--ink2);border-radius:100px;padding:4px 13px;font:500 12.5px/1.5 inherit;font-family:inherit;cursor:pointer}
+.h-pop button:hover{border-color:var(--blue);color:var(--blue)}
 .hgrid{display:grid;grid-template-columns:2fr 1fr 1fr;gap:12px;margin-bottom:6px}
 .alert{border-radius:8px;padding:18px 20px}
 .alert.a-dg{background:var(--dgl)} .alert.a-wr{background:var(--wrl)} .alert.a-ok{background:var(--okl)}
@@ -7319,7 +7344,7 @@ font-size:13.5px;font-weight:650;color:var(--mut);cursor:pointer;transition:.15s
 .mrow:last-child{border-bottom:0}
 .mrow:hover{background:var(--bg)}
 .sig{width:10px;height:10px;border-radius:50%;flex:none}
-.sig.dg{background:var(--dgr)}.sig.wr{background:#e8a13c}.sig.ok{background:var(--g)}.sig.mu{background:#c6cdc9}
+.sig.dg{background:var(--dgr)}.sig.wr{background:#E8A13C}.sig.ok{background:#1E7B45}.sig.mu{background:#C9D2DD}
 .m-main{flex:1;min-width:0}
 .m-main b{font-size:15px;font-weight:750}
 .m-main i{font-style:normal;font-size:12.5px;color:var(--mut);margin-left:7px}
@@ -7334,12 +7359,12 @@ font:inherit;font-size:13.5px;font-weight:700;color:var(--gd);cursor:pointer}
 .rail .ai-card .r-q{font-size:12.5px;opacity:.85;margin-top:4px}
 .rail .ai-card a{display:inline-block;margin-top:10px;background:rgba(255,255,255,.16);border-radius:999px;
 padding:6px 14px;font-size:12.5px;font-weight:700;color:#fff}
-.qmenu{display:grid;grid-template-columns:repeat(8,1fr);gap:8px;margin:-34px 0 22px;position:relative;z-index:5}
-.qmenu a{display:flex;flex-direction:column;align-items:center;gap:7px;background:var(--card);
-border:1px solid var(--line);border-radius:8px;padding:13px 4px 11px;font-size:12px;font-weight:650;color:var(--ink);transition:.12s;
-box-shadow:0 4px 12px rgba(20,40,30,.08)}
-.qmenu a:hover{border-color:var(--g);color:var(--gd)}
-.qmenu .qi{width:34px;height:34px;border-radius:50%;background:var(--gl);display:flex;align-items:center;justify-content:center;font-size:16px}
+.qmenu{display:grid;grid-template-columns:repeat(8,1fr);gap:6px;padding:34px 0 4px;margin:0 0 8px}
+.qmenu a{display:flex;flex-direction:column;align-items:center;gap:9px;background:none;
+border:0;padding:10px 4px;font-size:13px;font-weight:700;color:var(--ink2);transition:.12s}
+.qmenu a:hover{color:var(--blue)}
+.qmenu .qi{width:56px;height:56px;border-radius:50%;background:var(--sky);display:flex;align-items:center;justify-content:center;font-size:23px;transition:.12s}
+.qmenu a:hover .qi{background:var(--sky2)}
 .popq{font-size:12.5px;color:var(--mut);font-weight:700;margin:0 0 10px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
 .popq button{border:1px solid var(--line);background:var(--card);color:var(--gd);border-radius:999px;
 padding:3px 11px;font:650 12px/1.5 inherit;font-family:inherit;cursor:pointer}
@@ -7354,7 +7379,7 @@ padding:3px 11px;font:650 12px/1.5 inherit;font-family:inherit;cursor:pointer}
 .mh{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
 .mh b{font-size:15px;font-weight:800}
 .mh a{font-size:12px;color:var(--mut);font-weight:650}
-.srcline{font-size:11px;color:var(--mut);margin-top:9px}
+.srcline{font-size:11px;color:var(--ink3);margin-top:12px;padding-top:10px;border-top:1px dashed var(--line)}
 .ptable{width:100%;border-collapse:collapse;font-size:13px}
 .ptable th{font-size:11.5px;color:var(--mut);font-weight:700;border-bottom:1px solid var(--line);padding:4px 2px;text-align:left}
 .ptable td{padding:7px 2px;border-bottom:1px solid var(--line)}
@@ -7419,7 +7444,7 @@ def render_home_v2():
         for c in ["비철금속", "희소금속", "희토류", "에너지", "기타"])
 
     _rk = load_risk_data() or []
-    _colors = ["#0e7a4f", "#c8931d", "#1c5cab", "#c0392b", "#7a5195", "#2e8b8b"]
+    _colors = ["#155BB8", "#c8931d", "#1c5cab", "#c0392b", "#7a5195", "#2e8b8b"]
     risk_js = json.dumps({
         "labels": (_rk[0].get("months") if _rk else []) or [],
         "series": [{"name": r["name"], "vals": r.get("vals") or [], "color": _colors[i % 6]}
@@ -7430,7 +7455,7 @@ def render_home_v2():
     _lme_rows = ""
     for it in (_ppa.get("items") or [])[:6]:
         chg = it.get("chg") or 0
-        cc = "#c0392b" if chg > 0 else ("#1c5cab" if chg < 0 else "#8a948e")
+        cc = "#c0392b" if chg > 0 else ("#1c5cab" if chg < 0 else "#888888")
         arrow = "▲" if chg > 0 else ("▼" if chg < 0 else "—")
         _lme_rows += (f'<tr><td>{it.get("name", "")}</td>'
                       f'<td class="num">{(it.get("close") or 0):,.0f}</td>'
@@ -7469,14 +7494,17 @@ def render_home_v2():
 <div class="hero">
   <div class="wrap">
     <span class="h-badge">핵심광물 48종 · 5개 분류 실시간 관측</span>
-    <div class="h-tt">오늘의 광물 날씨</div>
-    <div class="h-sub">{now.month}월 {now.day}일 {wd}요일 — 흩어진 광물 공공데이터를 융합해 공급망 위험을 하나의 지수로 진단합니다</div>
-    <div class="h-search"><input id="heroq" placeholder="광종명·용도를 입력하세요 (예: 리튬, 배터리, 자석)"><button aria-label="검색">🔍</button></div>
-    <div class="h-pop">인기 검색어
-      <button data-q="리튬">#리튬</button><button data-q="텅스텐">#텅스텐</button>
-      <button data-q="흑연">#흑연</button><button data-q="네오디뮴">#네오디뮴</button>
-      <button data-q="갈륨">#갈륨</button><button data-q="배터리">#배터리</button></div>
+    <div class="h-tt">흩어진 공공데이터를 융합해<br>공급망 위험을 하나의 지수로 진단합니다</div>
+    <div class="h-sub">{now.month}월 {now.day}일 {wd}요일 · KOMIR·관세청·조달청·USGS 공개 지표 교차 계산 — 오늘의 광물 날씨</div>
+    <a class="h-cta" href="#mlist">전체 광종 현황 바로가기</a>
   </div>
+</div>
+<div class="wrap gsearch">
+  <div class="h-search"><input id="heroq" placeholder="광종명·용도를 입력하세요 (예: 리튬, 배터리, 자석)"><button aria-label="검색">🔍</button></div>
+  <div class="h-pop">인기 검색어
+    <button data-q="리튬">#리튬</button><button data-q="텅스텐">#텅스텐</button>
+    <button data-q="흑연">#흑연</button><button data-q="네오디뮴">#네오디뮴</button>
+    <button data-q="갈륨">#갈륨</button><button data-q="배터리">#배터리</button></div>
 </div>
 <div class="wrap">
   <div class="qmenu">
@@ -7596,7 +7624,7 @@ def render_home_v2():
       options:{maintainAspectRatio:false,interaction:{mode:'index',intersect:false},
         plugins:{legend:{position:'bottom',labels:{boxWidth:8,boxHeight:8,font:{size:10.5},padding:8}}},
         scales:{x:{grid:{display:false},ticks:{maxTicksLimit:6,font:{size:10}}},
-                y:{grid:{color:'#eef1ef'},ticks:{font:{size:10}}}}}});
+                y:{grid:{color:'#EEF1F5'},ticks:{font:{size:10}}}}}});
   }
   drawRisk();
   fetch('/api/geo-events').then(function(r){return r.json()}).then(function(d){
@@ -7741,22 +7769,22 @@ def render_mineral_v2(name):
 (function(){{
   if(!window.Chart) return;
   Chart.defaults.font.family="'Pretendard Variable',Pretendard,sans-serif";
-  Chart.defaults.color='#68726c';
+  Chart.defaults.color='#555555';
   var IL={imp_labels}, IV={imp_vals}, elImp=document.getElementById('cImp');
   if(elImp&&IL.length){{
     new Chart(elImp,{{type:'bar',
-      data:{{labels:IL,datasets:[{{data:IV,backgroundColor:'#0e7a4f',borderRadius:8,barThickness:18}}]}},
+      data:{{labels:IL,datasets:[{{data:IV,backgroundColor:'#155BB8',borderRadius:8,barThickness:18}}]}},
       options:{{indexAxis:'y',maintainAspectRatio:false,plugins:{{legend:{{display:false}}}},
-        scales:{{x:{{grid:{{color:'#eef1ef'}},ticks:{{font:{{size:11}}}}}},y:{{grid:{{display:false}},ticks:{{font:{{size:12}}}}}}}}}}}});
+        scales:{{x:{{grid:{{color:'#EEF1F5'}},ticks:{{font:{{size:11}}}}}},y:{{grid:{{display:false}},ticks:{{font:{{size:12}}}}}}}}}}}});
   }}
   var PL={px_labels}, PV={px_vals};
   if(PL.length){{
     new Chart(document.getElementById('cPx'),{{type:'line',
-      data:{{labels:PL,datasets:[{{data:PV,borderColor:'#0e7a4f',borderWidth:2.5,pointRadius:0,tension:.3,fill:true,
-        backgroundColor:'rgba(14,122,79,.07)'}}]}},
+      data:{{labels:PL,datasets:[{{data:PV,borderColor:'#155BB8',borderWidth:2.5,pointRadius:0,tension:.3,fill:true,
+        backgroundColor:'rgba(21,91,184,.07)'}}]}},
       options:{{maintainAspectRatio:false,plugins:{{legend:{{display:false}}}},
         scales:{{x:{{grid:{{display:false}},ticks:{{maxTicksLimit:6,font:{{size:11}}}}}},
-                y:{{grid:{{color:'#eef1ef'}},ticks:{{font:{{size:11}}}}}}}}}}}});
+                y:{{grid:{{color:'#EEF1F5'}},ticks:{{font:{{size:11}}}}}}}}}}}});
   }}
 }})();"""
     return _v2_shell("home", f"{name} — 마인테크", content, V2_DETAIL_CSS, js)
