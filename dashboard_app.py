@@ -6256,7 +6256,6 @@ tailwind.config = {
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 </head>
 <body class="flex min-h-screen bg-background">
-<a href="/" style="position:fixed;bottom:16px;left:16px;z-index:95;display:flex;align-items:center;gap:6px;padding:8px 15px;border-radius:999px;background:rgba(10,25,48,.72);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.14);color:#dbe6f5;font-size:12.5px;font-weight:700;text-decoration:none;font-family:'Pretendard Variable',Pretendard,sans-serif;box-shadow:0 6px 16px rgba(0,0,0,.25)"><span style="width:7px;height:7px;border-radius:50%;background:linear-gradient(135deg,#D97680,#4A7DD6)"></span>K Mineral Risk 홈</a>
 
 <!-- Main (사이드바 없음 — 회의에 집중) -->
 <main class="flex-1 h-screen flex flex-col bg-background overflow-hidden">
