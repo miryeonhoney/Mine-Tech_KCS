@@ -5144,7 +5144,7 @@ body{background:#eef2f8;color:#16233c;font-family:Pretendard,'Apple SD Gothic Ne
 <div id="globeViz"></div>
 
 <div class="hd">
-  <a class="brand" href="/"><span style="font-size:19px;font-weight:900;color:#12325e;letter-spacing:-.02em">MINE<em style="font-style:normal;color:#c8931d">TECH</em></span>
+  <a class="brand" href="/"><span style="font-size:19px;font-weight:900;color:#12325e;letter-spacing:-.02em">K<em style="font-style:normal;color:#155BB8"> Mineral Risk</em></span>
     <span><span class="s">Critical Minerals Map</span><br><span class="t">핵심광물지도</span></span></a>
   <div class="right">
     <span class="clock" id="clock">— <b>● LIVE</b></span>
@@ -5482,7 +5482,7 @@ form.sbar button{width:38px;height:38px;border:0;border-radius:10px;background:l
 .dlink:hover{color:#8a6a10}
 </style></head><body>
 <div class="top">
-  <a class="brand" href="/"><span style="font-size:18px;font-weight:900;color:#12325e;letter-spacing:-.02em">MINE<em style="font-style:normal;color:#c8931d">TECH</em></span></a>
+  <a class="brand" href="/"><span style="font-size:18px;font-weight:900;color:#12325e;letter-spacing:-.02em">K<em style="font-style:normal;color:#155BB8"> Mineral Risk</em></span></a>
   <form class="sbar" action="/search" method="get">
     <input name="q" value="__Q__" placeholder="광물·품목·키워드를 검색하세요" autofocus>
     <button type="submit">🔍</button>
@@ -5699,7 +5699,7 @@ body{font-variant-numeric:tabular-nums;}
     <div class="flex items-center gap-3 mb-6">
       <div class="w-10 h-10 rounded-lg flex items-center justify-center font-black text-xl" style="background:#12325e;color:#f4e3ad">M</div>
       <div>
-        <div class="font-black text-[#12325e] tracking-wider">MINETECH AI</div>
+        <div class="font-black text-[#12325e] tracking-wider">K MINERAL RISK AI</div>
         <div class="text-[10px] uppercase tracking-widest text-[#8a94a6]">AI 전문가 회의실</div>
       </div>
     </div>
@@ -6227,8 +6227,7 @@ tailwind.config = {
 <main class="flex-1 h-screen flex flex-col bg-background overflow-hidden">
   <header class="h-16 shrink-0 flex items-center justify-between px-8 border-b border-outline-variant/30 bg-surface/70 backdrop-blur-xl">
     <a href="/" class="flex items-center gap-3 no-underline" title="허브 홈">
-      <span style="font-size:19px;font-weight:900;color:#12325e;letter-spacing:-.02em">MINE<em style="font-style:normal;color:#c8931d">TECH</em></span>
-      <span class="text-on-surface-variant text-sm font-bold">· AI 전문가 회의실</span>
+      <span class="text-on-surface-variant text-sm font-bold" style="font-size:15px">AI 전문가 회의실</span>
     </a>
     <div class="flex items-center gap-4">
       <span id="confClock" class="font-data-tabular text-xs text-on-surface-variant">__NOW__ KST ● LIVE</span>
@@ -7234,6 +7233,40 @@ MIN_USES = {
     "철/철광석": "철강 원료", "흑연": "배터리 음극재", "백금": "촉매·수소차",
     "팔라듐": "자동차 촉매", "금": "반도체·자산", "은": "전자·태양광",
 }
+
+
+# ── 전 광종 전문가 자동 증강 — 수기 전문가(리튬 등 7인)는 유지, 나머지 광종은 템플릿 생성 ──
+_GEN_COLORS = ["#155BB8", "#0E7A4F", "#B8720A", "#7A5195", "#C0392B", "#2E8B8B",
+               "#8A5A2B", "#4A3AA7", "#1E74D8", "#D2611E"]
+_GEN_AVATAR = {"비철금속": "🔩", "희소금속": "⚗️", "희토류": "🧲", "에너지": "⚡", "기타": "⛏️"}
+
+def _gen_expert(nm, cat, use, idx):
+    stance = ("리스크를 먼저 경고하되 근거 수치를 반드시 제시" if idx % 3 == 0 else
+              ("기회 요인과 대체 공급선을 균형 있게 제시" if idx % 3 == 1 else
+               "가격·수급 데이터의 추세 해석에 집중"))
+    return {
+        "name": f"{nm} 전문가",
+        "title": f"{use} 공급망 분석가",
+        "avatar": _GEN_AVATAR.get(cat, "⛏️"),
+        "color": _GEN_COLORS[idx % len(_GEN_COLORS)],
+        "category": cat,
+        "model": DEFAULT_OPENAI_MODEL,
+        "api_key": "",
+        "system": (f"당신은 '{nm} 전문가'입니다. 한국의 {nm}({use}) 공급망을 전담 분석합니다.\n"
+                   f"전문 분야: {nm}의 용도({use})와 수요 산업, 한국 수입 구조·주요 공급국, 가격 동향, 분류({cat}) 시장 맥락.\n"
+                   f"성격: {stance}. 제공된 팩트카드·차트 범위의 수치만 인용한다.\n"
+                   "다중 토론 지침: 다른 전문가 발언을 직접 인용해 동의/반박하고, 200자 내외로 핵심만 말한다."),
+    }
+
+_idx = 0
+for _cat, _names in MINERAL_TAXONOMY.items():
+    for _nm in _names:
+        _base = re.sub(r"[\(\)/].*$", "", _nm)
+        if _base in MINERAL_EXPERTS or _nm in MINERAL_EXPERTS:
+            _idx += 1
+            continue
+        MINERAL_EXPERTS[_base] = _gen_expert(_base, _cat, MIN_USES.get(_nm, _cat), _idx)
+        _idx += 1
 
 
 def _v2_norm(s):
