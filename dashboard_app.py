@@ -1520,10 +1520,6 @@ text-decoration:none!important;letter-spacing:0!important}
 """
 
 V2_CHROME_HEADER = """
-<div class="v2ubar"><div class="v2wrap">
-  <div class="l">데이터 출처: KOMIS · 공공데이터포털 · 관세청 · USGS</div>
-  <div class="r"><a href="/briefing">리포트 구독</a></div>
-</div></div>
 <div class="v2tbar"><div class="v2wrap">
   <a class="v2logo" href="/"><svg width="36" height="36" viewBox="0 0 40 40" aria-hidden="true"><defs>
 <linearGradient id="kmrg" x1="0" y1="0" x2="1" y2="1">
@@ -7542,14 +7538,6 @@ __EXTRA_CSS__
 </style>
 </head>
 <body>
-<div class="ubar"><div class="wrap">
-  <div class="u-l">데이터 출처:&nbsp;
-    <a href="https://www.komis.or.kr" target="_blank" rel="noopener">KOMIS</a>&nbsp;·&nbsp;
-    <a href="https://www.data.go.kr" target="_blank" rel="noopener">공공데이터포털</a>&nbsp;·&nbsp;
-    <a href="https://tradedata.go.kr" target="_blank" rel="noopener">관세청</a>&nbsp;·&nbsp;
-    <a href="https://www.usgs.gov" target="_blank" rel="noopener">USGS</a></div>
-  <div class="u-r"><a href="/briefing">리포트 구독</a></div>
-</div></div>
 <div class="tbar"><div class="wrap">
   <a class="logo" href="/"><svg width="36" height="36" viewBox="0 0 40 40" aria-hidden="true"><defs>
 <linearGradient id="kmrg" x1="0" y1="0" x2="1" y2="1">
