@@ -4447,7 +4447,7 @@ function selectMineral(mineral, btn) {{
 # ═══════════════════════════════════════════════════════════════
 #  ③ 라우트
 # ═══════════════════════════════════════════════════════════════
-def _page_cached(key, builder, ttl=1500):
+def _page_cached(key, builder, ttl=21600):
     """완성 HTML을 캐시로 서빙 — 저사양 서버에서 요청당 재조립 비용 제거 (워머가 주기 갱신)."""
     h = cache_get(key)
     if h is None:
@@ -4789,16 +4789,16 @@ def _cache_warmer():
         try:
             t0 = time.time()
             fetch_news(); fetch_audience_news()
-            cache_set("page_dash", render_dashboard(home=False), ttl=1900)
-            try: cache_set("page_home", render_home_v2(), ttl=1900)
+            cache_set("page_dash", render_dashboard(home=False), ttl=21600)
+            try: cache_set("page_home", render_home_v2(), ttl=21600)
             except Exception: pass
-            try: cache_set("page_brief", render_briefing_v2(), ttl=1900)
+            try: cache_set("page_brief", render_briefing_v2(), ttl=21600)
             except Exception: pass
             # 광종 상세 — K-RISK 상위 8종 + 인기 광종 선렌더
             try:
                 _top = [k for k, _ in sorted(compute_k_risk().items(), key=lambda x: -x[1]["score"])[:8]]
                 for _nm in dict.fromkeys(_top + ["리튬", "니켈", "코발트", "텅스텐", "흑연", "네오디뮴"]):
-                    try: cache_set("page_m_" + _v2_norm(_nm), render_mineral_v2(_nm), ttl=1900)
+                    try: cache_set("page_m_" + _v2_norm(_nm), render_mineral_v2(_nm), ttl=21600)
                     except Exception: pass
             except Exception as _e:
                 print("[warmer] minerals:", _e)
