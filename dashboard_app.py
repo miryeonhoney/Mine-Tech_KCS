@@ -7138,9 +7138,34 @@ function sendMessage() {
   renderTurnControls();
 }
 
+function _jamo(str) {
+  // 한글 음절 → 자모 배열 (STT 오인식 유사도 비교용)
+  const CHO = 'ㄱㄲㄴㄷㄸㄹㅁㅂㅃㅅㅆㅇㅈㅉㅊㅋㅌㅍㅎ';
+  const JUNG = 'ㅏㅐㅑㅒㅓㅔㅕㅖㅗㅘㅙㅚㅛㅜㅝㅞㅟㅠㅡㅢㅣ';
+  const JONG = ' ㄱㄲㄳㄴㄵㄶㄷㄹㄺㄻㄼㄽㄾㄿㅀㅁㅂㅄㅅㅆㅇㅈㅊㅋㅌㅍㅎ';
+  const out = [];
+  for (const ch of str) {
+    const c = ch.charCodeAt(0) - 0xAC00;
+    if (c >= 0 && c < 11172) {
+      out.push(CHO[Math.floor(c / 588)], JUNG[Math.floor((c % 588) / 28)]);
+      if (c % 28) out.push(JONG[c % 28]);
+    } else out.push(ch);
+  }
+  return out;
+}
+function _jamoSim(a, b) {
+  const A = _jamo(a), B = _jamo(b);
+  const dp = Array.from({length: A.length + 1}, (_, i) => Array.from({length: B.length + 1}, (_, j) => i === 0 ? j : (j === 0 ? i : 0)));
+  for (let i = 1; i <= A.length; i++)
+    for (let j = 1; j <= B.length; j++)
+      dp[i][j] = Math.min(dp[i-1][j] + 1, dp[i][j-1] + 1, dp[i-1][j-1] + (A[i-1] === B[j-1] ? 0 : 1));
+  const mx = Math.max(A.length, B.length);
+  return mx ? 1 - dp[A.length][B.length] / mx : 0;
+}
 function _detectCalledExpert(msg) {
   const m = msg.replace(/\s+/g, '');
   let hit = null;
+  // 1차: 정확 매칭
   turnOrder.forEach(function(k){
     const ex = EXPERTS[k]; if (!ex) return;
     const nm = (ex.name || '').replace(/\s+/g, '');       // "리튬 전문가" → "리튬전문가"
@@ -7148,7 +7173,20 @@ function _detectCalledExpert(msg) {
     if (!base) return;
     if (m.includes(nm) || m.includes(base + '전문가') || m.includes(base + '님')) hit = k;
   });
-  return hit;
+  if (hit) return hit;
+  // 2차: 퍼지 매칭 — "○○ 전문가"의 ○○를 자모 유사도로 유추 (STT 오인식 구제: 재정학→지정학)
+  const calls = [...msg.matchAll(/([가-힣A-Za-z]{2,8})\s*전문가/g)].map(x => x[1]);
+  let best = null, bestSim = 0;
+  calls.forEach(function(word){
+    turnOrder.forEach(function(k){
+      const ex = EXPERTS[k]; if (!ex) return;
+      const base = (ex.name || '').replace(/\s+/g, '').replace(/전문가$/, '');
+      if (!base) return;
+      const sim = _jamoSim(word, base);
+      if (sim > bestSim) { bestSim = sim; best = k; }
+    });
+  });
+  return bestSim >= 0.55 ? best : null;
 }
 
 /* ═══ Jarvis 음성 회의 — STT(마이크) + TTS(낭독) ═══ */
