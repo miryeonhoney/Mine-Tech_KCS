@@ -6426,6 +6426,9 @@ tailwind.config = {
     </a>
     <div class="flex items-center gap-4">
       <span id="confClock" class="font-data-tabular text-xs text-on-surface-variant">__NOW__ KST ● LIVE</span>
+      <button onclick="toggleFullscreen()" title="전체화면 (F)" class="flex items-center gap-2 px-4 py-2 rounded-full border border-outline-variant/40 text-on-surface-variant text-sm font-bold hover:border-secondary hover:text-secondary transition">
+        <span class="material-symbols-outlined text-base" id="fsIcon">fullscreen</span> 전체화면
+      </button>
       <a href="/" class="flex items-center gap-2 px-4 py-2 rounded-full border border-secondary/40 text-secondary text-sm font-bold hover:bg-secondary hover:text-on-secondary-fixed transition">
         <span class="material-symbols-outlined text-base">logout</span> 회의실 나가기
       </a>
@@ -7348,6 +7351,18 @@ function _fallbackSpeak(clean, exKey){          // OpenAI TTS 실패 시 브라�
   u.onend = _afterSpeak;
   speechSynthesis.speak(u);
 }
+
+function toggleFullscreen(){
+  if (!document.fullscreenElement) {
+    document.documentElement.requestFullscreen().catch(function(){});
+  } else {
+    document.exitFullscreen();
+  }
+}
+document.addEventListener('fullscreenchange', function(){
+  var ic = document.getElementById('fsIcon');
+  if (ic) ic.textContent = document.fullscreenElement ? 'fullscreen_exit' : 'fullscreen';
+});
 
 function toggleVoiceMode(){
   voiceMode = !voiceMode;
