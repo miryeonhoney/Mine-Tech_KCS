@@ -5061,6 +5061,7 @@ EXPERT_VOICE = {
     "통상":   ("ballad",  "부드럽지만 논리적인 남성 협상가 톤, 리듬감 있게 빠르게."),
     "지정학": ("onyx",    "매우 낮고 무거운 저음의 남성. 안보 브리핑의 긴장감을 살려 빠르게, 문장 끝만 낮게 떨어뜨리며."),
     "정책":   ("sage",    "차분한 중성 톤의 정책가. 담백하지만 속도는 빠르게, 결론부터 또박또박."),
+    "MainAI": ("ballad",  "격식 있는 남성 사회자. 회의 개회를 선언하듯 또렷하고 위엄 있게, 속도는 빠르게."),
 }
 TTS_COMMON = ("실제 한국어 정책 토론회에서 열띤 공방 중인 패널처럼 말하세요. "
               "전원 빠른 속도가 기본 — 단 음높이·무게감·말버릇은 아래 화자 특성을 따르고, 발음은 뭉개지 않게. "
@@ -6797,7 +6798,8 @@ function startSession() {
   recentViz = [];
   _agendaCount = 0;
   showAgendaBox(q.length > 42 ? q.slice(0, 40) + '…' : q);
-  appendMainAI('지금부터 전문가 회의를 시작합니다. 오늘의 안건 — "' + q + '". '
+  if (!voiceMode) { voiceMode = true; document.getElementById('voiceModeBtn').classList.add('on'); }
+  appendMainAI('지금부터 A2A 전문가 회의를 시작하겠습니다. 오늘의 안건 — "' + q + '". '
     + '참여 전문가는 ' + turnOrder.length + '인입니다. 진행자께서는 첫 발언자를 지정하거나 직접 질문해주세요.');
   appendUserMsg(q);
   busy = false;
@@ -6846,7 +6848,7 @@ function appendMainAI(text) {
   chatArea.appendChild(div);
   chatArea.scrollTop = chatArea.scrollHeight;
   chatHistory.push({role:'assistant', name:'Main AI(진행)', content:text});
-  if (voiceMode) voiceSpeak(text, null);
+  if (voiceMode) voiceSpeak(text, 'MainAI');
 }
 
 function endMeeting() {
