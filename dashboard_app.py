@@ -4938,13 +4938,16 @@ def conference_chat():
             _cat = build_viz_catalog()
             _my = [k for k in EXPERT_VIZ.get(speaker, []) if k in _cat]
             # 안건에 등장한 광물의 전용 차트를 최우선 배치 — 직능 전문가도 회의 광물 근거를 쓴다
+            _agenda_keys = []
             try:
                 _bases = {re.sub(r"[\(\)/].*$", "", _n) for _ns in MINERAL_TAXONOMY.values() for _n in _ns}
                 for _tn in sorted(_bases, key=len, reverse=True):
                     if _tn and _tn in (topic or ""):
                         for _k in (f"imports_{_tn}", f"risk_{_tn}"):
-                            if _k in _cat and _k not in _my:
-                                _my.insert(0, _k)
+                            if _k in _cat:
+                                if _k not in _my:
+                                    _my.insert(0, _k)
+                                _agenda_keys.append(_k)
                         break
             except Exception:
                 pass
@@ -4961,6 +4964,8 @@ def conference_chat():
                     "(예: [[viz:" + _my[0] + "]]). 데이터를 근거로 드는 발언이라면 대체로 하나 붙이는 게 좋습니다. "
                     "다만 ① 직전 발언과 똑같은 차트를 연속으로 반복하지 말고, ② 순수하게 동의·맥락·"
                     "감상만 말하는 발언에는 생략하세요. 한 발언에 차트는 최대 하나입니다."
+                    + ((" 이번 안건 광물의 전용 차트는 " + ", ".join(f"`{k}`" for k in _agenda_keys)
+                        + " 입니다 — 수치 근거에는 이 전용 차트를 우선 쓰고, `k_risk` 같은 종합 차트는 광물 간 순위를 비교할 때만 쓰세요.") if _agenda_keys else "")
                     + (f" 최근 화면에 이미 띄운 차트({', '.join(recent_viz)})는 다시 고르지 말고 다른 자료를 쓰거나 생략하세요." if recent_viz else "")
                 )
         except Exception as _e:
