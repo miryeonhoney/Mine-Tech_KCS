@@ -4936,6 +4936,18 @@ def conference_chat():
         try:
             _cat = build_viz_catalog()
             _my = [k for k in EXPERT_VIZ.get(speaker, []) if k in _cat]
+            # 안건에 등장한 광물의 전용 차트를 최우선 배치 — 직능 전문가도 회의 광물 근거를 쓴다
+            try:
+                _bases = {re.sub(r"[\(\)/].*$", "", _n) for _ns in MINERAL_TAXONOMY.values() for _n in _ns}
+                for _tn in sorted(_bases, key=len, reverse=True):
+                    if _tn and _tn in (topic or ""):
+                        for _k in (f"imports_{_tn}", f"risk_{_tn}"):
+                            if _k in _cat and _k not in _my:
+                                _my.insert(0, _k)
+                        break
+            except Exception:
+                pass
+            _my = _my[:6]
             if _my:
                 _lines = "\n".join(
                     f"- {k}: {_cat[k]['title']}"
@@ -5843,16 +5855,16 @@ body{font-variant-numeric:tabular-nums;}
 # 전문가가 발언하면서 근거로 띄울 수 있는 차트 스펙을 실데이터로 생성.
 # 각 항목: {title, type(line|bar|doughnut|stat), labels, series|stats, note, source}
 EXPERT_VIZ = {
-    "리튬":   ["k_risk", "risk_리튬", "reserves", "mineral_index", "komir_trade"],
-    "코발트": ["k_risk", "risk_코발트", "reserves", "komir_trade"],
-    "니켈":   ["k_risk", "risk_니켈", "reserves", "resource_dev"],
-    "희토류": ["reserves", "mineral_index", "komir_trade"],
-    "텅스텐": ["k_risk", "risk_텅스텐", "mineral_index", "reserves"],
-    "망간":   ["reserves", "resource_dev", "mineral_index"],
-    "흑연":   ["reserves", "mineral_index", "komir_trade"],
+    "리튬":   ["k_risk", "risk_리튬", "imports_리튬", "mineral_index"],
+    "코발트": ["k_risk", "risk_코발트", "imports_코발트", "komir_trade"],
+    "니켈":   ["k_risk", "risk_니켈", "imports_니켈", "resource_dev"],
+    "희토류": ["imports_희토류", "mineral_index", "komir_trade"],
+    "텅스텐": ["k_risk", "risk_텅스텐", "imports_텅스텐", "mineral_index"],
+    "망간":   ["imports_망간", "resource_dev", "mineral_index"],
+    "흑연":   ["imports_흑연", "mineral_index", "komir_trade"],
     "경제":   ["mineral_index", "komir_trade", "k_risk"],
-    "통상":   ["komir_trade", "reserves"],
-    "지정학": ["k_risk", "reserves", "komir_trade"],
+    "통상":   ["komir_trade", "mineral_index"],
+    "지정학": ["k_risk", "komir_trade"],
     "정책":   ["k_risk", "resource_dev", "mineral_index"],
 }
 
@@ -5941,6 +5953,37 @@ def build_viz_catalog():
         }
     except Exception as e:
         print("[VIZ reserves]", e)
+
+    # 3-b) 광물별 수입국 구성 — 회의 안건 광물 전용 근거 차트
+    try:
+        imp_map, _u = by_mineral_country(fetch_customs() or [])
+        try:
+            groups = _v2_trade_groups()
+        except Exception:
+            groups = {}
+        for _cn, _ns in MINERAL_TAXONOMY.items():
+            for _n in _ns:
+                _b = re.sub(r"[\(\)/].*$", "", _n)
+                try:
+                    byc, _src, _note = _v2_imports(_n, imp_map, groups)
+                except Exception:
+                    byc = None
+                byc = byc or {}
+                tot = sum(byc.values())
+                if not tot:
+                    continue
+                topc = sorted(byc.items(), key=lambda kv: -kv[1])[:7]
+                cat[f"imports_{_b}"] = {
+                    "title": f"{_b} 수입국 구성", "type": "bar",
+                    "labels": [k for k, _ in topc],
+                    "series": [{"name": "수입 비중(%)", "data": [round(v / tot * 100, 1) for _, v in topc],
+                                "color": "#1c5cab"}],
+                    "headline": {"label": "최대 수입국", "value": topc[0][0],
+                                 "sub": f"비중 {topc[0][1] / tot * 100:.0f}%"},
+                    "note": _note or "국가별 수입금액 기준", "source": "관세청·KOMIR 수출입",
+                }
+    except Exception as e:
+        print("[VIZ imports]", e)
 
     # 7) 자원개발률(자주개발률)
     try:
@@ -7470,6 +7513,7 @@ for _cat, _names in MINERAL_TAXONOMY.items():
             _idx += 1
             continue
         MINERAL_EXPERTS[_base] = _gen_expert(_base, _cat, MIN_USES.get(_nm, _cat), _idx)
+        EXPERT_VIZ.setdefault(_base, ["k_risk", "risk_" + _base, "imports_" + _base, "mineral_index"])
         _idx += 1
 
 
