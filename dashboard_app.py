@@ -6800,7 +6800,7 @@ function startSession() {
   document.getElementById('chatArea').innerHTML = '';
   recentViz = [];
   _agendaCount = 0;
-  showAgendaBox(q.length > 42 ? q.slice(0, 40) + '…' : q);
+  showAgendaBox(q, true);
   if (!voiceMode) { voiceMode = true; document.getElementById('voiceModeBtn').classList.add('on'); }
   appendMainAI('지금부터 A2A 전문가 회의를 시작하겠습니다.', '/static/mainai_open.mp3');
   appendUserMsg(q);
@@ -6821,11 +6821,13 @@ function backToLobby() {
 }
 
 let _agendaCount = 0;
-function showAgendaBox(title) {
-  _agendaCount++;
+function showAgendaBox(title, isTopic) {
+  let tag;
+  if (isTopic) { tag = '◆ 주제'; }
+  else { _agendaCount++; tag = '◆ 안건 ' + _agendaCount; }
   let b = document.getElementById('agendaBox');
   if (!b) { b = document.createElement('div'); b.id = 'agendaBox'; document.body.appendChild(b); }
-  b.innerHTML = '<span class="ab-tag">◆ 안건 ' + _agendaCount + '</span><span class="ab-title"></span>';
+  b.innerHTML = '<span class="ab-tag">' + tag + '</span><span class="ab-title"></span>';
   b.querySelector('.ab-title').textContent = title;
   b.classList.remove('ab-pop'); void b.offsetWidth; b.classList.add('ab-pop');
 }
