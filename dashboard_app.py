@@ -6802,8 +6802,7 @@ function startSession() {
   _agendaCount = 0;
   showAgendaBox(q.length > 42 ? q.slice(0, 40) + '…' : q);
   if (!voiceMode) { voiceMode = true; document.getElementById('voiceModeBtn').classList.add('on'); }
-  appendMainAI('지금부터 A2A 전문가 회의를 시작하겠습니다. 오늘의 안건 — "' + q + '". '
-    + '참여 전문가는 ' + turnOrder.length + '인입니다. 진행자께서는 첫 발언자를 지정하거나 직접 질문해주세요.');
+  appendMainAI('지금부터 A2A 전문가 회의를 시작하겠습니다.');
   appendUserMsg(q);
   busy = false;
   renderTurnControls(true);   // 첫 발언자 직접 선택
