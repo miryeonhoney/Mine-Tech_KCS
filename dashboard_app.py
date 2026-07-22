@@ -7263,12 +7263,25 @@ function stopMic(send){
       _micStatus('');
       if (d && d.ok && d.text) {
         const input = document.getElementById('chatInput');
-        input.value = d.text;
+        input.value = _sttFix(d.text);
         sendMessage();
       } else if (d && d.error === 'stt_unavailable') {
         _micStatus('⚠️ Jarvis STT 서버가 꺼져 있어요 — 터미널에서 ./jarvis_stt.sh 실행 후 다시 시도');
       } else { _micStatus('… 음성을 인식하지 못했어요. 다시 눌러 말씀해주세요'); }
     }).catch(()=>{ _micStatus('⚠️ STT 연결 실패 — ./jarvis_stt.sh 확인'); });
+}
+
+// STT 단골 오인식 강제 교정 (도메인상 정답이 명백한 것만)
+const _STT_FIXES = [
+  [/101\s*일\s*분/g, '100일분'],
+  [/101\s*분/g, '100일분'],
+  [/백\s*일\s*분/g, '100일분'],
+  [/재정학\s*전문가/g, '지정학 전문가'],
+];
+function _sttFix(t){
+  let out = t;
+  _STT_FIXES.forEach(function(p){ out = out.replace(p[0], p[1]); });
+  return out;
 }
 
 function _toWav16k(chunks, rate){
