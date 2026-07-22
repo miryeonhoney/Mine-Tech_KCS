@@ -6802,7 +6802,7 @@ function startSession() {
   _agendaCount = 0;
   showAgendaBox(q.length > 42 ? q.slice(0, 40) + '…' : q);
   if (!voiceMode) { voiceMode = true; document.getElementById('voiceModeBtn').classList.add('on'); }
-  appendMainAI('지금부터 A2A 전문가 회의를 시작하겠습니다.');
+  appendMainAI('지금부터 A2A 전문가 회의를 시작하겠습니다.', '/static/mainai_open.mp3');
   appendUserMsg(q);
   busy = false;
   renderTurnControls(true);   // 첫 발언자 직접 선택
@@ -6838,7 +6838,17 @@ function _checkAgenda(msg) {
     .catch(function(){});
 }
 
-function appendMainAI(text) {
+function playStaticVoice(url) {
+  if (!voiceMode) return;
+  if (_curAudio){ try{_curAudio.pause();}catch(e){} }
+  const a = new Audio(url);
+  _curAudio = a;
+  a.playbackRate = 1.2;
+  a.onended = () => { _micStatus(''); _afterSpeak(); };
+  a.onerror = () => { _micStatus(''); _afterSpeak(); };
+  a.play().catch(()=>{ _micStatus(''); _afterSpeak(); });
+}
+function appendMainAI(text, staticAudio) {
   const chatArea = document.getElementById('chatArea');
   const div = document.createElement('div');
   div.className = 'flex justify-center';
@@ -6850,7 +6860,7 @@ function appendMainAI(text) {
   chatArea.appendChild(div);
   chatArea.scrollTop = chatArea.scrollHeight;
   chatHistory.push({role:'assistant', name:'Main AI(진행)', content:text});
-  if (voiceMode) voiceSpeak(text, 'MainAI');
+  if (voiceMode) { if (staticAudio) playStaticVoice(staticAudio); else voiceSpeak(text, 'MainAI'); }
 }
 
 function endMeeting() {
