@@ -6796,7 +6796,7 @@ function startSession() {
   recentViz = [];
   _agendaCount = 0;
   showAgendaBox(q.length > 42 ? q.slice(0, 40) + '…' : q);
-  appendMainAI('지금부터 K Mineral Risk 전문가 회의를 시작합니다. 오늘의 안건 — "' + q + '". '
+  appendMainAI('지금부터 전문가 회의를 시작합니다. 오늘의 안건 — "' + q + '". '
     + '참여 전문가는 ' + turnOrder.length + '인입니다. 진행자께서는 첫 발언자를 지정하거나 직접 질문해주세요.');
   appendUserMsg(q);
   busy = false;
