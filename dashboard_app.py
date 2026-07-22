@@ -4933,6 +4933,7 @@ def conference_chat():
 
         # 이 전문가가 발언 근거로 띄울 수 있는 시각자료(차트) 목록 주입
         viz_block = ""
+        _my = []
         try:
             _cat = build_viz_catalog()
             _my = [k for k in EXPERT_VIZ.get(speaker, []) if k in _cat]
@@ -5015,12 +5016,20 @@ def conference_chat():
                 ],
                 stream=True,
             )
+            _full = ""
             for chunk in stream:
                 if not chunk.choices:
                     continue
                 delta = chunk.choices[0].delta.content
                 if delta:
+                    _full += delta
                     yield sse({'text': delta})
+            # 근거 차트 보장 — 수치를 말했는데 차트를 안 붙였으면 안건 1순위 차트를 서버가 부착
+            try:
+                if _my and "[[viz:" not in _full and re.search(r"\d", _full) and _my[0] not in (recent_viz or []):
+                    yield sse({'text': "\n[[viz:" + _my[0] + "]]"})
+            except Exception:
+                pass
         except Exception as e:
             yield sse({'error': str(e), 'mineral': speaker})
 
