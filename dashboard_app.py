@@ -5062,6 +5062,31 @@ def conference_tts():
         return jsonify(ok=False, error=str(e)), 502
 
 
+@app.route("/api/conference/agenda", methods=["POST"])
+def conference_agenda():
+    """진행자 발언이 안건 상정인지 판정하고 20자 안건명으로 요약 — 무대 안건 박스용."""
+    if not _conf_authed():
+        return jsonify(ok=False), 401
+    text = ((request.get_json(silent=True) or {}).get("text") or "").strip()
+    if not text or not OPENAI_API_KEY:
+        return jsonify(ok=False)
+    try:
+        r = OpenAI(api_key=OPENAI_API_KEY).chat.completions.create(
+            model=DEFAULT_OPENAI_MODEL, max_completion_tokens=700,
+            messages=[{"role": "system", "content":
+                "당신은 회의 서기다. 진행자 발언이 '안건 상정'이면 안건명을 요약하라. 안건 상정이란: 새 논제 제시, 표결·결정 요청(\"~할 것인가\"), "
+                "\"~을 상정합니다\", 그리고 논의 주제 전환(\"~방안이 있는지\", \"추가로 ~을 논의\", \"마지막으로 ~있습니까\")을 포함한다. "
+                "안건명을 20자 이내 명사형으로 요약하라. 특정 전문가 호명, 단순 질문, 감상, 진행 멘트는 안건이 아니다. "
+                "JSON만 출력: {\"is_agenda\": true|false, \"title\": \"안건명\"}"},
+                {"role": "user", "content": text[:400]}])
+        m = re.search(r"\{.*\}", r.choices[0].message.content or "", re.S)
+        d0 = json.loads(m.group(0)) if m else {}
+        return jsonify(ok=bool(d0.get("is_agenda")), title=str(d0.get("title") or "")[:40])
+    except Exception as e:
+        print("[agenda]", e)
+        return jsonify(ok=False)
+
+
 @app.route("/api/conference/stt", methods=["POST"])
 def conference_stt():
     """회의실 음성 인식 — Jarvis STT 사이드카 프록시 (WAV in, text out)."""
@@ -6213,6 +6238,15 @@ tailwind.config = {
     background:rgba(6,10,22,.82);backdrop-filter:blur(16px);
     border-left:1px solid rgba(126,166,255,.14);
     padding:0 16px 150px 16px!important;overflow-y:auto;}
+  #agendaBox{display:none;position:fixed;top:158px;left:calc((100vw - 390px)/2);transform:translateX(-50%);z-index:28;
+    max-width:min(640px, calc(100vw - 430px));align-items:center;gap:11px;padding:12px 20px;border-radius:14px;
+    background:rgba(10,20,40,.78);backdrop-filter:blur(10px);border:1px solid rgba(233,198,103,.5);
+    box-shadow:0 8px 30px rgba(0,0,0,.4);font-family:'Pretendard Variable',Pretendard,sans-serif;}
+  body.cine #agendaBox{display:flex;}
+  #agendaBox .ab-tag{flex:none;font-size:11px;font-weight:900;letter-spacing:.12em;color:#0a1930;background:#e9c667;padding:4px 11px;border-radius:999px;}
+  #agendaBox .ab-title{font-size:14.5px;font-weight:700;color:#f2e6b8;line-height:1.45;}
+  .ab-pop{animation:abPop .45s cubic-bezier(.2,.9,.3,1.2);}
+  @keyframes abPop{0%{transform:translateX(-50%) translateY(-14px);opacity:0}100%{transform:translateX(-50%) translateY(0);opacity:1}}
   body.cine #chatArea::before{content:'LIVE TRANSCRIPT';display:block;position:sticky;top:0;z-index:31;
     font-size:9.5px;font-weight:900;letter-spacing:.26em;color:#7d93b8;
     margin:0 -16px 18px;padding:16px 16px 10px;border-bottom:1px solid rgba(126,166,255,.12);
@@ -6700,6 +6734,8 @@ function startSession() {
   }).join('');
   document.getElementById('chatArea').innerHTML = '';
   recentViz = [];
+  _agendaCount = 0;
+  showAgendaBox(q.length > 42 ? q.slice(0, 40) + '…' : q);
   appendMainAI('지금부터 K Mineral Risk 전문가 회의를 시작합니다. 오늘의 안건 — "' + q + '". '
     + '참여 전문가는 ' + turnOrder.length + '인입니다. 진행자께서는 첫 발언자를 지정하거나 직접 질문해주세요.');
   appendUserMsg(q);
@@ -6708,12 +6744,33 @@ function startSession() {
 }
 
 function backToLobby() {
+  var _ab = document.getElementById('agendaBox');
+  if (_ab) _ab.remove();
+  _agendaCount = 0;
   showScreen('step1Screen');
   document.getElementById('chatArea').innerHTML = '';
   document.getElementById('turnControls').style.display = 'none';
   chatHistory = [];
   recentViz = [];
   busy = false;
+}
+
+let _agendaCount = 0;
+function showAgendaBox(title) {
+  _agendaCount++;
+  let b = document.getElementById('agendaBox');
+  if (!b) { b = document.createElement('div'); b.id = 'agendaBox'; document.body.appendChild(b); }
+  b.innerHTML = '<span class="ab-tag">◆ 안건 ' + _agendaCount + '</span><span class="ab-title"></span>';
+  b.querySelector('.ab-title').textContent = title;
+  b.classList.remove('ab-pop'); void b.offsetWidth; b.classList.add('ab-pop');
+}
+function _checkAgenda(msg) {
+  // 서기 AI가 발언을 판정 — 안건 상정이면 무대 위 박스 갱신 (비동기, 토론 흐름 방해 없음)
+  fetch('/api/conference/agenda', {method: 'POST', headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({text: msg})})
+    .then(function(r){ return r.json(); })
+    .then(function(d){ if (d && d.ok && d.title) showAgendaBox(d.title); })
+    .catch(function(){});
 }
 
 function appendMainAI(text) {
@@ -7011,6 +7068,7 @@ function sendMessage() {
   if (!msg) return;
   input.value = '';
   appendUserMsg(msg);
+  _checkAgenda(msg);
   // 호명 자동 지목 — "리튬 전문가 생각은 어떠세요?" → 선택 없이 리튬 전문가가 바로 발언
   const called = _detectCalledExpert(msg);
   if (called) {
