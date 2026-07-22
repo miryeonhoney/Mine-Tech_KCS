@@ -5014,7 +5014,7 @@ def conference_chat():
         try:
             stream = OpenAI(api_key=api_key).chat.completions.create(
                 model=expert.get("model", DEFAULT_OPENAI_MODEL),
-                max_completion_tokens=240,
+                max_completion_tokens=800,
                 messages=[
                     {"role": "system", "content": sys_prompt},
                     {"role": "user",   "content": user_prompt},
